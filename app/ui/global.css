@@ -2,17 +2,102 @@
 @tailwind components;
 @tailwind utilities;
 
-input[type='number'] {
+@layer base {
+  :root {
+    --color-primary: #2e5a7a;
+    --color-secondary: #7b7b85;
+    --color-tertiary: #4fbadb;
+    --color-text: #636464;
+    --color-background: #ffffff;
+    --color-surface: #f9fafb;
+    --color-border: #e5e7eb;
+  }
+
+  .dark {
+    --color-primary: #4fbadb;
+    --color-secondary: #9ca3af;
+    --color-tertiary: #60a5fa;
+    --color-text: #f3f4f6;
+    --color-background: #111827;
+    --color-surface: #1f2937;
+    --color-border: #374151;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    transition: background-color 0.2s ease, color 0.2s ease;
+    padding-top: 120px; /* Account for fixed navigation */
+  }
+
+  /* Hide scrollbars */
+  html {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+  }
+
+  html::-webkit-scrollbar {
+    display: none; /* WebKit browsers */
+  }
+
+  body::-webkit-scrollbar {
+    display: none; /* WebKit browsers */
+  }
+
+  *::-webkit-scrollbar {
+    display: none; /* WebKit browsers */
+  }
+}
+
+@layer components {
+  .text-primary {
+    color: var(--color-primary);
+  }
+
+  .text-secondary {
+    color: var(--color-secondary);
+  }
+
+  .text-tertiary {
+    color: var(--color-tertiary);
+  }
+
+  .bg-primary {
+    background-color: var(--color-primary);
+  }
+
+  .bg-secondary {
+    background-color: var(--color-secondary);
+  }
+
+  .bg-tertiary {
+    background-color: var(--color-tertiary);
+  }
+
+  .border-primary {
+    border-color: var(--color-primary);
+  }
+
+  .border-secondary {
+    border-color: var(--color-secondary);
+  }
+
+  .border-tertiary {
+    border-color: var(--color-tertiary);
+  }
+}
+
+input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
 
-input[type='number']::-webkit-inner-spin-button {
+input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-input[type='number']::-webkit-outer-spin-button {
+input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }

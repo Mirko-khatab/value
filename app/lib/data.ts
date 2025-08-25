@@ -1,13 +1,20 @@
 import {
-  CustomerField,
+  TeamField,
   CustomersTableType,
   InvoiceForm,
-  InvoicesTable,
-  LatestInvoiceRaw,
   Revenue,
+  Blog,
+  Machine,
+  MachineGroup,
+  Quote,
+  SocialMedia,
+  Property,
+  SpecialProjects,
 } from "./definitions";
-import { formatCurrency } from "./utils";
 import { getConnection } from "./serverutils";
+import { Project } from "./definitions";
+import { ParentType } from "./definitions";
+import { Gallery } from "./definitions";
 
 export async function fetchRevenue() {
   let connection;
@@ -15,13 +22,10 @@ export async function fetchRevenue() {
     // Artificially delay a response for demo purposes.
     // Don't do this in production :)
 
-    // console.log("Fetching revenue data...");
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     connection = await getConnection();
     const [rows] = await connection.execute("SELECT * FROM revenue");
-
-    // console.log("Data fetch completed after 3 seconds.");
 
     return rows as Revenue[];
   } catch (error) {
@@ -32,160 +36,219 @@ export async function fetchRevenue() {
   }
 }
 
-export async function fetchLatestInvoices() {
+export async function fetchTeamById(id: string) {
   let connection;
-  try {
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    connection = await getConnection();
-    const [rows] = await connection.execute(`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`);
-
-    const data = rows as LatestInvoiceRaw[];
-    const latestInvoices = data.map((invoice) => ({
-      ...invoice,
-      amount: formatCurrency(invoice.amount),
-    }));
-    return latestInvoices;
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch the latest invoices.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-export async function fetchCardData() {
-  let connection;
-  try {
-    // You can probably combine these into a single SQL query
-    // However, we are intentionally splitting them to demonstrate
-    // how to initialize multiple queries in parallel with JS.
-    connection = await getConnection();
-
-    const [invoiceCountResult] = await connection.execute(
-      "SELECT COUNT(*) as count FROM invoices"
-    );
-    const [customerCountResult] = await connection.execute(
-      "SELECT COUNT(*) as count FROM customers"
-    );
-    const [invoiceStatusResult] = await connection.execute(`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS paid,
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS pending
-         FROM invoices`);
-
-    const numberOfInvoices = Number(
-      (invoiceCountResult as { count: number }[])[0].count ?? "0"
-    );
-    const numberOfCustomers = Number(
-      (customerCountResult as { count: number }[])[0].count ?? "0"
-    );
-    const totalPaidInvoices = formatCurrency(
-      (invoiceStatusResult as { paid: number; pending: number }[])[0].paid ??
-        "0"
-    );
-    const totalPendingInvoices = formatCurrency(
-      (invoiceStatusResult as { paid: number; pending: number }[])[0].pending ??
-        "0"
-    );
-
-    return {
-      numberOfCustomers,
-      numberOfInvoices,
-      totalPaidInvoices,
-      totalPendingInvoices,
-    };
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch card data.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-const ITEMS_PER_PAGE = 6;
-export async function fetchFilteredInvoices(
-  query: string,
-  currentPage: number
-) {
-  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-  let connection;
-
   try {
     connection = await getConnection();
     const [rows] = await connection.execute(
       `
-      SELECT
-        invoices.id,
-        invoices.amount,
-        invoices.date,
-        invoices.status,
-        customers.name,
-        customers.email,
-        customers.image_url
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      WHERE
-        customers.name LIKE ? OR
-        customers.email LIKE ? OR
-        CAST(invoices.amount AS CHAR) LIKE ? OR
-        CAST(invoices.date AS CHAR) LIKE ? OR
-        invoices.status LIKE ?
-      ORDER BY invoices.date DESC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-      `,
-      [
-        `%${query}%`,
-        `%${query}%`,
-        `%${query}%`,
-        `%${query}%`,
-        `%${query}%`,
-        // offset,
-        // ITEMS_PER_PAGE,
-      ]
+      SELECT * FROM teams WHERE id = ?
+    `,
+      [id]
     );
-
-    return rows as InvoicesTable[];
+    return rows as TeamField[];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch invoices.");
+    throw new Error("Failed to fetch team.");
   } finally {
     if (connection) await connection.end();
   }
 }
 
-export async function fetchInvoicesPages(query: string) {
+export async function fetchSpecialProjects() {
   let connection;
   try {
     connection = await getConnection();
     const [rows] = await connection.execute(
-      `SELECT COUNT(*) as count
-    FROM invoices
-    JOIN customers ON invoices.customer_id = customers.id
-    WHERE
-      customers.name LIKE ? OR
-      customers.email LIKE ? OR
-      CAST(invoices.amount AS CHAR) LIKE ? OR
-      CAST(invoices.date AS CHAR) LIKE ? OR
-      invoices.status LIKE ?
-  `,
-      [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`]
+      `
+        SELECT * FROM special_projects
+      `
     );
-
-    const totalPages = Math.ceil(
-      Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
-    );
-    return totalPages;
+    return rows as SpecialProjects[];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch total number of invoices.");
+    throw new Error("Failed to fetch special projects.");
   } finally {
     if (connection) await connection.end();
   }
 }
+
+export async function fetchProjectById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT projects.*, 
+        (SELECT image_url FROM galleries WHERE parent_id = projects.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = projects.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = projects.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM projects 
+      WHERE projects.id = ?`,
+      [id]
+    );
+    return rows as Project[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch project.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// export async function fetchLatestInvoices() {
+//   let connection;
+//   try {
+//     await new Promise((resolve) => setTimeout(resolve, 1000));
+//     connection = await getConnection();
+//     const [rows] = await connection.execute(`
+//       SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
+//       FROM invoices
+//       JOIN customers ON invoices.customer_id = customers.id
+//       ORDER BY invoices.date DESC
+//       LIMIT 5`);
+
+//     const data = rows as LatestInvoiceRaw[];
+//     const latestInvoices = data.map((invoice) => ({
+//       ...invoice,
+//       amount: formatCurrency(invoice.amount),
+//     }));
+//     return latestInvoices;
+//   } catch (error) {
+//     console.error("Database Error:", error);
+//     throw new Error("Failed to fetch the latest invoices.");
+//   } finally {
+//     if (connection) await connection.end();
+//   }
+// }
+
+// export async function fetchCardData() {
+//   let connection;
+//   try {
+//     // You can probably combine these into a single SQL query
+//     // However, we are intentionally splitting them to demonstrate
+//     // how to initialize multiple queries in parallel with JS.
+//     connection = await getConnection();
+
+//     const [invoiceCountResult] = await connection.execute(
+//       "SELECT COUNT(*) as count FROM invoices"
+//     );
+//     const [customerCountResult] = await connection.execute(
+//       "SELECT COUNT(*) as count FROM customers"
+//     );
+//     const [invoiceStatusResult] = await connection.execute(`SELECT
+//          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS paid,
+//          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS pending
+//          FROM invoices`);
+
+//     const numberOfInvoices = Number(
+//       (invoiceCountResult as { count: number }[])[0].count ?? "0"
+//     );
+//     const numberOfCustomers = Number(
+//       (customerCountResult as { count: number }[])[0].count ?? "0"
+//     );
+//     const totalPaidInvoices = formatCurrency(
+//       (invoiceStatusResult as { paid: number; pending: number }[])[0].paid ??
+//         "0"
+//     );
+//     const totalPendingInvoices = formatCurrency(
+//       (invoiceStatusResult as { paid: number; pending: number }[])[0].pending ??
+//         "0"
+//     );
+
+//     return {
+//       numberOfCustomers,
+//       numberOfInvoices,
+//       totalPaidInvoices,
+//       totalPendingInvoices,
+//     };
+//   } catch (error) {
+//     console.error("Database Error:", error);
+//     throw new Error("Failed to fetch card data.");
+//   } finally {
+//     if (connection) await connection.end();
+//   }
+// }
+
+// const ITEMS_PER_PAGE = 6;
+// export async function fetchFilteredInvoices(
+//   query: string,
+//   currentPage: number
+// ) {
+//   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+//   let connection;
+
+//   try {
+//     connection = await getConnection();
+//     const [rows] = await connection.execute(
+//       `
+//       SELECT
+//         invoices.id,
+//         invoices.amount,
+//         invoices.date,
+//         invoices.status,
+//         customers.name,
+//         customers.email,
+//         customers.image_url
+//       FROM invoices
+//       JOIN customers ON invoices.customer_id = customers.id
+//       WHERE
+//         customers.name LIKE ? OR
+//         customers.email LIKE ? OR
+//         CAST(invoices.amount AS CHAR) LIKE ? OR
+//         CAST(invoices.date AS CHAR) LIKE ? OR
+//         invoices.status LIKE ?
+//       ORDER BY invoices.date DESC
+//       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+//       `,
+//       [
+//         `%${query}%`,
+//         `%${query}%`,
+//         `%${query}%`,
+//         `%${query}%`,
+//         `%${query}%`,
+//         // offset,
+//         // ITEMS_PER_PAGE,
+//       ]
+//     );
+
+//     return rows as InvoicesTable[];
+//   } catch (error) {
+//     console.error("Database Error:", error);
+//     throw new Error("Failed to fetch invoices.");
+//   } finally {
+//     if (connection) await connection.end();
+//   }
+// }
+
+// export async function fetchInvoicesPages(query: string) {
+//   let connection;
+//   try {
+//     connection = await getConnection();
+//     const [rows] = await connection.execute(
+//       `SELECT COUNT(*) as count
+//     FROM invoices
+//     JOIN customers ON invoices.customer_id = customers.id
+//     WHERE
+//       customers.name LIKE ? OR
+//       customers.email LIKE ? OR
+//       CAST(invoices.amount AS CHAR) LIKE ? OR
+//       CAST(invoices.date AS CHAR) LIKE ? OR
+//       invoices.status LIKE ?
+//   `,
+//       [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`]
+//     );
+
+//     const totalPages = Math.ceil(
+//       Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
+//     );
+//     return totalPages;
+//   } catch (error) {
+//     console.error("Database Error:", error);
+//     throw new Error("Failed to fetch total number of invoices.");
+//   } finally {
+//     if (connection) await connection.end();
+//   }
+// }
 
 export async function fetchInvoiceById(id: string) {
   let connection;
@@ -227,12 +290,17 @@ export async function fetchCustomers() {
     const [rows] = await connection.execute(`
       SELECT
         id,
-        name
-      FROM customers
-      ORDER BY name ASC
+        name_ku,
+        name_ar,
+        name_en,
+        position_ku,
+        position_ar,
+        position_en,
+        image_url,
+        special
+      FROM teams
     `);
-
-    return rows as CustomerField[];
+    return rows as TeamField[];
   } catch (err) {
     console.error("Database Error:", err);
     throw new Error("Failed to fetch all customers.");
@@ -241,42 +309,800 @@ export async function fetchCustomers() {
   }
 }
 
-export async function fetchFilteredCustomers(query: string) {
+export async function fetchFilteredTeams(query: string, currentPage: number) {
   let connection;
   try {
     connection = await getConnection();
     const [rows] = await connection.execute(
       `
-		SELECT
-		  customers.id,
-		  customers.name,
-		  customers.email,
-		  customers.image_url,
-		  COUNT(invoices.id) AS total_invoices,
-		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
-		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
-		FROM customers
-		LEFT JOIN invoices ON customers.id = invoices.customer_id
-		WHERE
-		  customers.name LIKE ? OR
-        customers.email LIKE ?
-		GROUP BY customers.id, customers.name, customers.email, customers.image_url
-		ORDER BY customers.name ASC
-	  `,
-      [`%${query}%`, `%${query}%`]
+      SELECT * FROM teams
+      WHERE name_ku LIKE ? OR name_ar LIKE ? OR name_en LIKE ?
+      LIMIT 10 OFFSET ${ITEMS_PER_PAGE}
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
     );
-
-    const data = rows as CustomersTableType[];
-    const customers = data.map((customer) => ({
-      ...customer,
-      total_pending: formatCurrency(customer.total_pending),
-      total_paid: formatCurrency(customer.total_paid),
-    }));
-
-    return customers;
+    return rows as TeamField[];
   } catch (err) {
     console.error("Database Error:", err);
-    throw new Error("Failed to fetch customer table.");
+    throw new Error("Failed to fetch all customers.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+const ITEMS_PER_PAGE = 10;
+export async function fetchTotalTeamsPages(query: string) {
+  let connection;
+
+  connection = await getConnection();
+  const [rows] = await connection.execute(
+    `
+      SELECT COUNT(*) as count FROM teams
+      WHERE name_ku LIKE ? OR name_ar LIKE ? OR name_en LIKE ?
+    `,
+    [`%${query}%`, `%${query}%`, `%${query}%`]
+  );
+
+  const totalPages = Math.ceil(
+    Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
+  );
+  return totalPages;
+}
+
+export async function fetchProjects() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(`
+      SELECT 
+        p.*,
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM projects p
+      ORDER BY p.date DESC
+    `);
+    return rows as Project[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch projects.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredProjects(
+  query: string,
+  currentPage: number
+) {
+  let connection;
+  try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT 
+        p.*,
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM projects p
+      WHERE p.title_ku LIKE ? OR p.title_ar LIKE ? OR p.title_en LIKE ?
+      ORDER BY p.date DESC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    return rows as Project[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch projects.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// Blog data functions
+export async function fetchBlogs() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(`
+      SELECT 
+        b.*,
+        (SELECT image_url FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM blogs b
+      ORDER BY b.id DESC
+    `);
+    return rows as Blog[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch blogs.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchBlogById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT blogs.*, 
+        (SELECT image_url FROM galleries WHERE parent_id = blogs.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = blogs.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = blogs.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM blogs 
+      WHERE blogs.id = ?`,
+      [id]
+    );
+    return rows as Blog[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch blog.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredBlogs(query: string, currentPage: number) {
+  let connection;
+  try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT 
+        b.*,
+        (SELECT image_url FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM blogs b
+      WHERE b.title_ku LIKE ? OR b.title_ar LIKE ? OR b.title_en LIKE ?
+      ORDER BY b.id DESC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    return rows as Blog[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch blogs.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalBlogsPages(query: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT COUNT(*) as count
+    FROM blogs
+    WHERE
+      title_ku LIKE ? OR
+      title_ar LIKE ? OR
+      title_en LIKE ?
+  `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+
+    const totalPages = Math.ceil(
+      Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
+    );
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total number of blogs.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchBlogGalleries(blogId: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      "SELECT * FROM galleries WHERE parent_id = ? AND parent_type = ? ORDER BY CAST(order_index AS UNSIGNED) ASC",
+      [blogId, ParentType.Blog.toString()]
+    );
+    return rows as Gallery[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch blog galleries.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// Machine data functions
+export async function fetchMachines() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(`
+      SELECT 
+        m.*,
+        (SELECT image_url FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM machines m
+      ORDER BY m.machine_group_id, m.title_en
+    `);
+    return rows as Machine[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch machines.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchMachineById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT machines.*, 
+        (SELECT image_url FROM galleries WHERE parent_id = machines.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = machines.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = machines.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM machines 
+      WHERE machines.id = ?`,
+      [id]
+    );
+    return rows as Machine[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch machine.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredMachines(
+  query: string,
+  currentPage: number
+) {
+  let connection;
+  try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT 
+        m.*,
+        (SELECT image_url FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM machines m
+      WHERE m.title_ku LIKE ? OR m.title_ar LIKE ? OR m.title_en LIKE ?
+      ORDER BY m.machine_group_id, m.title_en
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    return rows as Machine[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch machines.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalMachinesPages(query: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT COUNT(*) as count
+    FROM machines
+    WHERE
+      title_ku LIKE ? OR
+      title_ar LIKE ? OR
+      title_en LIKE ?
+  `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+
+    const totalPages = Math.ceil(
+      Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
+    );
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total number of machines.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchMachineGalleries(machineId: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      "SELECT * FROM galleries WHERE parent_id = ? AND parent_type = ? ORDER BY CAST(order_index AS UNSIGNED) ASC",
+      [machineId, ParentType.Machine.toString()]
+    );
+    return rows as Gallery[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch machine galleries.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// Machine Groups data functions
+export async function fetchMachineGroups() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(`
+      SELECT id, title_ku, title_ar, title_en 
+      FROM machine_groups 
+      ORDER BY title_en ASC
+    `);
+    return rows as MachineGroup[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch machine groups.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchMachineGroupById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT id, title_ku, title_ar, title_en 
+      FROM machine_groups 
+      WHERE id = ?
+    `,
+      [id]
+    );
+    return rows as MachineGroup[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch machine group.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredMachineGroups(
+  query: string,
+  currentPage: number
+) {
+  const ITEMS_PER_PAGE = 6;
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  let connection;
+
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT 
+        id, title_ku, title_ar, title_en,
+        (SELECT COUNT(*) FROM machines WHERE machine_group_id = machine_groups.id) as machine_count
+      FROM machine_groups
+      WHERE
+        title_ku LIKE ? OR
+        title_ar LIKE ? OR
+        title_en LIKE ?
+      ORDER BY title_en ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    return rows as (MachineGroup & { machine_count: number })[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch machine groups.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalMachineGroupsPages(query: string) {
+  const ITEMS_PER_PAGE = 6;
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT COUNT(*) as count
+    FROM machine_groups
+    WHERE
+      title_ku LIKE ? OR
+      title_ar LIKE ? OR
+      title_en LIKE ?
+  `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    const totalPages = Math.ceil(
+      Number((rows as any)[0].count) / ITEMS_PER_PAGE
+    );
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total number of machine groups.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalProjectsPages(query: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT COUNT(*) as count FROM projects
+      WHERE title_ku LIKE ? OR title_ar LIKE ? OR title_en LIKE ?
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+
+    const totalPages = Math.ceil(
+      Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
+    );
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total number of projects.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchProjectGalleries(projectId: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT * FROM galleries 
+       WHERE parent_id = ? AND parent_type = '${ParentType.Project}'
+       ORDER BY order_index ASC`,
+      [projectId]
+    );
+    return rows as Gallery[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch project galleries.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchQuotes() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(`
+      SELECT * FROM quotes
+    `);
+    return rows as Quote[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch quotes.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchQuoteById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT * FROM quotes
+      WHERE id = ?
+    `,
+      [id]
+    );
+    return rows as Quote[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch quote.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredQuotes(query: string, currentPage: number) {
+  let connection;
+  try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT * FROM quotes
+      WHERE title_ku LIKE ? OR title_ar LIKE ? OR title_en LIKE ?
+      ORDER BY id DESC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    return rows as Quote[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch quotes.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalQuotesPages(query: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT COUNT(*) as count
+    FROM quotes
+    WHERE
+      title_ku LIKE ? OR
+      title_en LIKE ? OR
+      title_ar LIKE ?
+  `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+
+    const totalPages = Math.ceil(
+      Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
+    );
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total number of quotes.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// Social Media data functions
+export async function fetchSocialMedia() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(`
+      SELECT * FROM social_media
+      ORDER BY type ASC
+    `);
+    return rows as SocialMedia[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch social media.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchSocialMediaById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT * FROM social_media
+      WHERE id = ?
+    `,
+      [id]
+    );
+    return rows as SocialMedia[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch social media.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredSocialMedia(
+  query: string,
+  currentPage: number
+) {
+  let connection;
+  try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT * FROM social_media
+      WHERE url LIKE ?
+      ORDER BY type ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `,
+      [`%${query}%`]
+    );
+    return rows as SocialMedia[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch social media.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalSocialMediaPages(query: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT COUNT(*) as count
+    FROM social_media
+    WHERE url LIKE ?
+  `,
+      [`%${query}%`]
+    );
+
+    const totalPages = Math.ceil(
+      Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
+    );
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total number of social media.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// Properties data functions
+export async function fetchProperties() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(`
+      SELECT * FROM properties
+    `);
+    return rows as Property[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch properties.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchPropertyById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT * FROM properties
+      WHERE id = ?
+    `,
+      [id]
+    );
+    return rows as Property[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch property.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredProperties(
+  query: string,
+  currentPage: number
+) {
+  let connection;
+  try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT * FROM properties
+      WHERE \`key\` LIKE ? OR value_en LIKE ? OR value_ku LIKE ? OR value_ar LIKE ?
+      ORDER BY \`key\` ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    return rows as Property[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch properties.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalPropertiesPages(query: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT COUNT(*) as count
+    FROM properties
+    WHERE \`key\` LIKE ? OR value_en LIKE ? OR value_ku LIKE ? OR value_ar LIKE ?
+  `,
+      [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`]
+    );
+
+    const totalPages = Math.ceil(
+      Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
+    );
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total number of properties.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchSpecialProjectsById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT * FROM special_projects
+      WHERE id = ?
+    `,
+      [id]
+    );
+    return rows as SpecialProjects[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch special projects.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredSpecialProjects(
+  query: string,
+  currentPage: number
+) {
+  let connection;
+  try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT * FROM special_projects
+      ORDER BY sort_order ASC, id ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `
+    );
+    return rows as SpecialProjects[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch special projects.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalSpecialProjectsPages() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT COUNT(*) as count FROM special_projects`
+    );
+
+    const totalPages = Math.ceil(
+      Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
+    );
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total number of special projects.");
   } finally {
     if (connection) await connection.end();
   }

@@ -1,8 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "d27wu6gy6te9ow.cloudfront.net",
+        pathname: "/**",
+      },
+    ],
+    unoptimized: false, // still ok
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
   webpack: (config, { isServer }) => {
-    // Fixes npm packages that depend on `fs` module
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,

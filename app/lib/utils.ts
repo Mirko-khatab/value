@@ -1,4 +1,22 @@
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+import {
+  UserGroupIcon,
+  HomeIcon,
+  DocumentDuplicateIcon,
+  BuildingOfficeIcon,
+  TruckIcon,
+  NewspaperIcon,
+  RectangleGroupIcon,
+  ChatBubbleLeftRightIcon,
+  ShareIcon,
+  PhotoIcon,
+} from "@heroicons/react/24/outline";
 import { Revenue } from "./definitions";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export const formatCurrency = (amount: number) => {
   return (amount / 100).toLocaleString("en-US", {
@@ -67,3 +85,33 @@ export const generatePagination = (currentPage: number, totalPages: number) => {
     totalPages,
   ];
 };
+
+export const links = [
+  // { name: "project", href: "/dashboard", icon: HomeIcon },
+  // {
+  //   name: "Invoices",
+  //   href: "/dashboard/invoices",
+  //   icon: DocumentDuplicateIcon,
+  // },
+  { name: "Projects", href: "/dashboard/projects", icon: BuildingOfficeIcon },
+  { name: "Machines", href: "/dashboard/machines", icon: TruckIcon },
+  { name: "Quotes", href: "/dashboard/quote", icon: ChatBubbleLeftRightIcon },
+  { name: "Social Media", href: "/dashboard/social-media", icon: ShareIcon },
+  {
+    name: "Properties",
+    href: "/dashboard/properties",
+    icon: DocumentDuplicateIcon,
+  },
+  {
+    name: "Special Projects",
+    href: "/dashboard/special-projects",
+    icon: PhotoIcon,
+  },
+  {
+    name: "Machine Groups",
+    href: "/dashboard/machine-groups",
+    icon: RectangleGroupIcon,
+  },
+  { name: "Blogs", href: "/dashboard/blogs", icon: NewspaperIcon },
+  { name: "Teams", href: "/dashboard/teams", icon: UserGroupIcon },
+];

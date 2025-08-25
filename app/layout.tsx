@@ -1,15 +1,6 @@
 import "@/app/ui/global.css";
-import { lusitana } from "@/app/ui/fonts";
-import { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: {
-    template: "%s | Acme Dashboard",
-    default: "Acme Dashboard",
-  },
-  description: "The official Next.js Learn Dashboard built with App Router.",
-  metadataBase: new URL("https://next-learn-dashboard.vercel.sh"),
-};
+import { bahnschrift } from "@/app/ui/fonts";
+import { ThemeProvider } from "@/app/lib/theme-context";
 
 export default function RootLayout({
   children,
@@ -19,10 +10,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${lusitana.className} antialiased`}
         suppressHydrationWarning={true}
+        className={`${bahnschrift.className} antialiased bg-white min-h-screen dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200`}
       >
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
