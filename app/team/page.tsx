@@ -1,4 +1,4 @@
-import { Card } from "@/app/ui/teams/card";
+import { Card } from "@/app/ui/utils/card";
 
 export default function Page() {
   return <Card />;

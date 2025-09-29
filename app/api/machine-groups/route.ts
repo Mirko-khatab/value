@@ -1,10 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { fetchMachineGroups } from "@/app/lib/data";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const machineGroups = await fetchMachineGroups();
-    return NextResponse.json(machineGroups);
+
+    const response = NextResponse.json(machineGroups);
+
+    // Add caching headers for better performance
+    response.headers.set(
+      "Cache-Control",
+      "public, s-maxage=3600, stale-while-revalidate=7200"
+    );
+
+    return response;
   } catch (error) {
     console.error("Error fetching machine groups:", error);
     return NextResponse.json(

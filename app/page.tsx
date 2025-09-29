@@ -5,22 +5,72 @@ import styles from "@/app/ui/home.module.css";
 import Image from "next/image";
 import ShowcaseLayout from "@/app/ui/showcase-layout";
 import Text from "@/app/ui/text";
-import Project from "./ui/home/project";
+import CustomCard from "./ui/home/custom-card";
+import Quote from "./ui/home/quote";
+import { Space } from "./ui/utils/space";
+import { Card } from "./ui/home/card";
+import { Slide } from "./ui/home/slide";
 
 export default function Page() {
   return (
     <ShowcaseLayout>
       {/* Hero Section */}
-      <div className=" mb-16 flex flex-col md:flex-row gap-8 justify-start items-start">
+      <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw]">
+        <Slide />
+      </div>
+      <Space className="  flex flex-wrap  gap-8 ">
+        <CustomCard
+          title="Project 1"
+          clasName="h-[300px] w-[700px]"
+          image_url="/image/2.jpg"
+          height={300}
+          width={700}
+        />
+        <CustomCard
+          title="Project 1"
+          clasName="h-[300px] w-[700px]"
+          image_url="/image/2.jpg"
+          height={300}
+          width={400}
+        />
+        <CustomCard
+          title="Project 1"
+          clasName="h-[300px] w-[700px]"
+          image_url="/image/2.jpg"
+          height={300}
+          width={700}
+        />
+      </Space>
+      {/* end of hero section */}
+
+      {/* quote section */}
+      {/* <Space>
+        <Quote />
+      </Space> */}
+      {/* <Space className="grid grid-cols-2 sm:grid-cols-3 w-full  lg:grid-cols-4 gap-4 justify-items-center">
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+        <Card src="/image/2.jpg" />
+      </Space>
+      <Space className="  flex flex-col sm:flex-row gap-8 justify-start ">
         <div className="flex flex-col gap-4">
-          <Project
+          <CustomCard
             title="Project 1"
             description="Description 1 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
             image_url="/image/2.jpg"
             screen="screen 1"
             type={1}
           />
-          <Project
+          <CustomCard
             title="Project 2"
             description="Description 2 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
             image_url="/image/2.jpg"
@@ -29,14 +79,14 @@ export default function Page() {
           />
         </div>
         <div className="flex flex-col gap-4">
-          <Project
+          <CustomCard
             title="Project 2"
             description="Description 2 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
             image_url="/image/2.jpg"
             screen="screen 2"
             type={2}
           />
-          <Project
+          <CustomCard
             title="Project 2"
             description="Description 2 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
             image_url="/image/2.jpg"
@@ -44,7 +94,8 @@ export default function Page() {
             type={2}
           />
         </div>
-      </div>
+      </Space> */}
+      {/* end of quote section */}
     </ShowcaseLayout>
   );
 }

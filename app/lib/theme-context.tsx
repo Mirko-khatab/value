@@ -71,7 +71,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     secondary: theme === "dark" ? "#9CA3AF" : "#7B7B85",
     tertiary: theme === "dark" ? "#60A5FA" : "#4FBADB",
     text: theme === "dark" ? "#F3F4F6" : "#636464",
-    background: theme === "dark" ? "#111827" : "#FFFFFF",
+    background: theme === "dark" ? "#FFFFFF" : "#FFFFFF",
     surface: theme === "dark" ? "#1F2937" : "#F9FAFB",
     border: theme === "dark" ? "#374151" : "#E5E7EB",
   };
