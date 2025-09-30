@@ -45,7 +45,6 @@ export default function AppEntrance() {
         onComplete={() => setShowEntrance(false)}
         autoHide={true}
         hideDelay={hasVisited ? 2000 : 4000}
-        backgroundMode="blend" // You can change this to 'overlay' or 'solid'
       />
     </>
   );

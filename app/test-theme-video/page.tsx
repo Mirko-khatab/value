@@ -183,11 +183,7 @@ export default function TestThemeVideoPage() {
 
       {/* Video Loading Overlay */}
       {showVideo && (
-        <VideoLoading
-          backgroundMode={backgroundMode}
-          autoHide={false}
-          onComplete={() => setShowVideo(false)}
-        />
+        <VideoLoading autoHide={false} onComplete={() => setShowVideo(false)} />
       )}
     </div>
   );

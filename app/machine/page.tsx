@@ -107,16 +107,9 @@ export default async function Page(props: {
                     title={
                       machine.title_en || machine.title_ar || machine.title_ku
                     }
-                    description={
-                      machine.description_en ||
-                      machine.description_ar ||
-                      machine.description_ku
-                    }
                     image_url={machine.gallery_image_url || "/image/2.jpg"}
-                    screen={`Machine ${machine.id}`}
-                    type={getCardType(globalIndex)}
-                    id={machine.id}
-                    index={globalIndex}
+                    width={400}
+                    height={300}
                   />
                 </Link>
               );

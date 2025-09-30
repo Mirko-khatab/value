@@ -6,11 +6,11 @@ import { notFound } from "next/navigation";
 import MachineGalleryClient from "./machine-gallery-client";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function Page({ params }: PageProps) {
-  const machineId = params.id;
+  const { id: machineId } = await params;
 
   // Server-side data fetching
   const [machines, galleries] = await Promise.all([

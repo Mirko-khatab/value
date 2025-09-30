@@ -21,7 +21,6 @@ export default function SimpleImageUpload({
         maxSizeMB: 1,
         maxWidthOrHeight: 800,
         useWebWorker: true,
-        quality: 0.8,
       });
       return compressedFile;
     } catch (error) {

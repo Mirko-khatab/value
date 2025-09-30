@@ -177,7 +177,7 @@ export default function Form({ specialProject, mode }: FormProps) {
           </div>
           <p className="mt-1 text-sm text-gray-600">
             Sort order must be unique. Lower numbers appear first. Click
-            "Suggest" to get the next available number.
+            &quot;Suggest&quot; to get the next available number.
           </p>
         </div>
 

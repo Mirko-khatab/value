@@ -4,10 +4,10 @@ import { s3Client, S3_BUCKET_NAME } from "@/app/lib/aws-config";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { filename: string } }
+  { params }: { params: Promise<{ filename: string }> }
 ) {
   try {
-    const { filename } = params;
+    const { filename } = await params;
 
     // Construct the S3 key
     const key = `customers/${filename}`;

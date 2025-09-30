@@ -332,9 +332,7 @@ export async function fetchFilteredTeams(query: string, currentPage: number) {
 
 const ITEMS_PER_PAGE = 10;
 export async function fetchTotalTeamsPages(query: string) {
-  let connection;
-
-  connection = await getConnection();
+  const connection = await getConnection();
   const [rows] = await connection.execute(
     `
       SELECT COUNT(*) as count FROM teams

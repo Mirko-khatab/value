@@ -3,10 +3,11 @@ import { fetchMachineById } from "@/app/lib/data";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const machines = await fetchMachineById(params.id);
+    const { id } = await params;
+    const machines = await fetchMachineById(id);
 
     if (machines.length === 0) {
       return NextResponse.json({ error: "Machine not found" }, { status: 404 });

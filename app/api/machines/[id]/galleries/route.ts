@@ -3,10 +3,11 @@ import { fetchMachineGalleries } from "@/app/lib/data";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const galleries = await fetchMachineGalleries(params.id);
+    const { id } = await params;
+    const galleries = await fetchMachineGalleries(id);
     return NextResponse.json(galleries);
   } catch (error) {
     console.error("Error fetching machine galleries:", error);

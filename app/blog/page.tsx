@@ -1,5 +1,5 @@
 import ShowcaseLayout from "@/app/ui/showcase-layout";
-import Project from "../ui/home/custom-card";
+import CustomeCard from "../ui/home/custom-card";
 import { Space } from "../ui/utils/space";
 import Quote from "../ui/home/quote";
 
@@ -11,69 +11,61 @@ export default function Page() {
       </Space>
       <Space className="  flex flex-col sm:flex-row gap-8 justify-start ">
         <div className="flex flex-col gap-4">
-          <Project
+          <CustomeCard
             title="Project 1"
-            description="Description 1 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
             image_url="/image/2.jpg"
-            screen="screen 1"
-            type={1}
+            width={400}
+            height={300}
           />
-          <Project
+          <CustomeCard
             title="Project 2"
-            description="Description 2 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
             image_url="/image/2.jpg"
-            screen="screen 2"
-            type={2}
+            width={400}
+            height={300}
           />
         </div>
         <div className="flex flex-col gap-4">
-          <Project
-            title="Project 2"
-            description="Description 2 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
+          <CustomeCard
+            title="Project 3"
             image_url="/image/2.jpg"
-            screen="screen 2"
-            type={2}
+            width={400}
+            height={300}
           />
-          <Project
-            title="Project 2"
-            description="Description 2 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
+          <CustomeCard
+            title="Project 4"
             image_url="/image/2.jpg"
-            screen="screen 2"
-            type={2}
+            width={400}
+            height={300}
           />
         </div>
       </Space>
       <Space className="  flex flex-col sm:flex-row gap-8 justify-start ">
         <div className="flex flex-col gap-4">
-          <Project
-            title="Project 1"
-            description="Description 1 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
+          <CustomeCard
+            title="Project 5"
             image_url="/image/2.jpg"
-            screen="screen 1"
-            type={1}
+            width={400}
+            height={300}
           />
-          <Project
-            title="Project 2"
-            description="Description 2 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
+          <CustomeCard
+            title="Project 6"
             image_url="/image/2.jpg"
-            screen="screen 2"
-            type={2}
+            width={400}
+            height={300}
           />
         </div>
         <div className="flex flex-col gap-4">
-          <Project
-            title="Project 2"
-            description="Description 2 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
+          <CustomeCard
+            title="Project 7"
             image_url="/image/2.jpg"
-            screen="screen 2"
-            type={2}
+            width={400}
+            height={300}
           />
-          <Project
-            title="Project 2"
-            description="Description 2 aksjd;fkasjd;flk asdf;kjsd;flk asdkljf;sldjf lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos."
+          <CustomeCard
+            title="Project 8"
             image_url="/image/2.jpg"
-            screen="screen 2"
-            type={2}
+            width={400}
+            height={300}
           />
         </div>
       </Space>
