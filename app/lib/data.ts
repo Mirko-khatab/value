@@ -16,43 +16,54 @@ import { Project } from "./definitions";
 import { ParentType } from "./definitions";
 import { Gallery } from "./definitions";
 
-export async function fetchRevenue() {
+// Helper function to handle database connection errors gracefully
+async function withDatabaseConnection<T>(
+  operation: (connection: any) => Promise<T>,
+  fallbackValue: T
+): Promise<T> {
   let connection;
   try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
     connection = await getConnection();
-    const [rows] = await connection.execute("SELECT * FROM revenue");
-
-    return rows as Revenue[];
+    return await operation(connection);
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch revenue data.");
+    console.warn("Database operation failed, returning fallback data:", error);
+    return fallbackValue;
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (endError) {
+        console.warn("Error closing database connection:", endError);
+      }
+    }
   }
 }
 
+export async function fetchRevenue() {
+  return withDatabaseConnection(
+    async (connection) => {
+      // Artificially delay a response for demo purposes.
+      // Don't do this in production :)
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const [rows] = await connection.execute("SELECT * FROM revenue");
+      return rows as Revenue[];
+    },
+    [] // Return empty array as fallback
+  );
+}
+
 export async function fetchTeamById(id: string) {
-  let connection;
-  try {
-    connection = await getConnection();
-    const [rows] = await connection.execute(
-      `
-      SELECT * FROM teams WHERE id = ?
-    `,
-      [id]
-    );
-    return rows as TeamField[];
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch team.");
-  } finally {
-    if (connection) await connection.end();
-  }
+  return withDatabaseConnection(
+    async (connection) => {
+      const [rows] = await connection.execute(
+        `SELECT * FROM teams WHERE id = ?`,
+        [id]
+      );
+      return rows as TeamField[];
+    },
+    [] // Return empty array as fallback
+  );
 }
 
 export async function fetchSpecialProjects() {

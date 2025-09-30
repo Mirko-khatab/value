@@ -3,6 +3,9 @@ import { fetchMachines } from "@/app/lib/data";
 import { getConnection } from "@/app/lib/serverutils";
 import { Machine, ParentType } from "@/app/lib/definitions";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+
 async function fetchMachinesByGroup(groupId: string) {
   let connection;
   try {

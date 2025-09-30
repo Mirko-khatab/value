@@ -9,6 +9,9 @@ import {
 } from "@/app/lib/data";
 import Link from "next/link";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+
 export default async function Page(props: {
   searchParams: Promise<{ groupId?: string; search?: string }>;
 }) {

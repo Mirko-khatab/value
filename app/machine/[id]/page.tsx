@@ -5,6 +5,9 @@ import { fetchMachineById, fetchMachineGalleries } from "@/app/lib/data";
 import { notFound } from "next/navigation";
 import MachineGalleryClient from "./machine-gallery-client";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }
