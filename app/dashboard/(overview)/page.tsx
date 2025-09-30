@@ -11,6 +11,9 @@ import {
   CardsSkeleton,
 } from "@/app/ui/skeletons";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   // const revenue = await fetchRevenue();
   // const {

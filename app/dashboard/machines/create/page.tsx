@@ -2,6 +2,9 @@ import Breadcrumbs from "@/app/ui/machines/breadcrumbs";
 import Form from "@/app/ui/machines/create-form";
 import { fetchMachineGroups } from "@/app/lib/data";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const machineGroups = await fetchMachineGroups();
 
