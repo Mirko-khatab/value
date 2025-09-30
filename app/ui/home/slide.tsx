@@ -8,6 +8,7 @@ interface MediaItem {
   src: string;
   alt?: string;
   poster?: string;
+  title?: string;
 }
 
 interface SlideProps {
@@ -17,10 +18,15 @@ interface SlideProps {
 }
 
 const defaultMediaItems: MediaItem[] = [
-  { type: "image", src: "/image/2.jpg", alt: "Slide 1" },
-  { type: "image", src: "/image/barham.jpg", alt: "Slide 2" },
-  { type: "video", src: "/video/loading.mp4", alt: "Loading Video" },
-  { type: "image", src: "/image/value.png", alt: "Slide 5" },
+  { type: "image", src: "/image/2.jpg", title: "Slide 1", alt: "Slide 1" },
+  { type: "image", src: "/image/barham.jpg", title: "Slide 2", alt: "Slide 2" },
+  {
+    type: "video",
+    src: "/video/loading.mp4",
+    title: "Loading Video",
+    alt: "Loading Video",
+  },
+  { type: "image", src: "/image/value.png", title: "Slide 5", alt: "Slide 5" },
 ];
 
 export const Slide: React.FC<SlideProps> = ({
@@ -115,6 +121,15 @@ export const Slide: React.FC<SlideProps> = ({
           filter: "blur(8px)",
         }}
       />
+
+      {/* Slide Title */}
+      {mediaItems[currentIndex]?.title && (
+        <div className="absolute z-20 bottom-20 sm:bottom-24 md:bottom-28 left-1/2 transform -translate-x-1/2 text-center">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white backdrop-blur-sm px-4 py-2 rounded-lg">
+            {mediaItems[currentIndex].title}
+          </h2>
+        </div>
+      )}
 
       {/* Dots */}
       <div className="absolute z-30 flex -translate-x-1/2 bottom-4 sm:bottom-6 md:bottom-8 left-1/2 space-x-2 sm:space-x-3 md:space-x-4">

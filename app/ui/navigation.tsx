@@ -62,12 +62,14 @@ export default function Navigation() {
           <div className="flex flex-col">
             <div className="flex items-center justify-between">
               <div>
-                <Link href="/" className="font-bold">
+                <Link href="/" className="font-bold w-10 h-10">
                   <Image
-                    src="/image/logo.png"
+                    src={
+                      theme === "dark" ? "/image/value.png" : "/image/logo.png"
+                    }
                     alt="logo"
-                    width={70}
-                    height={70}
+                    width={100}
+                    height={100}
                   />
                 </Link>
               </div>

@@ -15,7 +15,7 @@ export default function Page() {
   return (
     <ShowcaseLayout>
       {/* Hero Section */}
-      <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw]">
+      <div className="w-screen relative top-0 left-1/2 right-1/2 -mx-[50vw]">
         <Slide />
       </div>
       <Space className="  flex flex-wrap  gap-8 ">
