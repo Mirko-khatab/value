@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import AcmeLogo from "@/app/ui/value-logo";
 import { ArrowRightIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
@@ -10,44 +13,63 @@ import Quote from "./ui/home/quote";
 import { Space } from "./ui/utils/space";
 import { Card } from "./ui/home/card";
 import { Slide } from "./ui/home/slide";
+import Intro from "@/app/ui/intro";
 
 export default function Page() {
-  return (
-    <ShowcaseLayout>
-      {/* Hero Section */}
-      <div className="w-screen relative top-0 left-1/2 right-1/2 -mx-[50vw]">
-        <Slide />
-      </div>
-      <Space className="  flex flex-wrap  gap-8 ">
-        <CustomCard
-          title="Project 1"
-          clasName="h-[300px] w-[700px]"
-          image_url="/image/2.jpg"
-          height={300}
-          width={700}
-        />
-        <CustomCard
-          title="Project 1"
-          clasName="h-[300px] w-[700px]"
-          image_url="/image/2.jpg"
-          height={300}
-          width={400}
-        />
-        <CustomCard
-          title="Project 1"
-          clasName="h-[300px] w-[700px]"
-          image_url="/image/2.jpg"
-          height={300}
-          width={700}
-        />
-      </Space>
-      {/* end of hero section */}
+  const [showIntro, setShowIntro] = useState(false);
 
-      {/* quote section */}
-      {/* <Space>
+  useEffect(() => {
+    // Check if user has seen intro before (stored permanently)
+    const hasSeenIntro = localStorage.getItem("hasSeenIntro");
+    if (!hasSeenIntro) {
+      setShowIntro(true);
+    }
+  }, []);
+
+  const handleIntroComplete = () => {
+    setShowIntro(false);
+    localStorage.setItem("hasSeenIntro", "true");
+  };
+
+  return (
+    <>
+      {showIntro && <Intro onComplete={handleIntroComplete} />}
+
+      <ShowcaseLayout>
+        {/* Hero Section */}
+        <div className="w-screen relative top-0 left-1/2 right-1/2 -mx-[50vw]">
+          <Slide />
+        </div>
+        <Space className="  flex flex-wrap  gap-8 ">
+          <CustomCard
+            title="Project 1"
+            clasName="h-[300px] w-[700px]"
+            image_url="/image/2.jpg"
+            height={300}
+            width={700}
+          />
+          <CustomCard
+            title="Project 1"
+            clasName="h-[300px] w-[700px]"
+            image_url="/image/2.jpg"
+            height={300}
+            width={400}
+          />
+          <CustomCard
+            title="Project 1"
+            clasName="h-[300px] w-[700px]"
+            image_url="/image/2.jpg"
+            height={300}
+            width={700}
+          />
+        </Space>
+        {/* end of hero section */}
+
+        {/* quote section */}
+        {/* <Space>
         <Quote />
       </Space> */}
-      {/* <Space className="grid grid-cols-2 sm:grid-cols-3 w-full  lg:grid-cols-4 gap-4 justify-items-center">
+        {/* <Space className="grid grid-cols-2 sm:grid-cols-3 w-full  lg:grid-cols-4 gap-4 justify-items-center">
         <Card src="/image/2.jpg" />
         <Card src="/image/2.jpg" />
         <Card src="/image/2.jpg" />
@@ -95,7 +117,8 @@ export default function Page() {
           />
         </div>
       </Space> */}
-      {/* end of quote section */}
-    </ShowcaseLayout>
+        {/* end of quote section */}
+      </ShowcaseLayout>
+    </>
   );
 }
