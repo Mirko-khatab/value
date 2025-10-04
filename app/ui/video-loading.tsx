@@ -17,57 +17,119 @@ export default function VideoLoading({
   className = "",
 }: VideoLoadingProps) {
   const [isVisible, setIsVisible] = useState(true);
+  const [isExiting, setIsExiting] = useState(false);
   const [isVideoLoaded, setIsVideoLoaded] = useState(true); // Start with true to show video immediately
   const videoRef = useRef<HTMLVideoElement>(null);
   const { theme, colors } = useTheme();
 
+  // Fallback timer in case video doesn't end properly
   useEffect(() => {
-    if (autoHide) {
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-        onComplete?.();
+    if (autoHide && !isExiting) {
+      console.log(`Setting fallback timer for ${hideDelay}ms...`);
+      const fallbackTimer = setTimeout(() => {
+        console.log("Fallback timer triggered, starting animation...");
+        // Use double requestAnimationFrame for smoother transition
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setIsExiting(true);
+            console.log("isExiting set to true - animation should start now!");
+          });
+        });
       }, hideDelay);
 
-      return () => clearTimeout(timer);
+      return () => clearTimeout(fallbackTimer);
     }
-  }, [autoHide, hideDelay, onComplete]);
+  }, [autoHide, hideDelay, isExiting]);
+
+  // Handle component removal after animation completes
+  useEffect(() => {
+    if (isExiting) {
+      console.log("Animation started, will remove in 2.2 seconds...");
+      const removeTimer = setTimeout(() => {
+        console.log("Removing component and calling onComplete");
+        setIsVisible(false);
+        onComplete?.();
+      }, 2200); // Wait for full animation to complete (1.8s animation + buffer)
+
+      return () => clearTimeout(removeTimer);
+    }
+  }, [isExiting, onComplete]);
 
   const handleVideoLoad = () => {
+    console.log("Video loaded");
     setIsVideoLoaded(true);
   };
 
   const handleVideoCanPlay = () => {
+    console.log("Video can play");
     setIsVideoLoaded(true);
+    // Log video duration
+    if (videoRef.current) {
+      console.log(`Video duration: ${videoRef.current.duration} seconds`);
+      console.log(`Video loop: ${videoRef.current.loop}`);
+    }
   };
 
   const handleVideoError = () => {
+    console.log("Video error occurred");
     // Still show the video area even if there's an error
     setIsVideoLoaded(true);
   };
 
   const handleVideoEnd = () => {
-    if (autoHide) {
-      setIsVisible(false);
-      onComplete?.();
+    console.log(
+      `Video ended event fired. autoHide: ${autoHide}, isExiting: ${isExiting}`
+    );
+    if (autoHide && !isExiting) {
+      console.log("Video ended, starting exit animation...");
+      // Use double requestAnimationFrame for smoother transition
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsExiting(true);
+          console.log("isExiting set to true - animation should start now!");
+        });
+      });
+    }
+  };
+
+  const handleVideoPlay = () => {
+    console.log("Video started playing");
+    if (videoRef.current) {
+      console.log(`Video loop attribute: ${videoRef.current.loop}`);
     }
   };
 
   if (!isVisible) return null;
 
+  console.log(
+    `Render: isVisible=${isVisible}, isExiting=${isExiting}, autoHide=${autoHide}`
+  );
+
   return (
     <div
-      className={`video-loading-container fixed inset-0 ${
-        isVisible ? "opacity-100" : "opacity-0"
-      } ${className}`}
+      className={`video-loading-container fixed ${className}`}
       style={{
         backgroundColor: "#000000",
-        transition: "background-color 0.3s ease, opacity 0.5s ease",
         height: "100vh",
         width: "100vw",
+        position: "fixed",
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
+        zIndex: 9999,
+        overflow: "hidden",
+        transform: isExiting
+          ? "translate3d(100vw, 0, 0)"
+          : "translate3d(0, 0, 0)",
+        opacity: isExiting ? 0 : 1,
+        transition: isExiting
+          ? "transform 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 1.2s ease-out"
+          : "none",
+        willChange: isExiting ? "transform, opacity" : "auto",
+        backfaceVisibility: "hidden",
+        perspective: "1000px",
+        pointerEvents: isExiting ? "none" : "auto",
       }}
     >
       {/* Full page background overlay to ensure consistency */}
@@ -77,6 +139,9 @@ export default function VideoLoading({
           backgroundColor: "#000000",
         }}
       />
+
+      {/* Debug indicator */}
+
       {/* Video Container with black background */}
       <div
         className="relative w-full flex items-center justify-center"
@@ -121,6 +186,7 @@ export default function VideoLoading({
             onCanPlay={handleVideoCanPlay}
             onError={handleVideoError}
             onEnded={handleVideoEnd}
+            onPlay={handleVideoPlay}
             preload="auto"
           >
             <source src="/video/loading.webm" type="video/webm" />

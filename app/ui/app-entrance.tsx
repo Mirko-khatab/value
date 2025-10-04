@@ -12,22 +12,13 @@ export default function AppEntrance() {
     const visited = localStorage.getItem("hasVisited");
     setHasVisited(!!visited);
 
-    if (visited) {
-      // If user has visited before, show shorter loading
-      const timer = setTimeout(() => {
-        setShowEntrance(false);
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    } else {
-      // First visit - show full video loading
-      const timer = setTimeout(() => {
-        setShowEntrance(false);
-        localStorage.setItem("hasVisited", "true");
-      }, 4000);
-
-      return () => clearTimeout(timer);
+    if (!visited) {
+      // Mark as visited for first-time users
+      localStorage.setItem("hasVisited", "true");
     }
+
+    // Let VideoLoading component control when to hide via onComplete callback
+    // No timers here!
   }, []);
 
   // Development reset function
