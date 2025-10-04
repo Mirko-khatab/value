@@ -1,15 +1,21 @@
+"use client";
+
 import Link from "next/link";
 import NavLinks from "@/app/ui/dashboard/nav-links";
 import AcmeLogo from "@/app/ui/value-logo";
 import { PowerIcon } from "@heroicons/react/24/outline";
 import { signOut } from "@/auth";
+import { useLoading } from "@/app/lib/loading-context";
 
 export default function SideNav() {
+  const { showLoading } = useLoading();
+
   return (
     <div className="flex h-full flex-col px-3 py-4 md:px-2 bg-gray-50 dark:bg-gray-800 transition-colors duration-200">
       <Link
         className="mb-2 flex h-22 items-end justify-start rounded-md bg-blue-600 dark:bg-blue-700 md:h-52 transition-colors duration-200"
         href="/"
+        onClick={() => showLoading()}
       >
         <div className=" flex h-full  w-full items-center justify-center text-white ">
           <AcmeLogo />

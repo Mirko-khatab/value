@@ -38,7 +38,8 @@ export function LoadingProvider({ children }: { children: ReactNode }) {
       {isLoading && (
         <VideoLoading
           onComplete={hideLoading}
-          autoHide={false}
+          autoHide={true}
+          hideDelay={2000}
           className="z-[10000]"
         />
       )}

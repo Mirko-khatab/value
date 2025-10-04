@@ -6,15 +6,15 @@ A stunning multi-language intro animation that cycles through your sketch images
 
 ## Features
 
-- ✨ Smooth sketch image transitions (12 images)
+- ✨ Smooth sketch image transitions (12 images) - cycles while text changes
 - 🎨 Background grid of all sketches with fade-in effect
-- 🎯 Center spotlight on current sketch
+- 🎯 **Everything happens simultaneously** - sketches, text, and logo all visible
 - 💫 Floating animated sketch elements
 - 🌍 **Multi-language support** (English, Kurdish, Arabic)
-- 🔄 Smooth language transitions with slide-up animations
-- 🏢 **Animated logo** with bounce effect appearing with the slogan
+- 🔄 Smooth language transitions with slide-up animations (text only, no labels)
+- 🏢 **Logo always visible** at the bottom with bounce effect
 - 📱 Fully responsive design
-- ⚡ Progress indicators for both sketches and languages
+- ⚡ Language progress dots show which language is active
 - 🎭 Beautiful language cycling with RTL support
 - 🌙 Proper RTL (Right-to-Left) support for Kurdish and Arabic
 
@@ -186,16 +186,27 @@ const languages: Language[] = [
 
 ## Animation Sequence
 
-1. **Phase 1**: Sketch images cycle (4.8 seconds)
-   - Background grid fills in
-   - Center spotlight shows each sketch
-   - Progress bar at bottom
-2. **Phase 2**: Language animations (3.9 seconds)
-   - Logo appears with bounce animation
-   - English text appears with slide-up (1.3s)
-   - Transition to Kurdish with RTL support (1.3s)
-   - Transition to Arabic with RTL support (1.3s)
-   - Language indicator shows current language
-3. **Phase 3**: Fade out and complete (1 second)
+**Everything happens simultaneously!**
+
+1. **Top**: Sketch images cycle through 1-12 (400ms each)
+
+   - Background grid fills in progressively
+   - Center spotlight shows current sketch with glow
+   - Floating sketches animate around
+
+2. **Middle**: Text changes through 3 languages (1.3s each)
+
+   - English text appears: "We value your work" (1.3s)
+   - Transitions to Kurdish: "بەها ئەدەین بەکارەکانتان" (1.3s)
+   - Transitions to Arabic: "نحن نقدر عملك" (1.3s)
+   - Each text slides up smoothly with animation
+
+3. **Bottom**: Logo visible throughout
+
+   - Appears immediately with bounce animation
+   - Stays visible while everything else changes
+   - Progress dots below show language progress
+
+4. **Fade out and complete** (1 second)
 
 Enjoy your spectacular multi-language intro! 🚀✨🌍

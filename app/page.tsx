@@ -35,41 +35,49 @@ export default function Page() {
     <>
       {showIntro && <Intro onComplete={handleIntroComplete} />}
 
-      <ShowcaseLayout>
-        {/* Hero Section */}
-        <div className="w-screen relative top-0 left-1/2 right-1/2 -mx-[50vw]">
-          <Slide />
-        </div>
-        <Space className="  flex flex-wrap  gap-8 ">
-          <CustomCard
-            title="Project 1"
-            clasName="h-[300px] w-[700px]"
-            image_url="/image/2.jpg"
-            height={300}
-            width={700}
-          />
-          <CustomCard
-            title="Project 1"
-            clasName="h-[300px] w-[700px]"
-            image_url="/image/2.jpg"
-            height={300}
-            width={400}
-          />
-          <CustomCard
-            title="Project 1"
-            clasName="h-[300px] w-[700px]"
-            image_url="/image/2.jpg"
-            height={300}
-            width={700}
-          />
-        </Space>
-        {/* end of hero section */}
+      <div
+        className={`transition-all duration-1000 ease-out ${
+          showIntro
+            ? "opacity-0 translate-y-12 scale-95"
+            : "opacity-100 translate-y-0 scale-100"
+        }`}
+        style={{ transitionDelay: showIntro ? "0ms" : "300ms" }}
+      >
+        <ShowcaseLayout>
+          {/* Hero Section */}
+          <div className="w-screen relative top-0 left-1/2 right-1/2 -mx-[50vw]">
+            <Slide />
+          </div>
+          <Space className="  flex flex-wrap  gap-8 ">
+            <CustomCard
+              title="Project 1"
+              clasName="h-[300px] w-[700px]"
+              image_url="/image/2.jpg"
+              height={300}
+              width={700}
+            />
+            <CustomCard
+              title="Project 1"
+              clasName="h-[300px] w-[700px]"
+              image_url="/image/2.jpg"
+              height={300}
+              width={400}
+            />
+            <CustomCard
+              title="Project 1"
+              clasName="h-[300px] w-[700px]"
+              image_url="/image/2.jpg"
+              height={300}
+              width={700}
+            />
+          </Space>
+          {/* end of hero section */}
 
-        {/* quote section */}
-        {/* <Space>
+          {/* quote section */}
+          {/* <Space>
         <Quote />
       </Space> */}
-        {/* <Space className="grid grid-cols-2 sm:grid-cols-3 w-full  lg:grid-cols-4 gap-4 justify-items-center">
+          {/* <Space className="grid grid-cols-2 sm:grid-cols-3 w-full  lg:grid-cols-4 gap-4 justify-items-center">
         <Card src="/image/2.jpg" />
         <Card src="/image/2.jpg" />
         <Card src="/image/2.jpg" />
@@ -117,8 +125,9 @@ export default function Page() {
           />
         </div>
       </Space> */}
-        {/* end of quote section */}
-      </ShowcaseLayout>
+          {/* end of quote section */}
+        </ShowcaseLayout>
+      </div>
     </>
   );
 }

@@ -22,8 +22,9 @@ export default function Intro({ onComplete }: { onComplete?: () => void }) {
   ];
 
   const totalSketches = 12;
-  const sketchDuration = 400; // ms per sketch
-  const sloganDuration = 1300; // ms to show each language
+  const sketchDuration = 600; // ms per sketch (slower to see each sketch better)
+  const sloganDuration = 2200; // ms to show each language (slower to read comfortably)
+  const totalDuration = totalSketches * sketchDuration; // Total time for all sketches
 
   // Cycle through sketches
   useEffect(() => {
@@ -32,11 +33,13 @@ export default function Intro({ onComplete }: { onComplete?: () => void }) {
         setCurrentSketch((prev) => prev + 1);
       }, sketchDuration);
       return () => clearTimeout(timer);
-    } else {
-      // Show slogan after all sketches
-      setShowSlogan(true);
     }
   }, [currentSketch]);
+
+  // Show slogan immediately (not waiting for sketches)
+  useEffect(() => {
+    setShowSlogan(true);
+  }, []);
 
   // Cycle through languages
   useEffect(() => {
@@ -47,7 +50,7 @@ export default function Intro({ onComplete }: { onComplete?: () => void }) {
         }, sloganDuration);
         return () => clearTimeout(timer);
       } else {
-        // After all languages, fade out
+        // After all languages, wait a bit then fade out
         const fadeTimer = setTimeout(() => {
           setFadeOut(true);
         }, sloganDuration);
@@ -68,10 +71,17 @@ export default function Intro({ onComplete }: { onComplete?: () => void }) {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex items-center justify-center transition-opacity duration-1000 ${
-        fadeOut ? "opacity-0" : "opacity-100"
+      className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-[1200ms] ${
+        fadeOut
+          ? "opacity-0 -translate-y-full scale-90"
+          : "opacity-100 translate-y-0 scale-100"
       }`}
-      style={{ backgroundColor: "#2E5A7A" }}
+      style={{
+        backgroundColor: "#2E5A7A",
+        transitionTimingFunction: fadeOut
+          ? "cubic-bezier(0.4, 0, 1, 1)"
+          : "ease-out",
+      }}
     >
       {/* Sketch Animation Container */}
       <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
@@ -99,17 +109,13 @@ export default function Intro({ onComplete }: { onComplete?: () => void }) {
           ))}
         </div>
 
-        {/* Center Focal Point - Main Sketch Display */}
-        <div className="relative z-10 flex flex-col items-center justify-center gap-8">
-          {/* Current Sketch Spotlight */}
+        {/* Center Focal Point - Everything shows together */}
+        <div className="relative z-10 flex flex-col items-center justify-center gap-12">
+          {/* Current Sketch Spotlight - Always visible */}
           {currentSketch > 0 && currentSketch <= totalSketches && (
-            <div
-              className={`relative w-64 h-64 md:w-80 md:h-80 transition-all duration-500 ${
-                showSlogan ? "opacity-0 scale-90" : "opacity-100 scale-100"
-              }`}
-            >
+            <div className="relative w-48 h-48 md:w-64 md:h-64 transition-all duration-500 opacity-100 scale-100">
               <div className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-full animate-pulse" />
-              <div className="relative w-full h-full p-8">
+              <div className="relative w-full h-full p-6">
                 <Image
                   src={`/sketch/${currentSketch}.png`}
                   alt={`Main Sketch ${currentSketch}`}
@@ -121,42 +127,13 @@ export default function Intro({ onComplete }: { onComplete?: () => void }) {
             </div>
           )}
 
-          {/* Multi-Language Slogan */}
-          <div
-            className={`text-center transition-all duration-1000 ${
-              showSlogan
-                ? "opacity-100 translate-y-0 scale-100"
-                : "opacity-0 translate-y-8 scale-95"
-            }`}
-          >
-            {/* Logo */}
-            <div className="mb-8 flex justify-center animate-logo-appear">
-              <div className="relative w-24 h-24 md:w-32 md:h-32">
-                <Image
-                  src="/image/value.png"
-                  alt="Value Logo"
-                  fill
-                  className="object-contain drop-shadow-2xl"
-                  priority
-                />
-              </div>
-            </div>
-
-            {/* Language Indicator */}
-            <div className="mb-6 h-6">
-              <span
-                key={`lang-${currentLangIndex}`}
-                className="text-white/70 text-sm tracking-widest uppercase inline-block animate-fade-in"
-              >
-                {languages[currentLangIndex].name}
-              </span>
-            </div>
-
-            {/* Slogan Text with Language Transitions */}
-            <div className="relative min-h-[120px] flex items-center justify-center mb-8">
+          {/* Multi-Language Slogan - Shows immediately with sketches */}
+          <div className="text-center">
+            {/* Slogan Text with Language Transitions - NO language label */}
+            <div className="relative min-h-[100px] md:min-h-[120px] flex items-center justify-center mb-8">
               <h1
                 key={`text-${currentLangIndex}`}
-                className={`text-4xl md:text-6xl lg:text-7xl font-bold text-white animate-slide-up ${
+                className={`text-3xl md:text-5xl lg:text-6xl font-bold text-white animate-slide-up px-4 ${
                   languages[currentLangIndex].dir === "rtl" ? "font-arabic" : ""
                 }`}
                 dir={languages[currentLangIndex].dir}
@@ -171,11 +148,21 @@ export default function Intro({ onComplete }: { onComplete?: () => void }) {
               </h1>
             </div>
 
-            {/* Decorative Line */}
-            <div className="w-32 h-1 bg-white/60 mx-auto rounded-full" />
+            {/* Logo at the bottom */}
+            <div className="flex justify-center animate-logo-appear">
+              <div className="relative w-20 h-20 md:w-28 md:h-28">
+                <Image
+                  src="/image/value.png"
+                  alt="Value Logo"
+                  fill
+                  className="object-contain drop-shadow-2xl"
+                  priority
+                />
+              </div>
+            </div>
 
             {/* Language Progress Dots */}
-            <div className="flex gap-3 justify-center mt-6">
+            <div className="flex gap-3 justify-center mt-8">
               {languages.map((_, index) => (
                 <div
                   key={index}
@@ -190,22 +177,6 @@ export default function Intro({ onComplete }: { onComplete?: () => void }) {
               ))}
             </div>
           </div>
-
-          {/* Progress Indicator */}
-          {!showSlogan && (
-            <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2">
-              <div className="flex gap-2">
-                {Array.from({ length: totalSketches }).map((_, index) => (
-                  <div
-                    key={index}
-                    className={`h-1 rounded-full transition-all duration-300 ${
-                      index < currentSketch ? "w-8 bg-white" : "w-4 bg-white/30"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Floating Sketch Elements for Extra Polish */}

@@ -12,6 +12,7 @@ import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 export default function Navigation() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
+  const { showLoading } = useLoading();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
 
@@ -21,6 +22,19 @@ export default function Navigation() {
     { name: "Blog", href: "/blog", key: 3 },
     { name: "Machine", href: "/machine", key: 4 },
   ];
+
+  const handleNavigation = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string
+  ) => {
+    // Only show loading if navigating to a different page
+    if (href !== pathname) {
+      showLoading();
+      closeMenu();
+    } else {
+      closeMenu();
+    }
+  };
 
   const toggleMenu = (event: React.MouseEvent) => {
     if (!isMenuOpen) {
@@ -62,7 +76,11 @@ export default function Navigation() {
           <div className="flex flex-col">
             <div className="flex items-center justify-between">
               <div>
-                <Link href="/" className="font-bold w-10 h-10">
+                <Link
+                  href="/"
+                  className="font-bold w-10 h-10"
+                  onClick={(e) => handleNavigation(e, "/")}
+                >
                   <Image
                     src={
                       theme === "dark" ? "/image/value.png" : "/image/logo.png"
@@ -153,7 +171,7 @@ export default function Navigation() {
                     <Link
                       key={item.key}
                       href={item.href}
-                      onClick={closeMenu}
+                      onClick={(e) => handleNavigation(e, item.href)}
                       className={`block px-4 py-3 text-lg font-medium rounded-lg transition-all duration-200 hover:scale-105 ${
                         isActive
                           ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20"

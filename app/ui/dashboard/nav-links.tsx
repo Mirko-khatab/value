@@ -4,12 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { links } from "@/app/lib/utils";
+import { useLoading } from "@/app/lib/loading-context";
 
 // Map of links to display in the side navigation.
 // Depending on the size of the application, this would be stored in a database.
 
 export default function NavLinks() {
   const pathname = usePathname();
+  const { showLoading } = useLoading();
+
+  const handleNavigation = (href: string) => {
+    // Only show loading if navigating to a different page
+    if (href !== pathname) {
+      showLoading();
+    }
+  };
 
   return (
     <>
@@ -19,6 +28,7 @@ export default function NavLinks() {
           <Link
             key={link.name}
             href={link.href}
+            onClick={() => handleNavigation(link.href)}
             className={clsx(
               "flex h-[48px] grow items-center justify-center gap-2 rounded-md bg-gray-50 dark:bg-gray-700 p-3 text-sm font-medium hover:bg-sky-100 dark:hover:bg-gray-600 hover:text-blue-600 dark:hover:text-blue-400 text-gray-700 dark:text-gray-200 md:flex-none md:justify-start md:p-2 md:px-3 transition-colors duration-200",
               {

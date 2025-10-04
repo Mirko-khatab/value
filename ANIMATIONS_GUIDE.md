@@ -1,18 +1,26 @@
-# Website Intro Animation Guide 🎬✨
+# Website Animations Guide 🎬✨
 
-Your website features an **amazing sketch intro animation** that creates an unforgettable first impression!
+Your website features **TWO amazing animations** working intelligently together for the perfect user experience!
 
 ## 🎯 The Perfect Sequence
 
-### For First-Time Visitors:
+### First Visit to Homepage:
 
 ```
-1. Sketch Intro (8.7s) → Multi-language showcase with logo & sketches
+Sketch Intro (8.7s) → Multi-language showcase with logo & sketches
       ↓
-2. Main Website → Your beautiful homepage
+Main Website → Your beautiful homepage
 ```
 
-### For Returning Visitors:
+### Navigation & Other Pages:
+
+```
+Video Loading (2-4s) → Smooth page transition with video
+      ↓
+Page Content
+```
+
+### Returning to Homepage:
 
 ```
 Homepage loads instantly → No animations, direct access
@@ -74,16 +82,22 @@ Homepage loads instantly → No animations, direct access
 
 ## 🔄 How It Works
 
-### First Visit Flow:
+### First Visit to Homepage:
 
-1. **User lands on homepage** → Sketch Intro plays
+1. **User lands on homepage** → Sketch Intro plays (8.7s)
 2. **Intro completes** → `hasSeenIntro` is set in localStorage
 3. **Main website appears** → User can browse normally
 
-### Returning Visit:
+### Navigation Flow:
 
-- User comes back → Animation is skipped
-- Instant access to website content
+- **User navigates** (Dashboard, About, etc.) → Video Loading shows (2-4s)
+- **Page changes** → Video Loading provides smooth transition
+- **Back to homepage** → Loads instantly (no animations)
+
+### Returning Visits:
+
+- **Homepage** → Loads instantly, no intro
+- **Other pages** → Video loading already shown, quick access
 
 ---
 
@@ -171,13 +185,16 @@ Or use **Incognito/Private mode** to test fresh visits!
 
 ---
 
-## 📊 Total Experience Time
+## 📊 Animation Timing
 
-### First-Time Visitor:
+### First Homepage Visit:
 
-- Video Loading: ~2-4 seconds
 - Sketch Intro: ~8.7 seconds
-- **Total:** ~10.7-12.7 seconds
+- **Total:** ~8.7 seconds
+
+### Page Navigation:
+
+- Video Loading: ~2-4 seconds per page transition
 
 ### Breakdown:
 
@@ -213,18 +230,19 @@ Sketch Intro (8.7s)
 
 ### Why Two Animations?
 
-1. **Video Loading**
+1. **Sketch Intro** (Homepage first visit)
 
-   - Quick brand recognition
-   - Sets the mood
-   - Smooth entry transition
-
-2. **Sketch Intro**
    - Showcases your work process
-   - Multi-language inclusivity
+   - Multi-language inclusivity (English, Kurdish, Arabic)
+   - Displays your logo beautifully
    - Deeper brand story
 
-Together they create a **memorable first impression** without being overwhelming!
+2. **Video Loading** (Navigation & page transitions)
+   - Quick brand recognition
+   - Smooth page transitions
+   - Professional loading experience
+
+Together they create a **memorable first impression** and smooth navigation experience!
 
 ---
 
@@ -252,12 +270,13 @@ Both animations work beautifully on:
 
 ## 🎉 Result
 
-A **professional, modern, and unforgettable** website entrance that:
+A **professional, modern, and unforgettable** website experience that:
 
-- Showcases your brand
-- Welcomes in multiple languages
-- Respects user time (shows once)
-- Creates lasting impression
-- Sets you apart from competition
+- ✨ **Sketch Intro** on first homepage visit - showcases your brand story in 3 languages
+- 🎬 **Video Loading** for smooth page transitions and navigation
+- ⚡ **Respects user time** - intro shows once, quick loading for navigation
+- 🌍 **Multi-language welcome** - English, Kurdish, Arabic
+- 💫 **Professional polish** - smooth animations throughout the site
+- 🎯 **Smart behavior** - knows when to show which animation
 
-Enjoy your spectacular dual-animation entrance! 🚀✨🌍
+Enjoy your spectacular website animations! 🚀✨🌍
