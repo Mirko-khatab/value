@@ -16,12 +16,12 @@ export default async function ProjectsTable({
   return (
     <div className="mt-6 flow-root">
       <div className="inline-block min-w-full align-middle">
-        <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
+        <div className="rounded-lg bg-gray-50 dark:bg-gray-700 p-2 md:pt-0 transition-colors duration-200">
           <div className="md:hidden">
             {projects?.map((project, index) => (
               <div
                 key={`mobile-${project.id}-${index}`}
-                className="mb-2 w-full rounded-md bg-white p-4"
+                className="mb-2 w-full rounded-md bg-white dark:bg-gray-800 p-4 transition-colors duration-200"
               >
                 <div className="flex items-center justify-between border-b pb-4">
                   <div>
@@ -35,32 +35,34 @@ export default async function ProjectsTable({
                           alt={project.gallery_alt_text || "Project image"}
                         />
                       ) : (
-                        <div className="mr-2 w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-xs text-gray-500">?</span>
+                        <div className="mr-2 w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            ?
+                          </span>
                         </div>
                       )}
                       <Link
                         href={`/dashboard/projects/${project.id}`}
-                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
                       >
                         {project.title_en}
                       </Link>
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {project.description_en}
                     </p>
                   </div>
                 </div>
                 <div className="flex w-full items-center justify-between pt-4">
                   <div>
-                    <p className="text-xl font-medium">
+                    <p className="text-xl font-medium text-gray-900 dark:text-gray-100">
                       {typeof project.date === "string"
                         ? project.date
                         : (project.date as Date)
                             ?.toISOString?.()
                             ?.split("T")[0] || "N/A"}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       Order: {project.gallery_order_index || "N/A"}
                     </p>
                   </div>
@@ -72,19 +74,31 @@ export default async function ProjectsTable({
               </div>
             ))}
           </div>
-          <table className="hidden min-w-full text-gray-900 md:table">
-            <thead className="rounded-lg text-left text-sm font-normal">
+          <table className="hidden min-w-full text-gray-900 dark:text-gray-100 md:table">
+            <thead className="rounded-lg text-left text-sm font-normal bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
+                <th
+                  scope="col"
+                  className="px-4 py-5 font-medium sm:pl-6 text-gray-900 dark:text-gray-100"
+                >
                   Project
                 </th>
-                <th scope="col" className="px-3 py-5 font-medium">
+                <th
+                  scope="col"
+                  className="px-3 py-5 font-medium text-gray-900 dark:text-gray-100"
+                >
                   Description
                 </th>
-                <th scope="col" className="px-3 py-5 font-medium">
+                <th
+                  scope="col"
+                  className="px-3 py-5 font-medium text-gray-900 dark:text-gray-100"
+                >
                   Date
                 </th>
-                <th scope="col" className="px-3 py-5 font-medium">
+                <th
+                  scope="col"
+                  className="px-3 py-5 font-medium text-gray-900 dark:text-gray-100"
+                >
                   Order
                 </th>
                 <th scope="col" className="relative py-3 pl-6 pr-3">
@@ -92,11 +106,11 @@ export default async function ProjectsTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white">
+            <tbody className="bg-white dark:bg-gray-800">
               {projects?.map((project, index) => (
                 <tr
                   key={`table-${project.id}-${index}`}
-                  className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
+                  className="w-full border-b border-gray-200 dark:border-gray-700 py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
                 >
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex items-center gap-3">
@@ -109,13 +123,15 @@ export default async function ProjectsTable({
                           alt={project.gallery_alt_text || "Project image"}
                         />
                       ) : (
-                        <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center">
-                          <span className="text-xs text-gray-500">?</span>
+                        <div className="w-7 h-7 rounded-full bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            ?
+                          </span>
                         </div>
                       )}
                       <Link
                         href={`/dashboard/projects/${project.id}`}
-                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
                       >
                         {project.title_en}
                       </Link>
