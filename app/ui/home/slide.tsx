@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface MediaItem {
   type: "image" | "video";
@@ -19,14 +19,19 @@ interface SlideProps {
 
 const defaultMediaItems: MediaItem[] = [
   { type: "image", src: "/image/2.jpg", title: "Slide 1", alt: "Slide 1" },
-  { type: "image", src: "/image/barham.jpg", title: "Slide 2", alt: "Slide 2" },
+
   {
     type: "video",
-    src: "/video/loading.mp4",
-    title: "Loading Video",
-    alt: "Loading Video",
+    src: "/video/1.mp4",
+    title: " Video",
+    alt: " Video",
   },
-  { type: "image", src: "/image/value.png", title: "Slide 5", alt: "Slide 5" },
+  {
+    type: "video",
+    src: "/video/2.mp4",
+    title: " Video",
+    alt: " Video",
+  },
 ];
 
 export const Slide: React.FC<SlideProps> = ({
@@ -35,6 +40,7 @@ export const Slide: React.FC<SlideProps> = ({
   interval = 5000,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
   useEffect(() => {
     if (autoPlay && mediaItems.length > 1) {
@@ -47,13 +53,29 @@ export const Slide: React.FC<SlideProps> = ({
     }
   }, [autoPlay, interval, mediaItems.length]);
 
+  // Control video playback based on active slide
+  useEffect(() => {
+    videoRefs.current.forEach((video, index) => {
+      if (video) {
+        if (index === currentIndex) {
+          video.play().catch((error) => {
+            console.log("Video play failed:", error);
+          });
+        } else {
+          video.pause();
+          video.currentTime = 0;
+        }
+      }
+    });
+  }, [currentIndex]);
+
   const goToSlide = (index: number) => setCurrentIndex(index);
 
   return (
     <div
       className={
         // Responsive height: shorter on phones, full-screen from md+
-        "relative w-full h-[60vh] sm:h-[70vh] md:h-screen overflow-hidden"
+        "relative w-full h-screen overflow-hidden"
       }
     >
       {/* Slides */}
@@ -72,24 +94,23 @@ export const Slide: React.FC<SlideProps> = ({
                   src={item.src}
                   className="w-full h-full object-cover"
                   alt={item.alt || `Slide ${index + 1}`}
-                  style={{
-                    filter: "contrast(1.1) saturate(1.1)",
-                  }}
-                  width={1200}
-                  height={1200}
-                  loading={isActive ? "eager" : "lazy"}
-                  decoding="async"
+                  fill
+                  quality={100}
+                  priority={index === 0}
+                  sizes="100vw"
+                  loading={isActive || index === 0 ? "eager" : "lazy"}
                 />
               ) : (
                 <video
+                  ref={(el) => {
+                    videoRefs.current[index] = el;
+                  }}
                   className="w-full h-full object-cover"
-                  autoPlay={isActive}
                   muted
                   loop
                   poster={item.poster}
-                  preload={isActive ? "auto" : "metadata"}
+                  preload="auto"
                   playsInline
-                  style={{ filter: "contrast(1.05) saturate(1.05)" }}
                 >
                   <source src={item.src} type="video/mp4" />
                   <source
@@ -103,6 +124,15 @@ export const Slide: React.FC<SlideProps> = ({
           );
         })}
       </div>
+
+      {/* Bottom gradient overlay for better title visibility */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-48 sm:h-56 md:h-64 z-10 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent)",
+        }}
+      />
 
       {/* Side blur overlays — hidden on small screens */}
       <div
@@ -125,7 +155,7 @@ export const Slide: React.FC<SlideProps> = ({
       {/* Slide Title */}
       {mediaItems[currentIndex]?.title && (
         <div className="absolute z-20 bottom-20 sm:bottom-24 md:bottom-28 left-1/2 transform -translate-x-1/2 text-center">
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white backdrop-blur-sm px-4 py-2 rounded-lg">
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white drop-shadow-lg px-4 py-2">
             {mediaItems[currentIndex].title}
           </h2>
         </div>

@@ -44,8 +44,8 @@ export default function Page() {
         style={{ transitionDelay: showIntro ? "0ms" : "300ms" }}
       >
         <ShowcaseLayout>
-          {/* Hero Section */}
-          <div className="w-screen relative top-0 left-1/2 right-1/2 -mx-[50vw]">
+          {/* Hero Section - Full Width at Top */}
+          <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw]">
             <Slide />
           </div>
           <Space className="  flex flex-wrap  gap-8 ">

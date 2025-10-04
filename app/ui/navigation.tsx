@@ -71,10 +71,10 @@ export default function Navigation() {
 
   return (
     <>
-      <nav className="w-full  duration-200 sticky top-0 z-50">
+      <nav className="w-full duration-200 fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/60 via-black/40 to-transparent backdrop-blur-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 xl:max-w-[1440px] w-full">
           <div className="flex flex-col">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between py-4">
               <div>
                 <Link
                   href="/"
@@ -82,9 +82,7 @@ export default function Navigation() {
                   onClick={(e) => handleNavigation(e, "/")}
                 >
                   <Image
-                    src={
-                      theme === "dark" ? "/image/value.png" : "/image/logo.png"
-                    }
+                    src="/image/value.png"
                     alt="logo"
                     width={100}
                     height={100}
@@ -97,25 +95,26 @@ export default function Navigation() {
                 <ThemeToggle />
                 <Link
                   href="/"
-                  className="font-bold flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-200"
+                  className="font-bold flex items-center gap-2 text-white/90 hover:text-white transition-colors duration-200"
                 >
                   <Image
                     src="/icons/lang.svg"
                     alt="lang"
                     width={20}
                     height={20}
+                    className="brightness-0 invert"
                   />
                   <span>EN</span>
                 </Link>
                 <button
                   onClick={toggleMenu}
-                  className="p-2 rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+                  className="p-2 rounded-lg transition-all duration-200 hover:bg-white/10 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50"
                   aria-label="Toggle menu"
                 >
                   {isMenuOpen ? (
-                    <XMarkIcon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                    <XMarkIcon className="w-6 h-6 text-white" />
                   ) : (
-                    <Bars3Icon className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                    <Bars3Icon className="w-6 h-6 text-white" />
                   )}
                 </button>
               </div>
@@ -126,7 +125,7 @@ export default function Navigation() {
 
       {/* Menu Overlay */}
       <div
-        className={`fixed inset-0 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 z-[60] transition-opacity duration-300 ${
           isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
