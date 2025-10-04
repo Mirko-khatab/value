@@ -1,20 +1,23 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function CustomeCard({
   title,
   image_url,
   clasName,
-  width,
-  height,
+  width = 1000,
+  height = 1000,
+  link,
 }: {
   title: string;
   image_url: string;
   clasName?: string;
   width?: number;
   height?: number;
+  link: string;
 }) {
   return (
-    <div className={`relative ${clasName}`}>
+    <Link href={link} className={`relative ${clasName}`}>
       <Image
         src={image_url}
         alt={title}
@@ -25,6 +28,6 @@ export default function CustomeCard({
       <h1 className="text-white absolute bottom-0 left-0 text-2xl font-bold">
         {title}
       </h1>
-    </div>
+    </Link>
   );
 }

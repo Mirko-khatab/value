@@ -43,35 +43,50 @@ export default function Page() {
         }`}
         style={{ transitionDelay: showIntro ? "0ms" : "300ms" }}
       >
+        {/* Hero Section - Full Screen at Top */}
+        <Slide />
+
         <ShowcaseLayout>
-          {/* Hero Section - Full Width at Top */}
-          <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw]">
-            <Slide />
-          </div>
-          <Space className="  flex flex-wrap  gap-8 ">
+          {/* Services Section */}
+          <section className="mx-2 py-12 md:py-16 lg:py-20">
+            <div className="grid grid-cols-2 gap-4">
+              <CustomCard
+                title="Engineering Services"
+                link="#"
+                image_url="/image/2.jpg"
+                width={1000}
+                height={200}
+              />
+
+              <CustomCard
+                title="Interior Design"
+                link="#"
+                image_url="/image/barham.jpg"
+                width={1000}
+                height={200}
+              />
+            </div>
+
+            {/* Bottom row: three regular cards each span 4/12 */}
             <CustomCard
-              title="Project 1"
-              clasName="h-[300px] w-[700px]"
-              image_url="/image/2.jpg"
-              height={300}
-              width={700}
+              title="Infrastructure Services"
+              link="#"
+              image_url="/image/barham.jpg"
             />
+
             <CustomCard
-              title="Project 1"
-              clasName="h-[300px] w-[700px]"
+              title="Architecture Design"
+              link="#"
               image_url="/image/2.jpg"
-              height={300}
-              width={400}
             />
+
             <CustomCard
-              title="Project 1"
-              clasName="h-[300px] w-[700px]"
-              image_url="/image/2.jpg"
-              height={300}
-              width={700}
+              title="Construction & Project Management"
+              link="#"
+              image_url="/image/barham.jpg"
             />
-          </Space>
-          {/* end of hero section */}
+          </section>
+          {/* end of services section */}
 
           {/* quote section */}
           {/* <Space>
