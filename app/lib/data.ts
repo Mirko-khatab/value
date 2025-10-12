@@ -10,6 +10,8 @@ import {
   SocialMedia,
   Property,
   SpecialProjects,
+  Banner,
+  Audio,
 } from "./definitions";
 import { getConnection } from "./serverutils";
 import { Project } from "./definitions";
@@ -840,7 +842,7 @@ export async function fetchQuoteById(id: string) {
     connection = await getConnection();
     const [rows] = await connection.execute(
       `
-      SELECT * FROM quotes
+      SELECT id, title_ku, title_en, title_ar, image_url FROM quotes
       WHERE id = ?
     `,
       [id]
@@ -861,7 +863,7 @@ export async function fetchFilteredQuotes(query: string, currentPage: number) {
     connection = await getConnection();
     const [rows] = await connection.execute(
       `
-      SELECT * FROM quotes
+      SELECT id, title_ku, title_en, title_ar, image_url FROM quotes
       WHERE title_ku LIKE ? OR title_ar LIKE ? OR title_en LIKE ?
       ORDER BY id DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
@@ -1138,6 +1140,184 @@ export async function fetchTotalSpecialProjectsPages() {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch total number of special projects.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// Banner Data Fetching
+export async function fetchFilteredBanners(query: string, currentPage: number) {
+  let connection;
+  try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT id, title_ku, title_en, title_ar, image_url, video_url, type, is_active, sort_order FROM banners
+      WHERE title_ku LIKE ? OR title_ar LIKE ? OR title_en LIKE ?
+      ORDER BY sort_order ASC, id DESC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    return rows as Banner[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch banners.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchBannerById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT id, title_ku, title_en, title_ar, image_url, video_url, type, is_active, sort_order FROM banners
+      WHERE id = ?
+    `,
+      [id]
+    );
+    return rows as Banner[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch banner.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalBannersPages(query: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT COUNT(*) as count FROM banners
+      WHERE title_ku LIKE ? OR title_ar LIKE ? OR title_en LIKE ?
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    const totalPages = Math.ceil((rows as any[])[0].count / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total banner pages.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchActiveBanners() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT id, title_ku, title_en, title_ar, image_url, video_url, type, is_active, sort_order FROM banners
+      WHERE is_active = true
+      ORDER BY sort_order ASC, id DESC
+    `
+    );
+    return rows as Banner[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch active banners.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// Audio Data Fetching
+export async function fetchFilteredAudios(query: string, currentPage: number) {
+  let connection;
+  try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT id, title_ku, title_en, title_ar, audio_url, is_active, use_for FROM audios
+      WHERE title_ku LIKE ? OR title_ar LIKE ? OR title_en LIKE ?
+      ORDER BY id DESC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    return rows as Audio[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch audios.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchAudioById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT id, title_ku, title_en, title_ar, audio_url, is_active, use_for FROM audios
+      WHERE id = ?
+    `,
+      [id]
+    );
+    return rows as Audio[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch audio.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalAudiosPages(query: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT COUNT(*) as count FROM audios
+      WHERE title_ku LIKE ? OR title_ar LIKE ? OR title_en LIKE ?
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    const totalPages = Math.ceil((rows as any[])[0].count / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total audio pages.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchActiveAudios(useFor?: "landing" | "intro" | "both") {
+  let connection;
+  try {
+    connection = await getConnection();
+    let query = `
+      SELECT id, title_ku, title_en, title_ar, audio_url, is_active, use_for FROM audios
+      WHERE is_active = true
+    `;
+
+    if (useFor) {
+      query += ` AND (use_for = ? OR use_for = 'both')`;
+    }
+
+    query += ` ORDER BY id DESC LIMIT 1`;
+
+    const [rows] = useFor
+      ? await connection.execute(query, [useFor])
+      : await connection.execute(query);
+
+    return rows as Audio[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch active audios.");
   } finally {
     if (connection) await connection.end();
   }

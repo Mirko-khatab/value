@@ -5,16 +5,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "@/app/lib/theme-context";
 import { useLoading } from "@/app/lib/loading-context";
+import { useLanguage } from "@/app/lib/language-context";
 import ThemeToggle from "./theme-toggle";
-import { useState } from "react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useState, useEffect, useRef } from "react";
+import {
+  Bars3Icon,
+  XMarkIcon,
+  ChevronDownIcon,
+} from "@heroicons/react/24/outline";
 
 export default function Navigation() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const { showLoading } = useLoading();
+  const { language, setLanguage } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
+  const languageDropdownRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
     { name: "Home", href: "/", key: 1 },
@@ -69,6 +77,48 @@ export default function Navigation() {
     setIsMenuOpen(false);
   };
 
+  const closeLanguageDropdown = () => {
+    setIsLanguageDropdownOpen(false);
+  };
+
+  const handleLanguageSelect = (selectedLanguage: "en" | "ar" | "ku") => {
+    setLanguage(selectedLanguage);
+    setIsLanguageDropdownOpen(false);
+  };
+
+  const getLanguageName = (lang: "en" | "ar" | "ku") => {
+    switch (lang) {
+      case "en":
+        return "English";
+      case "ar":
+        return "العربية";
+      case "ku":
+        return "کوردی";
+      default:
+        return "English";
+    }
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        languageDropdownRef.current &&
+        !languageDropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsLanguageDropdownOpen(false);
+      }
+    };
+
+    if (isLanguageDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isLanguageDropdownOpen]);
+
   return (
     <>
       <nav className="w-full duration-200 fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/60 via-black/40 to-transparent backdrop-blur-sm">
@@ -93,19 +143,57 @@ export default function Navigation() {
               {/* Navigation Controls */}
               <div className="flex items-center gap-4">
                 <ThemeToggle />
-                <Link
-                  href="/"
-                  className="font-bold flex items-center gap-2 text-white/90 hover:text-white transition-colors duration-200"
-                >
-                  <Image
-                    src="/icons/lang.svg"
-                    alt="lang"
-                    width={20}
-                    height={20}
-                    className="brightness-0 invert"
-                  />
-                  <span>EN</span>
-                </Link>
+
+                {/* Language Dropdown */}
+                <div className="relative" ref={languageDropdownRef}>
+                  <button
+                    onClick={() =>
+                      setIsLanguageDropdownOpen(!isLanguageDropdownOpen)
+                    }
+                    className="font-bold flex items-center gap-2 text-white/90 hover:text-white transition-colors duration-200 px-3 py-2 rounded-lg hover:bg-white/10"
+                  >
+                    <Image
+                      src="/icons/lang.svg"
+                      alt="lang"
+                      width={20}
+                      height={20}
+                      className="brightness-0 invert"
+                    />
+                    <span>{getLanguageName(language)}</span>
+                    <ChevronDownIcon className="w-4 h-4" />
+                  </button>
+
+                  {/* Dropdown Menu */}
+                  {isLanguageDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                      <div className="py-1">
+                        {[
+                          { code: "en" as const, name: "English", flag: "🇬🇧" },
+                          { code: "ar" as const, name: "العربية", flag: "🇸🇦" },
+                          { code: "ku" as const, name: "کوردی", flag: "🇮🇶" },
+                        ].map((lang) => (
+                          <button
+                            key={lang.code}
+                            onClick={() => handleLanguageSelect(lang.code)}
+                            className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex items-center gap-3 ${
+                              language === lang.code
+                                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+                                : "text-gray-700 dark:text-gray-300"
+                            }`}
+                          >
+                            <span className="text-lg">{lang.flag}</span>
+                            <span className="font-medium">{lang.name}</span>
+                            {language === lang.code && (
+                              <span className="ml-auto text-blue-600 dark:text-blue-400">
+                                ✓
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <button
                   onClick={toggleMenu}
                   className="p-2 rounded-lg transition-all duration-200 hover:bg-white/10 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-white/50"

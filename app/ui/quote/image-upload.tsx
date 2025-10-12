@@ -1,32 +1,61 @@
 "use client";
 import { useState, useRef } from "react";
 import imageCompression from "browser-image-compression";
+import { getSignedUploadUrl } from "@/app/lib/s3-upload";
+import { IMAGE_CONFIG } from "@/app/lib/aws-config";
 
-interface SimpleImageUploadProps {
+interface ImageUploadProps {
   onUploadComplete: (imageUrl: string) => void;
   onUploadError: (error: string) => void;
 }
 
-export default function SimpleImageUpload({
+export default function ImageUpload({
   onUploadComplete,
   onUploadError,
-}: SimpleImageUploadProps) {
+}: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [preview, setPreview] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const compressImage = async (file: File): Promise<File> => {
     try {
-      const compressedFile = await imageCompression(file, {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
-      });
+      const compressedFile = await imageCompression(file, IMAGE_CONFIG);
       return compressedFile;
     } catch (error) {
       console.error("Error compressing image:", error);
       throw new Error("Failed to compress image");
     }
+  };
+
+  const uploadToS3 = async (file: File, signedUrl: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener("progress", (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100;
+          setProgress(percentComplete);
+        }
+      });
+
+      xhr.addEventListener("load", () => {
+        if (xhr.status === 200) {
+          resolve();
+        } else {
+          reject(new Error(`Upload failed with status: ${xhr.status}`));
+        }
+      });
+
+      xhr.addEventListener("error", () => {
+        reject(new Error("Upload failed"));
+      });
+
+      xhr.open("PUT", signedUrl);
+      xhr.setRequestHeader("Content-Type", file.type);
+      xhr.send(file);
+    });
   };
 
   const handleFileSelect = async (
@@ -49,6 +78,8 @@ export default function SimpleImageUpload({
 
     try {
       setUploading(true);
+      setProgress(0);
+      setError(null);
 
       // Create preview
       const previewUrl = URL.createObjectURL(file);
@@ -57,34 +88,42 @@ export default function SimpleImageUpload({
       // Compress image
       const compressedFile = await compressImage(file);
 
-      // For now, we'll use a simple placeholder URL
-      // In production, this would be the actual S3 URL
-      const timestamp = Date.now();
-      const placeholderUrl = `/customers/uploaded-${timestamp}.jpg`;
+      // Get signed URL from server
+      const response = await getSignedUploadUrl(
+        compressedFile.name,
+        compressedFile.type
+      );
 
-      onUploadComplete(placeholderUrl);
+      // Upload to S3
+      await uploadToS3(compressedFile, response.signedUrl);
+
+      // Notify parent component with the public URL
+      onUploadComplete(response.publicUrl);
     } catch (error) {
       console.error("Upload error:", error);
       onUploadError(error instanceof Error ? error.message : "Upload failed");
       setPreview(null);
+      setError(error instanceof Error ? error.message : "Upload failed");
     } finally {
       setUploading(false);
+      setProgress(0);
     }
   };
 
   const handleRemoveImage = () => {
     setPreview(null);
-    onUploadComplete("");
+    setError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+    onUploadComplete("");
   };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-center w-full">
         <label
-          htmlFor="simple-image-upload"
+          htmlFor="quote-image-upload"
           className={`flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 ${
             uploading ? "pointer-events-none opacity-50" : ""
           }`}
@@ -129,15 +168,12 @@ export default function SimpleImageUpload({
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 PNG, JPG, GIF up to 10MB
               </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                (Placeholder URL - Ready for AWS S3)
-              </p>
             </div>
           )}
         </label>
         <input
           ref={fileInputRef}
-          id="simple-image-upload"
+          id="quote-image-upload"
           type="file"
           className="hidden"
           accept="image/*"
@@ -146,13 +182,23 @@ export default function SimpleImageUpload({
         />
       </div>
 
+      {error && (
+        <div className="p-3 text-sm text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 rounded">
+          {error}
+        </div>
+      )}
+
       {uploading && (
         <div className="space-y-2">
           <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-            <span>Processing image...</span>
+            <span>Uploading image...</span>
+            <span>{Math.round(progress)}%</span>
           </div>
           <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-            <div className="bg-blue-600 h-2 rounded-full animate-pulse w-full"></div>
+            <div
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress}%` }}
+            ></div>
           </div>
         </div>
       )}

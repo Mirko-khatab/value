@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/app/ui/button";
 import { createQuote, updateQuote, QuoteState } from "@/app/lib/actions";
 import { Quote } from "@/app/lib/definitions";
+import ImageUpload from "@/app/ui/quote/image-upload";
 
 export default function Form({
   quote,
@@ -22,9 +23,7 @@ export default function Form({
     title_ku: isEditMode && quote ? quote.title_ku : "",
     title_en: isEditMode && quote ? quote.title_en : "",
     title_ar: isEditMode && quote ? quote.title_ar : "",
-    description_ku: isEditMode && quote ? quote.description_ku : "",
-    description_en: isEditMode && quote ? quote.description_en : "",
-    description_ar: isEditMode && quote ? quote.description_ar : "",
+    image_url: isEditMode && quote ? quote.image_url || "" : "",
   });
 
   const handleInputChange = (field: keyof typeof formData, value: string) => {
@@ -52,9 +51,7 @@ export default function Form({
         formDataObj.append("title_ku", formData.title_ku);
         formDataObj.append("title_en", formData.title_en);
         formDataObj.append("title_ar", formData.title_ar);
-        formDataObj.append("description_ku", formData.description_ku);
-        formDataObj.append("description_en", formData.description_en);
-        formDataObj.append("description_ar", formData.description_ar);
+        formDataObj.append("image_url", formData.image_url);
 
         if (isEditMode && quote) {
           // Update existing quote
@@ -87,10 +84,10 @@ export default function Form({
 
   return (
     <form onSubmit={handleSubmit}>
-      <div className="rounded-md bg-gray-50 p-4 md:p-6">
+      <div className="rounded-md bg-gray-50 dark:bg-gray-800 p-4 md:p-6">
         {/* Success Message */}
         {success && (
-          <div className="mb-4 p-4 text-sm text-green-700 bg-green-100 border border-green-400 rounded">
+          <div className="mb-4 p-4 text-sm text-green-700 dark:text-green-300 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 rounded">
             Quote {isEditMode ? "updated" : "created"} successfully!
             Redirecting...
           </div>
@@ -98,7 +95,7 @@ export default function Form({
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-4 text-sm text-red-700 bg-red-100 border border-red-400 rounded">
+          <div className="mb-4 p-4 text-sm text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 rounded">
             {error}
           </div>
         )}
@@ -108,7 +105,7 @@ export default function Form({
           <div className="mb-4">
             <label
               htmlFor="title_ku"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
             >
               Title (Kurdish) <span className="text-red-500">*</span>
             </label>
@@ -120,13 +117,13 @@ export default function Form({
               value={formData.title_ku}
               onChange={(e) => handleInputChange("title_ku", e.target.value)}
               placeholder="Enter quote title in Kurdish"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
           <div className="mb-4">
             <label
               htmlFor="title_ar"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
             >
               Title (Arabic) <span className="text-red-500">*</span>
             </label>
@@ -138,13 +135,13 @@ export default function Form({
               value={formData.title_ar}
               onChange={(e) => handleInputChange("title_ar", e.target.value)}
               placeholder="Enter quote title in Arabic"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
           <div className="mb-4">
             <label
               htmlFor="title_en"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2 block text-sm font-medium text-gray-900 dark:text-white"
             >
               Title (English) <span className="text-red-500">*</span>
             </label>
@@ -156,77 +153,37 @@ export default function Form({
               value={formData.title_en}
               onChange={(e) => handleInputChange("title_en", e.target.value)}
               placeholder="Enter quote title in English"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
             />
           </div>
         </div>
 
-        {/* Description Fields */}
-        <div className="grid md:grid-cols-3 grid-cols-1 gap-4 mb-4">
-          <div className="mb-4">
-            <label
-              htmlFor="description_ku"
-              className="mb-2 block text-sm font-medium"
-            >
-              Description (Kurdish) <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="description_ku"
-              name="description_ku"
-              required
-              value={formData.description_ku}
-              onChange={(e) =>
-                handleInputChange("description_ku", e.target.value)
-              }
-              placeholder="Enter quote description in Kurdish"
-              rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="description_ar"
-              className="mb-2 block text-sm font-medium"
-            >
-              Description (Arabic) <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="description_ar"
-              name="description_ar"
-              required
-              value={formData.description_ar}
-              onChange={(e) =>
-                handleInputChange("description_ar", e.target.value)
-              }
-              placeholder="Enter quote description in Arabic"
-              rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div className="mb-4">
-            <label
-              htmlFor="description_en"
-              className="mb-2 block text-sm font-medium"
-            >
-              Description (English) <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="description_en"
-              name="description_en"
-              required
-              value={formData.description_en}
-              onChange={(e) =>
-                handleInputChange("description_en", e.target.value)
-              }
-              placeholder="Enter quote description in English"
-              rows={4}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+        {/* Image Upload */}
+        <div className="mb-4">
+          <label className="mb-2 block text-sm font-medium text-gray-900 dark:text-white">
+            Quote Image <span className="text-red-500">*</span>
+          </label>
+          <ImageUpload
+            onUploadComplete={(imageUrl) =>
+              handleInputChange("image_url", imageUrl)
+            }
+            onUploadError={(error) => setError(error)}
+          />
+          <input
+            type="hidden"
+            name="image_url"
+            value={formData.image_url}
+            required
+          />
+          {!formData.image_url && (
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Please upload an image for the quote
+            </p>
+          )}
         </div>
 
         {/* Required fields note */}
-        <div className="mb-4 text-sm text-gray-600">
+        <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
           <span className="text-red-500">*</span> Required fields
         </div>
       </div>
@@ -234,7 +191,7 @@ export default function Form({
       <div className="mt-6 flex justify-end gap-4">
         <Link
           href="/dashboard/quote"
-          className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
+          className="flex h-10 items-center rounded-lg bg-gray-100 dark:bg-gray-700 px-4 text-sm font-medium text-gray-600 dark:text-gray-300 transition-colors hover:bg-gray-200 dark:hover:bg-gray-600"
         >
           Cancel
         </Link>

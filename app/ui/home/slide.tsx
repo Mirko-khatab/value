@@ -2,6 +2,19 @@
 
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
+import { useLanguage } from "@/app/lib/language-context";
+
+interface Banner {
+  id: string;
+  title_ku: string;
+  title_en: string;
+  title_ar: string;
+  image_url: string;
+  video_url: string;
+  type: "image" | "video";
+  is_active: boolean;
+  sort_order: number;
+}
 
 interface MediaItem {
   type: "image" | "video";
@@ -9,38 +22,73 @@ interface MediaItem {
   alt?: string;
   poster?: string;
   title?: string;
+  title_en?: string;
+  title_ar?: string;
+  title_ku?: string;
 }
 
 interface SlideProps {
-  mediaItems?: MediaItem[];
   autoPlay?: boolean;
   interval?: number;
 }
 
-const defaultMediaItems: MediaItem[] = [
-  { type: "image", src: "/image/2.jpg", title: "Slide 1", alt: "Slide 1" },
-
-  {
-    type: "video",
-    src: "/video/1.mp4",
-    title: " Video",
-    alt: " Video",
-  },
-  {
-    type: "video",
-    src: "/video/2.mp4",
-    title: " Video",
-    alt: " Video",
-  },
-];
-
 export const Slide: React.FC<SlideProps> = ({
-  mediaItems = defaultMediaItems,
   autoPlay = true,
-  interval = 5000,
+  interval = 8000,
 }) => {
+  const { language } = useLanguage();
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+
+  // Fetch banners from database
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const response = await fetch("/api/banners");
+        if (!response.ok) {
+          throw new Error("Failed to fetch banners");
+        }
+        const banners: Banner[] = await response.json();
+
+        // Convert banners to media items
+        const items: MediaItem[] = banners.map((banner) => ({
+          type: banner.type,
+          src: banner.type === "video" ? banner.video_url : banner.image_url,
+          alt: banner.title_en,
+          title: banner.title_en, // Default to English
+          title_en: banner.title_en,
+          title_ar: banner.title_ar,
+          title_ku: banner.title_ku,
+        }));
+
+        setMediaItems(items);
+      } catch (error) {
+        console.error("Error fetching banners:", error);
+        // Set empty array if fetch fails
+        setMediaItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBanners();
+  }, []);
+
+  // Get title based on current language
+  const getCurrentTitle = (item: MediaItem) => {
+    switch (language) {
+      case "ku":
+        return item.title_ku || item.title_en;
+      case "ar":
+        return item.title_ar || item.title_en;
+      default:
+        return item.title_en || item.title;
+    }
+  };
+
+  const isRTL = language === "ar" || language === "ku";
 
   useEffect(() => {
     if (autoPlay && mediaItems.length > 1) {
@@ -70,6 +118,28 @@ export const Slide: React.FC<SlideProps> = ({
   }, [currentIndex]);
 
   const goToSlide = (index: number) => setCurrentIndex(index);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="relative w-full h-screen overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+        <div className="text-gray-600 dark:text-gray-400">
+          Loading banners...
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no banners
+  if (mediaItems.length === 0) {
+    return (
+      <div className="relative w-full h-screen overflow-hidden bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-gray-500 dark:text-gray-400">
+          No banners available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -153,10 +223,16 @@ export const Slide: React.FC<SlideProps> = ({
       />
 
       {/* Slide Title */}
-      {mediaItems[currentIndex]?.title && (
+      {mediaItems[currentIndex] && (
         <div className="absolute z-20 bottom-20 sm:bottom-24 md:bottom-28 left-1/2 transform -translate-x-1/2 text-center">
-          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white drop-shadow-lg px-4 py-2">
-            {mediaItems[currentIndex].title}
+          <h2
+            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white drop-shadow-lg px-4 py-2"
+            dir={isRTL ? "rtl" : "ltr"}
+            style={{
+              fontFamily: isRTL ? "'Arial', 'Tahoma', sans-serif" : "inherit",
+            }}
+          >
+            {getCurrentTitle(mediaItems[currentIndex])}
           </h2>
         </div>
       )}

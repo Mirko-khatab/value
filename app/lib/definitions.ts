@@ -35,9 +35,19 @@ export type Quote = {
   title_ku: string;
   title_en: string;
   title_ar: string;
-  description_ku: string;
-  description_ar: string;
-  description_en: string;
+  image_url: string;
+};
+
+export type Banner = {
+  id: string;
+  title_ku: string;
+  title_en: string;
+  title_ar: string;
+  image_url: string;
+  video_url: string;
+  type: "image" | "video";
+  is_active: boolean;
+  sort_order: number;
 };
 
 export enum SocialMediaType {

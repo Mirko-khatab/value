@@ -5,13 +5,15 @@ import { getConnection } from "./serverutils";
 import { redirect } from "next/navigation";
 import { deleteS3Object } from "./s3-upload";
 
-import { signIn } from "@/auth";
+import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
 import {
   ParentType,
   Property,
   SocialMedia,
   SocialMediaType,
+  Banner,
+  Audio,
 } from "./definitions";
 
 const FormSchema = z.object({
@@ -1642,9 +1644,7 @@ const CreateQuote = z.object({
   title_ku: z.string().min(1, "Kurdish title is required"),
   title_en: z.string().min(1, "English title is required"),
   title_ar: z.string().min(1, "Arabic title is required"),
-  description_ku: z.string().min(1, "Kurdish description is required"),
-  description_en: z.string().min(1, "English description is required"),
-  description_ar: z.string().min(1, "Arabic description is required"),
+  image_url: z.string().min(1, "Image is required"),
 });
 
 export type QuoteState = {
@@ -1652,9 +1652,7 @@ export type QuoteState = {
     title_ku?: string[];
     title_en?: string[];
     title_ar?: string[];
-    description_ku?: string[];
-    description_en?: string[];
-    description_ar?: string[];
+    image_url?: string[];
   };
   message?: string | null;
 };
@@ -1664,9 +1662,7 @@ export async function createQuote(prevState: QuoteState, formData: FormData) {
     title_ku: formData.get("title_ku"),
     title_en: formData.get("title_en"),
     title_ar: formData.get("title_ar"),
-    description_ku: formData.get("description_ku"),
-    description_en: formData.get("description_en"),
-    description_ar: formData.get("description_ar"),
+    image_url: formData.get("image_url"),
   });
 
   if (!validatedFields.success) {
@@ -1676,15 +1672,8 @@ export async function createQuote(prevState: QuoteState, formData: FormData) {
     };
   }
 
-  const {
-    title_ku,
-    title_en,
-    title_ar,
-    description_ku,
-    description_en,
-    description_ar,
-  } = validatedFields.data;
-
+  const { title_ku, title_en, title_ar, image_url } = validatedFields.data;
+  console.log(image_url);
   const connection = await getConnection();
   try {
     await connection.beginTransaction();
@@ -1706,15 +1695,8 @@ export async function createQuote(prevState: QuoteState, formData: FormData) {
 
     // Insert quote record
     await connection.execute(
-      "INSERT INTO quotes (title_ku, title_en, title_ar, description_ku, description_en, description_ar) VALUES (?, ?, ?, ?, ?, ?)",
-      [
-        title_ku,
-        title_en,
-        title_ar,
-        description_ku,
-        description_en,
-        description_ar,
-      ]
+      "INSERT INTO quotes (title_ku, title_en, title_ar,image_url) VALUES (?, ?, ?,?)",
+      [title_ku, title_en, title_ar, image_url]
     );
 
     await connection.commit();
@@ -1753,9 +1735,7 @@ export async function updateQuote(id: string, formData: FormData) {
     title_ku: formData.get("title_ku"),
     title_en: formData.get("title_en"),
     title_ar: formData.get("title_ar"),
-    description_ku: formData.get("description_ku"),
-    description_en: formData.get("description_en"),
-    description_ar: formData.get("description_ar"),
+    image_url: formData.get("image_url"),
   });
 
   if (!validatedFields.success) {
@@ -1765,14 +1745,7 @@ export async function updateQuote(id: string, formData: FormData) {
     };
   }
 
-  const {
-    title_ku,
-    title_en,
-    title_ar,
-    description_ku,
-    description_en,
-    description_ar,
-  } = validatedFields.data;
+  const { title_ku, title_en, title_ar, image_url } = validatedFields.data;
 
   const connection = await getConnection();
 
@@ -1796,18 +1769,10 @@ export async function updateQuote(id: string, formData: FormData) {
 
     // Update quote record
     await connection.execute(
-      "UPDATE quotes SET title_ku = ?, title_en = ?, title_ar = ?, description_ku = ?, description_en = ?, description_ar = ? WHERE id = ?",
-      [
-        title_ku,
-        title_en,
-        title_ar,
-        description_ku,
-        description_en,
-        description_ar,
-        id,
-      ]
+      "UPDATE quotes SET title_ku = ?, title_en = ?, title_ar = ?, image_url = ? WHERE id = ?",
+      [title_ku, title_en, title_ar, image_url, id]
     );
-
+    console.log("Quote updated successfully");
     await connection.commit();
   } catch (error) {
     console.error("Database Error: Failed to Update Quote.", error);
@@ -2299,4 +2264,359 @@ export async function deleteSpecialProject(id: string) {
   }
   revalidatePath("/dashboard/special-projects");
   redirect("/dashboard/special-projects");
+}
+
+// Sign Out Action
+export async function handleSignOut() {
+  await signOut({ redirectTo: "/" });
+}
+
+// Banner CRUD Operations
+const CreateBanner = z
+  .object({
+    title_ku: z.string().min(1, "Kurdish title is required"),
+    title_en: z.string().min(1, "English title is required"),
+    title_ar: z.string().min(1, "Arabic title is required"),
+    image_url: z.string(),
+    video_url: z.string().optional(),
+    type: z.enum(["image", "video"]),
+    is_active: z.boolean().default(true),
+    sort_order: z.number().default(0),
+  })
+  .refine(
+    (data) => {
+      // If type is image, image_url must be present
+      if (data.type === "image" && !data.image_url) {
+        return false;
+      }
+      // If type is video, video_url must be present
+      if (data.type === "video" && !data.video_url) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message:
+        "Image is required for image type, video is required for video type",
+      path: ["image_url"],
+    }
+  );
+
+export type BannerState = {
+  errors?: {
+    title_ku?: string[];
+    title_en?: string[];
+    title_ar?: string[];
+    image_url?: string[];
+    video_url?: string[];
+    type?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createBanner(prevState: BannerState, formData: FormData) {
+  const validatedFields = CreateBanner.safeParse({
+    title_ku: formData.get("title_ku"),
+    title_en: formData.get("title_en"),
+    title_ar: formData.get("title_ar"),
+    image_url: formData.get("image_url"),
+    video_url: formData.get("video_url") || "",
+    type: formData.get("type"),
+    is_active: formData.get("is_active") === "true",
+    sort_order: parseInt(formData.get("sort_order") as string) || 0,
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Create Banner.",
+    };
+  }
+
+  const {
+    title_ku,
+    title_en,
+    title_ar,
+    image_url,
+    video_url,
+    type,
+    is_active,
+    sort_order,
+  } = validatedFields.data;
+  const connection = await getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Insert banner record
+    await connection.execute(
+      "INSERT INTO banners (title_ku, title_en, title_ar, image_url, video_url, type, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      [
+        title_ku,
+        title_en,
+        title_ar,
+        image_url,
+        video_url || "",
+        type,
+        is_active,
+        sort_order,
+      ]
+    );
+
+    await connection.commit();
+    console.log("Banner created successfully");
+  } catch (error) {
+    await connection.rollback();
+    console.error("Database Error: Failed to Create Banner.", error);
+    throw new Error("Failed to create banner");
+  } finally {
+    await connection.end();
+  }
+  revalidatePath("/dashboard/banners");
+  redirect("/dashboard/banners");
+}
+
+export async function updateBanner(id: string, formData: FormData) {
+  const validatedFields = CreateBanner.safeParse({
+    title_ku: formData.get("title_ku"),
+    title_en: formData.get("title_en"),
+    title_ar: formData.get("title_ar"),
+    image_url: formData.get("image_url"),
+    video_url: formData.get("video_url") || "",
+    type: formData.get("type"),
+    is_active: formData.get("is_active") === "true",
+    sort_order: parseInt(formData.get("sort_order") as string) || 0,
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Update Banner.",
+    };
+  }
+
+  const {
+    title_ku,
+    title_en,
+    title_ar,
+    image_url,
+    video_url,
+    type,
+    is_active,
+    sort_order,
+  } = validatedFields.data;
+  const connection = await getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Update banner record
+    await connection.execute(
+      "UPDATE banners SET title_ku = ?, title_en = ?, title_ar = ?, image_url = ?, video_url = ?, type = ?, is_active = ?, sort_order = ? WHERE id = ?",
+      [
+        title_ku,
+        title_en,
+        title_ar,
+        image_url,
+        video_url || "",
+        type,
+        is_active,
+        sort_order,
+        id,
+      ]
+    );
+
+    await connection.commit();
+    console.log("Banner updated successfully");
+  } catch (error) {
+    await connection.rollback();
+    console.error("Database Error: Failed to Update Banner.", error);
+    throw new Error("Failed to update banner");
+  } finally {
+    await connection.end();
+  }
+  revalidatePath("/dashboard/banners");
+  redirect("/dashboard/banners");
+}
+
+export async function deleteBanner(id: string) {
+  const connection = await getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Get banner to delete old image/video
+    const [bannerRows] = (await connection.execute(
+      "SELECT image_url, video_url FROM banners WHERE id = ?",
+      [id]
+    )) as any[];
+
+    if (bannerRows.length > 0) {
+      const banner = bannerRows[0];
+
+      // Delete old image from S3
+      if (banner.image_url) {
+        await deleteS3Object(banner.image_url);
+      }
+
+      // Delete old video from S3
+      if (banner.video_url) {
+        await deleteS3Object(banner.video_url);
+      }
+    }
+
+    // Delete the banner record
+    await connection.execute("DELETE FROM banners WHERE id = ?", [id]);
+
+    await connection.commit();
+    console.log("Banner deleted successfully");
+  } catch (error) {
+    await connection.rollback();
+    console.error("Database Error: Failed to Delete Banner.", error);
+    throw new Error("Failed to delete banner");
+  } finally {
+    await connection.end();
+  }
+  revalidatePath("/dashboard/banners");
+}
+
+// Audio CRUD Operations
+const CreateAudio = z.object({
+  title_ku: z.string().min(1, "Kurdish title is required"),
+  title_en: z.string().min(1, "English title is required"),
+  title_ar: z.string().min(1, "Arabic title is required"),
+  audio_url: z.string().min(1, "Audio file is required"),
+  is_active: z.boolean().default(true),
+  use_for: z.enum(["landing", "intro", "both"]),
+});
+
+export type AudioState = {
+  errors?: {
+    title_ku?: string[];
+    title_en?: string[];
+    title_ar?: string[];
+    audio_url?: string[];
+    use_for?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createAudio(prevState: AudioState, formData: FormData) {
+  const validatedFields = CreateAudio.safeParse({
+    title_ku: formData.get("title_ku"),
+    title_en: formData.get("title_en"),
+    title_ar: formData.get("title_ar"),
+    audio_url: formData.get("audio_url"),
+    is_active: formData.get("is_active") === "true",
+    use_for: formData.get("use_for"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Create Audio.",
+    };
+  }
+
+  const { title_ku, title_en, title_ar, audio_url, is_active, use_for } =
+    validatedFields.data;
+  const connection = await getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Insert audio record
+    await connection.execute(
+      "INSERT INTO audios (title_ku, title_en, title_ar, audio_url, is_active, use_for) VALUES (?, ?, ?, ?, ?, ?)",
+      [title_ku, title_en, title_ar, audio_url, is_active, use_for]
+    );
+
+    await connection.commit();
+    console.log("Audio created successfully");
+  } catch (error) {
+    await connection.rollback();
+    console.error("Database Error: Failed to Create Audio.", error);
+    throw new Error("Failed to create audio");
+  } finally {
+    await connection.end();
+  }
+  revalidatePath("/dashboard/audios");
+  redirect("/dashboard/audios");
+}
+
+export async function updateAudio(id: string, formData: FormData) {
+  const validatedFields = CreateAudio.safeParse({
+    title_ku: formData.get("title_ku"),
+    title_en: formData.get("title_en"),
+    title_ar: formData.get("title_ar"),
+    audio_url: formData.get("audio_url"),
+    is_active: formData.get("is_active") === "true",
+    use_for: formData.get("use_for"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Update Audio.",
+    };
+  }
+
+  const { title_ku, title_en, title_ar, audio_url, is_active, use_for } =
+    validatedFields.data;
+  const connection = await getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Update audio record
+    await connection.execute(
+      "UPDATE audios SET title_ku = ?, title_en = ?, title_ar = ?, audio_url = ?, is_active = ?, use_for = ? WHERE id = ?",
+      [title_ku, title_en, title_ar, audio_url, is_active, use_for, id]
+    );
+
+    await connection.commit();
+    console.log("Audio updated successfully");
+  } catch (error) {
+    await connection.rollback();
+    console.error("Database Error: Failed to Update Audio.", error);
+    throw new Error("Failed to update audio");
+  } finally {
+    await connection.end();
+  }
+  revalidatePath("/dashboard/audios");
+  redirect("/dashboard/audios");
+}
+
+export async function deleteAudio(id: string) {
+  const connection = await getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Get audio to delete old file
+    const [audioRows] = (await connection.execute(
+      "SELECT audio_url FROM audios WHERE id = ?",
+      [id]
+    )) as any[];
+
+    if (audioRows.length > 0) {
+      const audio = audioRows[0];
+
+      // Delete old audio from S3
+      if (audio.audio_url) {
+        await deleteS3Object(audio.audio_url);
+      }
+    }
+
+    // Delete the audio record
+    await connection.execute("DELETE FROM audios WHERE id = ?", [id]);
+
+    await connection.commit();
+    console.log("Audio deleted successfully");
+  } catch (error) {
+    await connection.rollback();
+    console.error("Database Error: Failed to Delete Audio.", error);
+    throw new Error("Failed to delete audio");
+  } finally {
+    await connection.end();
+  }
+  revalidatePath("/dashboard/audios");
 }

@@ -316,6 +316,66 @@ async function seedSpecialProjects(connection: mysql.Connection) {
   `);
 }
 
+async function seedBanners(connection: mysql.Connection) {
+  await connection.execute(`
+    CREATE TABLE IF NOT EXISTS banners (
+      id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+      title_ku VARCHAR(255) NOT NULL,
+      title_ar VARCHAR(255) NOT NULL,
+      title_en VARCHAR(255) NOT NULL,
+      image_url VARCHAR(500) NOT NULL,
+      video_url VARCHAR(500) DEFAULT '',
+      type ENUM('image', 'video') NOT NULL DEFAULT 'image',
+      is_active BOOLEAN NOT NULL DEFAULT true,
+      sort_order INT NOT NULL DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Insert sample banners
+  const sampleBanners = [
+    {
+      title_ku: "بەرنامەیەکی نوێ",
+      title_ar: "برنامج جديد",
+      title_en: "New Program",
+      image_url: "/image/2.jpg",
+      video_url: "",
+      type: "image",
+      is_active: true,
+      sort_order: 1,
+    },
+    {
+      title_ku: "پڕۆژەی گەورە",
+      title_ar: "مشروع كبير",
+      title_en: "Big Project",
+      image_url: "/image/barham.jpg",
+      video_url: "",
+      type: "image",
+      is_active: true,
+      sort_order: 2,
+    },
+  ];
+
+  for (const banner of sampleBanners) {
+    await connection.execute(
+      `INSERT INTO banners (title_ku, title_ar, title_en, image_url, video_url, type, is_active, sort_order) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?) 
+       ON DUPLICATE KEY UPDATE title_ku=VALUES(title_ku)`,
+      [
+        banner.title_ku,
+        banner.title_ar,
+        banner.title_en,
+        banner.image_url,
+        banner.video_url,
+        banner.type,
+        banner.is_active,
+        banner.sort_order,
+      ]
+    );
+  }
+}
+
 export async function GET() {
   let connection;
 
@@ -327,6 +387,7 @@ export async function GET() {
     await seedInvoices(connection);
     await seedRevenue(connection);
     await seedSpecialProjects(connection);
+    await seedBanners(connection);
 
     return Response.json({ message: "Database seeded successfully" });
   } catch (error) {

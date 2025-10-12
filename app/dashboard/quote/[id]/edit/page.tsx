@@ -21,9 +21,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     title_ku: quoteData.title_ku,
     title_ar: quoteData.title_ar,
     title_en: quoteData.title_en,
-    description_ku: quoteData.description_ku,
-    description_ar: quoteData.description_ar,
-    description_en: quoteData.description_en,
+    image_url: quoteData.image_url,
   };
 
   return (

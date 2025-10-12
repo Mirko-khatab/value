@@ -11,6 +11,8 @@ import {
   ChatBubbleLeftRightIcon,
   ShareIcon,
   PhotoIcon,
+  PresentationChartBarIcon,
+  MusicalNoteIcon,
 } from "@heroicons/react/24/outline";
 import { Revenue } from "./definitions";
 
@@ -114,4 +116,14 @@ export const links = [
   },
   { name: "Blogs", href: "/dashboard/blogs", icon: NewspaperIcon },
   { name: "Teams", href: "/dashboard/teams", icon: UserGroupIcon },
+  {
+    name: "Banners",
+    href: "/dashboard/banners",
+    icon: PresentationChartBarIcon,
+  },
+  {
+    name: "Audios",
+    href: "/dashboard/audios",
+    icon: MusicalNoteIcon,
+  },
 ];
