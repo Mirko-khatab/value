@@ -222,7 +222,6 @@ export default function Form({
                 handleInputChange("image_url", imageUrl)
               }
               onUploadError={(error) => setError(error)}
-              initialImageUrl={formData.image_url}
             />
             <input type="hidden" name="image_url" value={formData.image_url} />
             {!formData.image_url && (

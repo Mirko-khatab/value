@@ -62,6 +62,7 @@ export type SocialMedia = {
   url: string;
 };
 
+// Legacy type - machine groups have been removed from database
 export type MachineGroup = {
   id: string;
   title_ar: string;
@@ -83,9 +84,8 @@ export type Blog = {
   gallery_order_index?: string;
 };
 
-export type Machine = {
+export type Product = {
   id: string;
-  machine_group_id: string;
   title_ar: string;
   title_en: string;
   title_ku: string;
@@ -97,6 +97,9 @@ export type Machine = {
   gallery_alt_text?: string;
   gallery_order_index?: string;
 };
+
+// Legacy alias for backward compatibility - keeping for existing code
+export type Machine = Product;
 
 export type Project = {
   id: string;
@@ -113,11 +116,12 @@ export type Project = {
   gallery_order_index?: string;
 };
 
-//0=project 1=blog 2=machine	 parent_type
+//0=project 1=blog 2=product	 parent_type
 export enum ParentType {
   Project = 0,
   Blog = 1,
-  Machine = 2,
+  Product = 2,
+  Machine = 2, // Legacy alias
 }
 
 export type Gallery = {

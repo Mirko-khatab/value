@@ -96,7 +96,7 @@ export const links = [
   //   icon: DocumentDuplicateIcon,
   // },
   { name: "Projects", href: "/dashboard/projects", icon: BuildingOfficeIcon },
-  { name: "Machines", href: "/dashboard/machines", icon: TruckIcon },
+  { name: "Products", href: "/dashboard/products", icon: TruckIcon },
   { name: "Quotes", href: "/dashboard/quote", icon: ChatBubbleLeftRightIcon },
   { name: "Social Media", href: "/dashboard/social-media", icon: ShareIcon },
   {
@@ -108,11 +108,6 @@ export const links = [
     name: "Special Projects",
     href: "/dashboard/special-projects",
     icon: PhotoIcon,
-  },
-  {
-    name: "Machine Groups",
-    href: "/dashboard/machine-groups",
-    icon: RectangleGroupIcon,
   },
   { name: "Blogs", href: "/dashboard/blogs", icon: NewspaperIcon },
   { name: "Teams", href: "/dashboard/teams", icon: UserGroupIcon },

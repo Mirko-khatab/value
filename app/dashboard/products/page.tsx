@@ -1,10 +1,10 @@
-import Pagination from "@/app/ui/machine-groups/pagination";
+import Pagination from "@/app/ui/products/pagination";
 import Search from "@/app/ui/search";
-import Table from "@/app/ui/machine-groups/table";
-import { CreateMachineGroup } from "@/app/ui/machine-groups/buttons";
+import Table from "@/app/ui/products/table";
+import { CreateMachine } from "@/app/ui/products/buttons";
 import { InvoicesTableSkeleton } from "@/app/ui/skeletons";
 import { Suspense } from "react";
-import { fetchTotalMachineGroupsPages } from "@/app/lib/data";
+import { fetchTotalMachinesPages } from "@/app/lib/data";
 
 export default async function Page(props: {
   searchParams?: Promise<{
@@ -15,16 +15,16 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || "";
   const currentPage = Number(searchParams?.page) || 1;
-  const totalPages = await fetchTotalMachineGroupsPages(query);
+  const totalPages = await fetchTotalMachinesPages(query);
 
   return (
     <div className="w-full">
       <div className="flex w-full items-center justify-between">
-        <h1 className={` text-2xl`}>Machine Groups</h1>
+        <h1 className={` text-2xl`}>Machines</h1>
       </div>
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-        <Search placeholder="Search machine groups..." />
-        <CreateMachineGroup />
+        <Search placeholder="Search machines..." />
+        <CreateMachine />
       </div>
       <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
         <Table query={query} currentPage={currentPage} />

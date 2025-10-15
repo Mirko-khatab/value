@@ -8,13 +8,13 @@ import {
   ChevronDoubleLeftIcon,
 } from "@heroicons/react/24/outline";
 
-interface MachineGalleryClientProps {
+interface ProductGalleryClientProps {
   galleries: Gallery[];
 }
 
-export default function MachineGalleryClient({
+export default function ProductGalleryClient({
   galleries,
-}: MachineGalleryClientProps) {
+}: ProductGalleryClientProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -62,7 +62,7 @@ export default function MachineGalleryClient({
     <div className="flex flex-col justify-center sm:items-end items-center gap-4 w-full md:w-1/2">
       <Image
         src={images[selectedImageIndex]}
-        alt="machine"
+        alt="product"
         width={500}
         height={500}
         className="rounded-md w-[400px] h-[271px] object-cover"
@@ -90,7 +90,7 @@ export default function MachineGalleryClient({
             >
               <Image
                 src={image}
-                alt={`machine ${index + 1}`}
+                alt={`product ${index + 1}`}
                 width={100}
                 height={100}
                 className={`rounded-md object-cover ${

@@ -1,8 +1,8 @@
 import { fetchMachineById, fetchMachineGalleries } from "@/app/lib/data";
 import { notFound } from "next/navigation";
-import Breadcrumbs from "@/app/ui/machines/breadcrumbs";
-import { UpdateMachine, DeleteMachine } from "@/app/ui/machines/buttons";
-import GalleryList from "@/app/ui/machines/gallery-list";
+import Breadcrumbs from "@/app/ui/products/breadcrumbs";
+import { UpdateMachine, DeleteMachine } from "@/app/ui/products/buttons";
+import GalleryList from "@/app/ui/products/gallery-list";
 import Image from "next/image";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {

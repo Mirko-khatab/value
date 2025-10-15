@@ -28,7 +28,7 @@ export default function Navigation() {
     { name: "Home", href: "/", key: 1 },
     { name: "About", href: "/about", key: 2 },
     { name: "Blog", href: "/blog", key: 3 },
-    { name: "Machine", href: "/machine", key: 4 },
+    { name: "Product", href: "/product", key: 4 },
   ];
 
   const handleNavigation = (

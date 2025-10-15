@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { UpdateMachine, DeleteMachine } from "@/app/ui/machines/buttons"; 
+import { UpdateMachine, DeleteMachine } from "@/app/ui/products/buttons";
 import { fetchFilteredMachines } from "@/app/lib/data";
 
 export default async function MachinesTable({
@@ -88,7 +88,7 @@ export default async function MachinesTable({
               </tr>
             </thead>
             <tbody className="bg-white">
-                {machines?.map((machine, index) => (
+              {machines?.map((machine, index) => (
                 <tr
                   key={`table-${machine.id}-${index}`}
                   className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
@@ -122,7 +122,7 @@ export default async function MachinesTable({
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
-                      {machine.gallery_order_index}
+                    {machine.gallery_order_index}
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {machine.gallery_order_index || "N/A"}

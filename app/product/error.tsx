@@ -23,7 +23,7 @@ export default function Error({
             Something went wrong!
           </h2>
           <p className="text-gray-600 mb-4">
-            {error.message || "An error occurred while loading machines."}
+            {error.message || "An error occurred while loading products."}
           </p>
           <button
             onClick={reset}

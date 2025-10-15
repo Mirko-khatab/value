@@ -38,11 +38,9 @@ export default function Form({
   // Load machine groups if not provided
   useEffect(() => {
     if (groups.length === 0) {
-      // Fetch machine groups from client-side API instead of direct server function
-      fetch("/api/machine-groups")
-        .then((res) => res.json())
-        .then(setGroups)
-        .catch(console.error);
+      // Machine groups functionality has been removed
+      // Products no longer need to be categorized by groups
+      setGroups([]);
     }
   }, [groups.length]);
 

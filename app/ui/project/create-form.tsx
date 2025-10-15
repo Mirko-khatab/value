@@ -140,7 +140,7 @@ export default function Form({
           <div className="mb-4">
             <label
               htmlFor="title_ku"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2  dark:text-gray-900  block text-sm font-medium"
             >
               Title (Kurdish) <span className="text-red-500">*</span>
             </label>
@@ -158,7 +158,7 @@ export default function Form({
           <div className="mb-4">
             <label
               htmlFor="title_ar"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2  dark:text-gray-900  block text-sm font-medium"
             >
               Title (Arabic) <span className="text-red-500">*</span>
             </label>
@@ -176,7 +176,7 @@ export default function Form({
           <div className="mb-4">
             <label
               htmlFor="title_en"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2  dark:text-gray-900  block text-sm font-medium"
             >
               Title (English) <span className="text-red-500">*</span>
             </label>
@@ -196,7 +196,7 @@ export default function Form({
         <div className="mb-4">
           <label
             htmlFor="description_ku"
-            className="mb-2 block text-sm font-medium"
+            className="mb-2  dark:text-gray-900  block text-sm font-medium"
           >
             Description (Kurdish) <span className="text-red-500">*</span>
           </label>
@@ -214,7 +214,7 @@ export default function Form({
         <div className="mb-4">
           <label
             htmlFor="description_ar"
-            className="mb-2 block text-sm font-medium"
+            className="mb-2  dark:text-gray-900  block text-sm font-medium"
           >
             Description (Arabic) <span className="text-red-500">*</span>
           </label>
@@ -232,7 +232,7 @@ export default function Form({
         <div className="mb-4">
           <label
             htmlFor="description_en"
-            className="mb-2 block text-sm font-medium"
+            className="mb-2  dark:text-gray-900  block text-sm font-medium"
           >
             Description (English) <span className="text-red-500">*</span>
           </label>
@@ -249,7 +249,10 @@ export default function Form({
 
         {/* Date Field */}
         <div className="mb-4">
-          <label htmlFor="date" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="date"
+            className="mb-2  dark:text-gray-900 block text-sm font-medium"
+          >
             Date <span className="text-red-500">*</span>
           </label>
           <input

@@ -1,5 +1,5 @@
-import Breadcrumbs from "@/app/ui/machines/breadcrumbs";
-import Form from "@/app/ui/machines/create-form";
+import Breadcrumbs from "@/app/ui/products/breadcrumbs";
+import Form from "@/app/ui/products/create-form";
 import { fetchMachineGroups } from "@/app/lib/data";
 
 // Force dynamic rendering to avoid database connection during build

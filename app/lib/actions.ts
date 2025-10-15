@@ -1064,7 +1064,17 @@ export async function deleteBlog(id: string) {
   revalidatePath("/dashboard/blogs");
 }
 
-//create Machine
+//create Product
+const CreateProduct = z.object({
+  title_ar: z.string().min(1, "Title is required"),
+  title_en: z.string().min(1, "Title is required"),
+  title_ku: z.string().min(1, "Title is required"),
+  description_ar: z.string().min(1, "Description is required"),
+  description_en: z.string().min(1, "Description is required"),
+  description_ku: z.string().min(1, "Description is required"),
+});
+
+// Legacy alias for backward compatibility
 const CreateMachine = z.object({
   machine_group_id: z.string().min(1, "Machine group is required"),
   title_ar: z.string().min(1, "Title is required"),
@@ -1074,6 +1084,120 @@ const CreateMachine = z.object({
   description_en: z.string().min(1, "Description is required"),
   description_ku: z.string().min(1, "Description is required"),
 });
+
+export async function createProduct(
+  prevState: ProductState,
+  formData: FormData
+) {
+  // Debug logging for development
+  console.log("Creating product with form data");
+  console.log(
+    "Form data entries:",
+    Array.from(formData.entries()).map(([key, value]) => [key, value])
+  );
+
+  const validatedFields = CreateProduct.safeParse({
+    title_ku: formData.get("title_ku"),
+    title_ar: formData.get("title_ar"),
+    title_en: formData.get("title_en"),
+    description_ku: formData.get("description_ku"),
+    description_ar: formData.get("description_ar"),
+    description_en: formData.get("description_en"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Create Product.",
+    };
+  }
+
+  const {
+    title_ku,
+    title_ar,
+    title_en,
+    description_ku,
+    description_ar,
+    description_en,
+  } = validatedFields.data;
+
+  const connection = await getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Insert product record
+    const [result] = await connection.execute(
+      "INSERT INTO products (title_ku, title_ar, title_en, description_ku, description_ar, description_en) VALUES (?, ?, ?, ?, ?, ?)",
+      [
+        title_ku,
+        title_ar,
+        title_en,
+        description_ku,
+        description_ar,
+        description_en,
+      ]
+    );
+
+    const productId = (result as mysql.ResultSetHeader).insertId;
+
+    // Handle gallery images
+    const galleryEntries = Array.from(formData.entries()).filter(([key]) =>
+      key.startsWith("gallery_")
+    );
+
+    if (galleryEntries.length > 0) {
+      const galleryImages: {
+        url: string;
+        alt: string;
+        order: number;
+      }[] = [];
+
+      // Group gallery data by index
+      const galleryData: { [key: number]: any } = {};
+      galleryEntries.forEach(([key, value]) => {
+        const match = key.match(/gallery_(\w+)_(\d+)/);
+        if (match) {
+          const [, field, index] = match;
+          const idx = parseInt(index);
+          if (!galleryData[idx]) galleryData[idx] = {};
+          galleryData[idx][field] = value;
+        }
+      });
+
+      // Convert to array format
+      Object.keys(galleryData).forEach((key) => {
+        const data = galleryData[parseInt(key)];
+        if (data.url) {
+          galleryImages.push({
+            url: data.url,
+            alt: data.alt || "",
+            order: parseInt(data.order) || 1,
+          });
+        }
+      });
+
+      // Insert gallery images
+      for (const image of galleryImages) {
+        await connection.execute(
+          "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
+          [productId, ParentType.Product, image.url, image.alt, image.order]
+        );
+      }
+    }
+
+    await connection.commit();
+    console.log("Product created successfully with ID:", productId);
+  } catch (error) {
+    await connection.rollback();
+    console.error("Database Error: Failed to Create Product.", error);
+    throw new Error("Failed to create product");
+  } finally {
+    await connection.end();
+  }
+  revalidatePath("/dashboard/products");
+  redirect("/dashboard/products");
+}
 
 export async function createMachine(
   prevState: MachineState,
@@ -1254,9 +1378,8 @@ export async function createMachine(
   redirect("/dashboard/machines");
 }
 
-export type MachineState = {
+export type ProductState = {
   errors?: {
-    machine_group_id?: string[];
     title_ku?: string[];
     title_ar?: string[];
     title_en?: string[];
@@ -1266,6 +1389,150 @@ export type MachineState = {
   };
   message?: string | null;
 };
+
+// Legacy alias for backward compatibility
+export type MachineState = ProductState & {
+  errors?: ProductState["errors"] & {
+    machine_group_id?: string[];
+  };
+};
+
+export async function updateProduct(id: string, formData: FormData) {
+  console.log("updateProduct called with id:", id);
+
+  const validatedFields = CreateProduct.safeParse({
+    title_ku: formData.get("title_ku"),
+    title_ar: formData.get("title_ar"),
+    title_en: formData.get("title_en"),
+    description_ku: formData.get("description_ku"),
+    description_ar: formData.get("description_ar"),
+    description_en: formData.get("description_en"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Update Product.",
+    };
+  }
+
+  const {
+    title_ku,
+    title_ar,
+    title_en,
+    description_ku,
+    description_ar,
+    description_en,
+  } = validatedFields.data;
+
+  const connection = await getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    // Update product record
+    await connection.execute(
+      "UPDATE products SET title_ku = ?, title_ar = ?, title_en = ?, description_ku = ?, description_ar = ?, description_en = ? WHERE id = ?",
+      [
+        title_ku,
+        title_ar,
+        title_en,
+        description_ku,
+        description_ar,
+        description_en,
+        id,
+      ]
+    );
+
+    // Handle gallery images - delete existing ones first
+    await connection.execute(
+      "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
+      [id, ParentType.Product]
+    );
+
+    // Handle new gallery images
+    const galleryEntries = Array.from(formData.entries()).filter(([key]) =>
+      key.startsWith("gallery_")
+    );
+
+    if (galleryEntries.length > 0) {
+      const galleryImages: {
+        url: string;
+        alt: string;
+        order: number;
+      }[] = [];
+
+      // Group gallery data by index
+      const galleryData: { [key: number]: any } = {};
+      galleryEntries.forEach(([key, value]) => {
+        const match = key.match(/gallery_(\w+)_(\d+)/);
+        if (match) {
+          const [, field, index] = match;
+          const idx = parseInt(index);
+          if (!galleryData[idx]) galleryData[idx] = {};
+          galleryData[idx][field] = value;
+        }
+      });
+
+      // Convert to array format
+      Object.keys(galleryData).forEach((key) => {
+        const data = galleryData[parseInt(key)];
+        if (data.url) {
+          galleryImages.push({
+            url: data.url,
+            alt: data.alt || "",
+            order: parseInt(data.order) || 1,
+          });
+        }
+      });
+
+      // Insert new gallery images
+      for (const image of galleryImages) {
+        await connection.execute(
+          "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
+          [id, ParentType.Product, image.url, image.alt, image.order]
+        );
+      }
+    }
+
+    await connection.commit();
+    console.log("Product updated successfully");
+  } catch (error) {
+    await connection.rollback();
+    console.error("Database Error: Failed to Update Product.", error);
+    throw new Error("Failed to update product");
+  } finally {
+    await connection.end();
+  }
+  revalidatePath("/dashboard/products");
+  redirect("/dashboard/products");
+}
+
+export async function deleteProduct(id: string) {
+  const connection = await getConnection();
+  try {
+    await connection.beginTransaction();
+
+    // Delete gallery images first
+    await connection.execute(
+      "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
+      [id, ParentType.Product]
+    );
+
+    // Delete product
+    await connection.execute("DELETE FROM products WHERE id = ?", [id]);
+
+    await connection.commit();
+    console.log("Product deleted successfully");
+  } catch (error) {
+    await connection.rollback();
+    console.error("Database Error: Failed to Delete Product.", error);
+    throw new Error("Failed to delete product");
+  } finally {
+    await connection.end();
+  }
+  revalidatePath("/dashboard/products");
+}
 
 export async function updateMachine(id: string, formData: FormData) {
   console.log("updateMachine called with id:", id);
@@ -1482,161 +1749,6 @@ export async function deleteMachine(id: string) {
     throw new Error("Failed to delete machine");
   }
   revalidatePath("/dashboard/machines");
-}
-
-// Machine Groups CRUD Operations
-const CreateMachineGroup = z.object({
-  title_ar: z.string().min(1, "Arabic title is required"),
-  title_en: z.string().min(1, "English title is required"),
-  title_ku: z.string().min(1, "Kurdish title is required"),
-});
-
-export type MachineGroupState = {
-  errors?: {
-    title_ar?: string[];
-    title_en?: string[];
-    title_ku?: string[];
-  };
-  message?: string | null;
-};
-
-export async function createMachineGroup(
-  prevState: MachineGroupState,
-  formData: FormData
-) {
-  const validatedFields = CreateMachineGroup.safeParse({
-    title_ar: formData.get("title_ar"),
-    title_en: formData.get("title_en"),
-    title_ku: formData.get("title_ku"),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Create Machine Group.",
-    };
-  }
-
-  const { title_ar, title_en, title_ku } = validatedFields.data;
-
-  const connection = await getConnection();
-  try {
-    await connection.beginTransaction();
-
-    // Check if machine group name already exists
-    const [existingGroup] = (await connection.execute(
-      "SELECT id FROM machine_groups WHERE title_ar = ? OR title_en = ? OR title_ku = ?",
-      [title_ar, title_en, title_ku]
-    )) as any[];
-
-    if (existingGroup.length > 0) {
-      return {
-        errors: {
-          title_en: ["Machine group with this name already exists"],
-        },
-        message: "Machine group name must be unique.",
-      };
-    }
-
-    // Insert machine group record
-    await connection.execute(
-      "INSERT INTO machine_groups (title_ar, title_en, title_ku) VALUES (?, ?, ?)",
-      [title_ar, title_en, title_ku]
-    );
-
-    await connection.commit();
-  } catch (error) {
-    console.error("Database Error: Failed to Create Machine Group.", error);
-    return {
-      errors: {},
-      message: "Database Error: Failed to create machine group.",
-    };
-  }
-  revalidatePath("/dashboard/machine-groups");
-  redirect("/dashboard/machine-groups");
-}
-
-export async function updateMachineGroup(id: string, formData: FormData) {
-  const validatedFields = CreateMachineGroup.safeParse({
-    title_ar: formData.get("title_ar"),
-    title_en: formData.get("title_en"),
-    title_ku: formData.get("title_ku"),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Update Machine Group.",
-    };
-  }
-
-  const { title_ar, title_en, title_ku } = validatedFields.data;
-
-  const connection = await getConnection();
-  try {
-    await connection.beginTransaction();
-
-    // Check if another machine group has the same name (excluding current one)
-    const [existingGroup] = (await connection.execute(
-      "SELECT id FROM machine_groups WHERE (title_ar = ? OR title_en = ? OR title_ku = ?) AND id != ?",
-      [title_ar, title_en, title_ku, id]
-    )) as any[];
-
-    if (existingGroup.length > 0) {
-      return {
-        errors: {
-          title_en: ["Machine group with this name already exists"],
-        },
-        message: "Machine group name must be unique.",
-      };
-    }
-
-    // Update machine group record
-    await connection.execute(
-      "UPDATE machine_groups SET title_ar = ?, title_en = ?, title_ku = ? WHERE id = ?",
-      [title_ar, title_en, title_ku, id]
-    );
-
-    await connection.commit();
-  } catch (error) {
-    console.error("Database Error: Failed to Update Machine Group.", error);
-    throw new Error("Failed to update machine group");
-  }
-  revalidatePath("/dashboard/machine-groups");
-  // Remove redirect since this is called from client component
-}
-
-export async function deleteMachineGroup(id: string) {
-  try {
-    const connection = await getConnection();
-    await connection.beginTransaction();
-
-    console.log("Deleting machine group and associated machines for ID:", id);
-
-    // First, check if there are any machines in this group
-    const [machines] = (await connection.execute(
-      "SELECT COUNT(*) as count FROM machines WHERE machine_group_id = ?",
-      [id]
-    )) as any[];
-
-    if (machines[0].count > 0) {
-      throw new Error(
-        `Cannot delete machine group. It contains ${machines[0].count} machine(s). Please move or delete the machines first.`
-      );
-    }
-
-    // Delete the machine group record
-    await connection.execute("DELETE FROM machine_groups WHERE id = ?", [id]);
-
-    await connection.commit();
-    console.log("Machine group deleted successfully");
-  } catch (error) {
-    console.error("Database Error: Failed to Delete Machine Group.", error);
-    throw new Error(
-      error instanceof Error ? error.message : "Failed to delete machine group"
-    );
-  }
-  revalidatePath("/dashboard/machine-groups");
 }
 
 // Quote CRUD Operations
@@ -2543,7 +2655,11 @@ export async function createAudio(prevState: AudioState, formData: FormData) {
   redirect("/dashboard/audios");
 }
 
-export async function updateAudio(id: string, formData: FormData) {
+export async function updateAudio(
+  id: string,
+  prevState: AudioState,
+  formData: FormData
+) {
   const validatedFields = CreateAudio.safeParse({
     title_ku: formData.get("title_ku"),
     title_en: formData.get("title_en"),

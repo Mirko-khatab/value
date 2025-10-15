@@ -62,7 +62,7 @@ export default async function Page(props: {
             <input
               type="text"
               name="search"
-              placeholder="Search machines..."
+              placeholder="Search products..."
               defaultValue={searchParams.search || ""}
               className="w-full rounded-md p-2 border transition-all duration-300 focus:ring-2 focus:ring-primary focus:border-transparent"
             />
@@ -70,19 +70,19 @@ export default async function Page(props: {
         </div>
         <div className="flex flex-row gap-4 scrollbar-hide overflow-x-auto">
           <Link
-            href="/machine"
+            href="/product"
             className={`px-4 py-2 rounded-md transition-all duration-300 enhanced-hover ${
               !searchParams.groupId
                 ? "bg-blue-500 text-white shadow-lg"
                 : "bg-gray-200 text-gray-800 hover:bg-gray-300"
             }`}
           >
-            All Machines
+            All Products
           </Link>
           {machineGroups.map((group, groupIndex) => (
             <Link
               key={group.id}
-              href={`/machine?groupId=${group.id}`}
+              href={`/product?groupId=${group.id}`}
               className={`px-4 py-2 rounded-md transition-all duration-300 enhanced-hover animation-delay-${Math.min(
                 groupIndex * 100,
                 500
@@ -105,7 +105,7 @@ export default async function Page(props: {
                 columnIndex * Math.ceil(filteredMachines.length / 2) +
                 machineIndex;
               return (
-                <Link key={machine.id} href={`/machine/${machine.id}`}>
+                <Link key={machine.id} href={`/product/${machine.id}`}>
                   <CustomeCard
                     title={
                       machine.title_en || machine.title_ar || machine.title_ku

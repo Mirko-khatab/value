@@ -531,6 +531,148 @@ export async function fetchBlogGalleries(blogId: string) {
 }
 
 // Machine data functions
+export async function fetchProducts() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(`
+      SELECT 
+        p.*,
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM products p
+      ORDER BY p.title_en
+    `);
+    return rows as Product[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch products.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchProductById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT 
+        p.*,
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+       FROM products p 
+       WHERE p.id = ?`,
+      [id]
+    );
+    return rows as Product[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch product.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredProducts(
+  query: string,
+  currentPage: number
+) {
+  let connection;
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT 
+        p.*,
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+       FROM products p
+       WHERE 
+         p.title_ku LIKE ? OR
+         p.title_ar LIKE ? OR
+         p.title_en LIKE ? OR
+         p.description_ku LIKE ? OR
+         p.description_ar LIKE ? OR
+         p.description_en LIKE ?
+       ORDER BY p.title_en
+       LIMIT ? OFFSET ?`,
+      [
+        `%${query}%`,
+        `%${query}%`,
+        `%${query}%`,
+        `%${query}%`,
+        `%${query}%`,
+        `%${query}%`,
+        ITEMS_PER_PAGE,
+        offset,
+      ]
+    );
+    return rows as Product[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch filtered products.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalProductsPages(query: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT COUNT(*) as count
+       FROM products p
+       WHERE 
+         p.title_ku LIKE ? OR
+         p.title_ar LIKE ? OR
+         p.title_en LIKE ? OR
+         p.description_ku LIKE ? OR
+         p.description_ar LIKE ? OR
+         p.description_en LIKE ?`,
+      [
+        `%${query}%`,
+        `%${query}%`,
+        `%${query}%`,
+        `%${query}%`,
+        `%${query}%`,
+        `%${query}%`,
+      ]
+    );
+    const totalPages = Math.ceil((rows as any)[0].count / ITEMS_PER_PAGE);
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total number of products.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchProductGalleries(productId: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT * FROM galleries 
+       WHERE parent_id = ? AND parent_type = ? 
+       ORDER BY order_index ASC`,
+      [productId, ParentType.Product]
+    );
+    return rows as Gallery[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch product galleries.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
 export async function fetchMachines() {
   let connection;
   try {
