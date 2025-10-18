@@ -68,7 +68,7 @@ export default function Form({ team, mode }: FormProps) {
         setHasImageChanged(true);
         setDeletionError(null); // Reset error state when starting new upload
 
-        // Immediately delete the old image from S3 when new image is uploaded
+        // Immediately delete the old image from cloud storage when new image is uploaded
         try {
           setIsDeletingOldImage(true);
           setDeletionError(null);
@@ -87,7 +87,10 @@ export default function Form({ team, mode }: FormProps) {
             setOldImageDeleted(true);
             setDeletionError(null); // Clear any previous errors
           } else {
-            console.error("Failed to delete old image from S3:", result);
+            console.error(
+              "Failed to delete old image from cloud storage:",
+              result
+            );
             setOldImageDeleted(false);
             setDeletionError(result.error || "Failed to delete old image");
           }

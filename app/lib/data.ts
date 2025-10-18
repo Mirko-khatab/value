@@ -5,7 +5,6 @@ import {
   Revenue,
   Blog,
   Machine,
-  MachineGroup,
   Quote,
   SocialMedia,
   Property,
@@ -600,7 +599,7 @@ export async function fetchFilteredProducts(
          p.description_ar LIKE ? OR
          p.description_en LIKE ?
        ORDER BY p.title_en
-       LIMIT ? OFFSET ?`,
+       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
       [
         `%${query}%`,
         `%${query}%`,
@@ -608,8 +607,6 @@ export async function fetchFilteredProducts(
         `%${query}%`,
         `%${query}%`,
         `%${query}%`,
-        ITEMS_PER_PAGE,
-        offset,
       ]
     );
     return rows as Product[];
@@ -673,247 +670,27 @@ export async function fetchProductGalleries(productId: string) {
   }
 }
 
-export async function fetchMachines() {
-  let connection;
-  try {
-    connection = await getConnection();
-    const [rows] = await connection.execute(`
-      SELECT 
-        m.*,
-        (SELECT image_url FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
-        (SELECT alt_text FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
-        (SELECT order_index FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
-      FROM machines m
-      ORDER BY m.machine_group_id, m.title_en
-    `);
-    return rows as Machine[];
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch machines.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-export async function fetchMachineById(id: string) {
-  let connection;
-  try {
-    connection = await getConnection();
-    const [rows] = await connection.execute(
-      `SELECT machines.*, 
-        (SELECT image_url FROM galleries WHERE parent_id = machines.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
-        (SELECT alt_text FROM galleries WHERE parent_id = machines.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
-        (SELECT order_index FROM galleries WHERE parent_id = machines.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
-      FROM machines 
-      WHERE machines.id = ?`,
-      [id]
-    );
-    return rows as Machine[];
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch machine.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-export async function fetchFilteredMachines(
-  query: string,
-  currentPage: number
-) {
-  let connection;
-  try {
-    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-    connection = await getConnection();
-    const [rows] = await connection.execute(
-      `
-      SELECT 
-        m.*,
-        (SELECT image_url FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
-        (SELECT alt_text FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
-        (SELECT order_index FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
-      FROM machines m
-      WHERE m.title_ku LIKE ? OR m.title_ar LIKE ? OR m.title_en LIKE ?
-      ORDER BY m.machine_group_id, m.title_en
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `,
-      [`%${query}%`, `%${query}%`, `%${query}%`]
-    );
-    return rows as Machine[];
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch machines.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-export async function fetchTotalMachinesPages(query: string) {
-  let connection;
-  try {
-    connection = await getConnection();
-    const [rows] = await connection.execute(
-      `SELECT COUNT(*) as count
-    FROM machines
-    WHERE
-      title_ku LIKE ? OR
-      title_ar LIKE ? OR
-      title_en LIKE ?
-  `,
-      [`%${query}%`, `%${query}%`, `%${query}%`]
-    );
-
-    const totalPages = Math.ceil(
-      Number((rows as { count: number }[])[0].count) / ITEMS_PER_PAGE
-    );
-    return totalPages;
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch total number of machines.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-export async function fetchMachineGalleries(machineId: string) {
-  let connection;
-  try {
-    connection = await getConnection();
-    const [rows] = await connection.execute(
-      "SELECT * FROM galleries WHERE parent_id = ? AND parent_type = ? ORDER BY CAST(order_index AS UNSIGNED) ASC",
-      [machineId, ParentType.Machine.toString()]
-    );
-    return rows as Gallery[];
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch machine galleries.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-export async function fetchMachinesByGroup(groupId: string) {
+export async function fetchProductsByGroup(groupId: string) {
   let connection;
   try {
     connection = await getConnection();
     const [rows] = await connection.execute(
       `
       SELECT 
-        m.*,
-        (SELECT image_url FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
-        (SELECT alt_text FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
-        (SELECT order_index FROM galleries WHERE parent_id = m.id AND parent_type = '${ParentType.Machine}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
-      FROM machines m
-      WHERE m.machine_group_id = ?
-      ORDER BY m.title_en
+        p.*,
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM products p
+      WHERE p.product_group_id = ?
+      ORDER BY p.title_en
     `,
       [groupId]
     );
-    return rows as Machine[];
+    return rows as Product[];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch machines by group.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-// Machine Groups data functions
-export async function fetchMachineGroups() {
-  let connection;
-  try {
-    connection = await getConnection();
-    const [rows] = await connection.execute(`
-      SELECT id, title_ku, title_ar, title_en 
-      FROM machine_groups 
-      ORDER BY title_en ASC
-    `);
-    return rows as MachineGroup[];
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch machine groups.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-export async function fetchMachineGroupById(id: string) {
-  let connection;
-  try {
-    connection = await getConnection();
-    const [rows] = await connection.execute(
-      `
-      SELECT id, title_ku, title_ar, title_en 
-      FROM machine_groups 
-      WHERE id = ?
-    `,
-      [id]
-    );
-    return rows as MachineGroup[];
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch machine group.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-export async function fetchFilteredMachineGroups(
-  query: string,
-  currentPage: number
-) {
-  const ITEMS_PER_PAGE = 6;
-  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-  let connection;
-
-  try {
-    connection = await getConnection();
-    const [rows] = await connection.execute(
-      `
-      SELECT 
-        id, title_ku, title_ar, title_en,
-        (SELECT COUNT(*) FROM machines WHERE machine_group_id = machine_groups.id) as machine_count
-      FROM machine_groups
-      WHERE
-        title_ku LIKE ? OR
-        title_ar LIKE ? OR
-        title_en LIKE ?
-      ORDER BY title_en ASC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `,
-      [`%${query}%`, `%${query}%`, `%${query}%`]
-    );
-    return rows as (MachineGroup & { machine_count: number })[];
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch machine groups.");
-  } finally {
-    if (connection) await connection.end();
-  }
-}
-
-export async function fetchTotalMachineGroupsPages(query: string) {
-  const ITEMS_PER_PAGE = 6;
-  let connection;
-  try {
-    connection = await getConnection();
-    const [rows] = await connection.execute(
-      `SELECT COUNT(*) as count
-    FROM machine_groups
-    WHERE
-      title_ku LIKE ? OR
-      title_ar LIKE ? OR
-      title_en LIKE ?
-  `,
-      [`%${query}%`, `%${query}%`, `%${query}%`]
-    );
-    const totalPages = Math.ceil(
-      Number((rows as any)[0].count) / ITEMS_PER_PAGE
-    );
-    return totalPages;
-  } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch total number of machine groups.");
+    throw new Error("Failed to fetch products by group.");
   } finally {
     if (connection) await connection.end();
   }

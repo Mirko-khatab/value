@@ -1,34 +1,22 @@
 import Breadcrumbs from "@/app/ui/products/breadcrumbs";
 import Form from "@/app/ui/products/create-form";
-import { fetchMachineGroups } from "@/app/lib/data";
-
 // Force dynamic rendering to avoid database connection during build
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const machineGroups = await fetchMachineGroups();
-
-  // Convert to plain objects to ensure proper serialization
-  const serializedMachineGroups = machineGroups.map((group) => ({
-    id: group.id,
-    title_ku: group.title_ku,
-    title_ar: group.title_ar,
-    title_en: group.title_en,
-  }));
-
   return (
     <main>
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Machines", href: "/dashboard/machines" },
+          { label: "Products", href: "/dashboard/products" },
           {
-            label: "Create Machine",
-            href: "/dashboard/machines/create",
+            label: "Create Product",
+            href: "/dashboard/products/create",
             active: true,
           },
         ]}
       />
-      <Form mode="create" machineGroups={serializedMachineGroups} />
+      <Form mode="create" />
     </main>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getSignedUploadUrl } from "@/app/lib/s3-upload";
+import { uploadToCloud } from "@/app/lib/cloud-upload-client";
 import { CloudArrowUpIcon } from "@heroicons/react/24/outline";
 
 interface AudioUploadProps {
@@ -39,41 +39,14 @@ export default function AudioUpload({
     setProgress(0);
 
     try {
-      // Get signed URL
-      const { signedUrl, publicUrl } = await getSignedUploadUrl(
-        file.name,
-        file.type
-      );
-
-      // Upload to S3
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = (e.loaded / e.total) * 100;
-          setProgress(percentComplete);
-        }
+      // Upload to cloud storage
+      const response = await uploadToCloud(file, (progress) => {
+        setProgress(progress);
       });
 
-      xhr.addEventListener("load", () => {
-        if (xhr.status === 200) {
-          onUploadComplete(publicUrl);
-          setUploading(false);
-          setProgress(100);
-        } else {
-          setError("Upload failed. Please try again.");
-          setUploading(false);
-        }
-      });
-
-      xhr.addEventListener("error", () => {
-        setError("Upload failed. Please try again.");
-        setUploading(false);
-      });
-
-      xhr.open("PUT", signedUrl);
-      xhr.setRequestHeader("Content-Type", file.type);
-      xhr.send(file);
+      onUploadComplete(response.publicUrl);
+      setUploading(false);
+      setProgress(100);
     } catch (err) {
       setError("Failed to upload audio. Please try again.");
       setUploading(false);

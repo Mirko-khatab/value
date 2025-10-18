@@ -92,63 +92,6 @@ async function seedRevenue(connection: mysql.Connection) {
   }
 }
 
-async function seedMachineGroups(connection: mysql.Connection) {
-  await connection.execute(`
-    CREATE TABLE IF NOT EXISTS machine_groups (
-      id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
-      title_ku VARCHAR(255) NOT NULL,
-      title_ar VARCHAR(255) NOT NULL,
-      title_en VARCHAR(255) NOT NULL
-    )
-  `);
-
-  // Insert sample machine groups
-  const sampleGroups = [
-    {
-      title_ku: "ئامێرەکانی کشتوکاڵ",
-      title_ar: "آلات الزراعة",
-      title_en: "Agricultural Machinery",
-    },
-    {
-      title_ku: "ئامێرەکانی بیناسازی",
-      title_ar: "آلات البناء",
-      title_en: "Construction Equipment",
-    },
-    {
-      title_ku: "ئامێرەکانی پیشەسازی",
-      title_ar: "آلات الصناعة",
-      title_en: "Industrial Machinery",
-    },
-  ];
-
-  for (const group of sampleGroups) {
-    await connection.execute(
-      `INSERT INTO machine_groups (title_ku, title_ar, title_en) 
-       VALUES (?, ?, ?) 
-       ON DUPLICATE KEY UPDATE title_ku=VALUES(title_ku)`,
-      [group.title_ku, group.title_ar, group.title_en]
-    );
-  }
-}
-
-async function seedMachines(connection: mysql.Connection) {
-  await connection.execute(`
-    CREATE TABLE IF NOT EXISTS machines (
-      id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
-      machine_group_id VARCHAR(36) NOT NULL,
-      title_ar VARCHAR(255) NOT NULL,
-      title_en VARCHAR(255) NOT NULL,
-      title_ku VARCHAR(255) NOT NULL,
-      description_ar TEXT NOT NULL,
-      description_en TEXT NOT NULL,
-      description_ku TEXT NOT NULL,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      FOREIGN KEY (machine_group_id) REFERENCES machine_groups(id) ON DELETE CASCADE
-    )
-  `);
-}
-
 async function seedGalleries(connection: mysql.Connection) {
   await connection.execute(`
     CREATE TABLE IF NOT EXISTS galleries (

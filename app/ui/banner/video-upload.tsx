@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef } from "react";
-import { getSignedUploadUrl } from "@/app/lib/s3-upload";
+import { uploadToCloud } from "@/app/lib/cloud-upload-client";
 
 interface VideoUploadProps {
   onUploadComplete: (videoUrl: string) => void;
@@ -19,39 +19,6 @@ export default function VideoUpload({
     initialVideoUrl || null
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const uploadToS3 = async (
-    file: File,
-    signedUrl: string,
-    publicUrl: string
-  ): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-          const percentComplete = Math.round((e.loaded / e.total) * 100);
-          setProgress(percentComplete);
-        }
-      });
-
-      xhr.addEventListener("load", () => {
-        if (xhr.status === 200) {
-          resolve();
-        } else {
-          reject(new Error(`Upload failed with status ${xhr.status}`));
-        }
-      });
-
-      xhr.addEventListener("error", () => {
-        reject(new Error("Upload failed"));
-      });
-
-      xhr.open("PUT", signedUrl);
-      xhr.setRequestHeader("Content-Type", file.type);
-      xhr.send(file);
-    });
-  };
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -76,24 +43,14 @@ export default function VideoUpload({
       setUploading(true);
       setProgress(0);
 
-      // Generate unique filename
-      const timestamp = Date.now();
-      const randomString = Math.random().toString(36).substring(2, 15);
-      const extension = file.name.split(".").pop();
-      const fileName = `banner-video-${timestamp}-${randomString}.${extension}`;
-
-      // Get signed URL from server
-      const { signedUrl, publicUrl } = await getSignedUploadUrl(
-        fileName,
-        file.type
-      );
-
-      // Upload to S3
-      await uploadToS3(file, signedUrl, publicUrl);
+      // Upload to cloud storage
+      const response = await uploadToCloud(file, (progress) => {
+        setProgress(progress);
+      });
 
       // Update state and notify parent
-      setVideoUrl(publicUrl);
-      onUploadComplete(publicUrl);
+      setVideoUrl(response.publicUrl);
+      onUploadComplete(response.publicUrl);
       onUploadError(""); // Clear any previous errors
     } catch (error) {
       console.error("Video upload error:", error);

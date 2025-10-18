@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { s3Client, S3_BUCKET_NAME } from "@/app/lib/aws-config";
+
+const CLOUD_API_BASE =
+  process.env.CLOUD_API_BASE_URL || "https://cloud.mirkokawa.dev/api";
+const CLOUD_API_KEY_READ = process.env.CLOUD_API_KEY_READ || "";
 
 export async function GET(
   request: NextRequest,
@@ -9,30 +11,37 @@ export async function GET(
   try {
     const { filename } = await params;
 
-    // Construct the S3 key
-    const key = `customers/${filename}`;
+    // For legacy support, try to fetch from cloud storage
+    // This endpoint is used for backwards compatibility with old image URLs
+    // Format: /api/image/customers/filename.jpg
 
-    // Get the object from S3
-    const command = new GetObjectCommand({
-      Bucket: S3_BUCKET_NAME,
-      Key: key,
-    });
+    // Extract just the filename without path
+    const cleanFilename = filename.split("/").pop() || filename;
 
-    const response = await s3Client.send(command);
+    // Try to fetch from cloud storage using the public API
+    // Note: This assumes the file exists in your cloud storage
+    // You may need to implement a mapping from old filenames to new file IDs
 
-    if (!response.Body) {
+    const publicUrl = `${CLOUD_API_BASE}/public/${CLOUD_API_KEY_READ}/${cleanFilename}`;
+    const response = await fetch(publicUrl);
+
+    if (!response.ok) {
+      // If not found in cloud storage, return 404
       return new NextResponse("Image not found", { status: 404 });
     }
 
-    // Convert the stream to buffer
-    const buffer = await streamToBuffer(response.Body as ReadableStream);
+    // Get the image data
+    const buffer = await response.arrayBuffer();
+
+    // Forward the content type from cloud storage
+    const contentType = response.headers.get("content-type") || "image/jpeg";
 
     // Return the image with proper headers
     return new NextResponse(buffer, {
       status: 200,
       headers: {
-        "Content-Type": response.ContentType || "image/jpeg",
-        "Content-Length": buffer.length.toString(),
+        "Content-Type": contentType,
+        "Content-Length": buffer.byteLength.toString(),
         "Cache-Control": "public, max-age=31536000, immutable", // Cache for 1 year
       },
     });
@@ -40,22 +49,4 @@ export async function GET(
     console.error("Error serving image:", error);
     return new NextResponse("Internal Server Error", { status: 500 });
   }
-}
-
-// Helper function to convert stream to buffer
-async function streamToBuffer(stream: ReadableStream): Promise<Buffer> {
-  const chunks: Uint8Array[] = [];
-  const reader = stream.getReader();
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      chunks.push(value);
-    }
-  } finally {
-    reader.releaseLock();
-  }
-
-  return Buffer.concat(chunks);
 }

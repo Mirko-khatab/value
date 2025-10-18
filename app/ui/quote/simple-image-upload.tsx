@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import imageCompression from "browser-image-compression";
+import { uploadToCloud } from "@/app/lib/cloud-upload-client";
 
 interface SimpleImageUploadProps {
   onUploadComplete: (imageUrl: string) => void;
@@ -57,12 +58,10 @@ export default function SimpleImageUpload({
       // Compress image
       const compressedFile = await compressImage(file);
 
-      // For now, we'll use a simple placeholder URL
-      // In production, this would be the actual S3 URL
-      const timestamp = Date.now();
-      const placeholderUrl = `/customers/uploaded-${timestamp}.jpg`;
+      // Upload to cloud storage
+      const response = await uploadToCloud(compressedFile);
 
-      onUploadComplete(placeholderUrl);
+      onUploadComplete(response.publicUrl);
     } catch (error) {
       console.error("Upload error:", error);
       onUploadError(error instanceof Error ? error.message : "Upload failed");
@@ -130,7 +129,7 @@ export default function SimpleImageUpload({
                 PNG, JPG, GIF up to 10MB
               </p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                (Placeholder URL - Ready for AWS S3)
+                (Placeholder URL - Ready for Cloud Storage)
               </p>
             </div>
           )}

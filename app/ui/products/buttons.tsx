@@ -1,11 +1,11 @@
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { deleteMachine } from "@/app/lib/actions";
+import { deleteProduct } from "@/app/lib/actions";
 
 export function CreateMachine() {
   return (
     <Link
-      href="/dashboard/machines/create"
+      href="/dashboard/products/create"
       className="flex h-10 items-center rounded-lg bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
     >
       <span className="hidden md:block">Create Machine</span>{" "}
@@ -17,26 +17,26 @@ export function CreateMachine() {
 export function UpdateMachine({ id }: { id: string }) {
   return (
     <Link
-      href={`/dashboard/machines/${id}/edit`}
-      className="rounded-md border p-2 hover:bg-gray-100"
+      href={`/dashboard/products/${id}/edit`}
+      className="rounded-md border p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
     >
-      <PencilIcon className="w-5" />
+      <PencilIcon className="w-5 text-blue-500 dark:text-blue-400" />
     </Link>
   );
 }
 
 export function DeleteMachine({ id }: { id: string }) {
-  const deleteMachineWithId = deleteMachine.bind(null, id);
+  const deleteProductWithId = deleteProduct.bind(null, id);
 
   return (
     <>
-      <form action={deleteMachineWithId}>
+      <form action={deleteProductWithId}>
         <button
           type="submit"
-          className="rounded-md border p-2 hover:bg-gray-100"
+          className="rounded-md border p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
         >
           <span className="sr-only">Delete</span>
-          <TrashIcon className="w-5" />
+          <TrashIcon className="w-5 text-red-500 dark:text-red-400" />
         </button>
       </form>
     </>

@@ -1,45 +1,77 @@
 // Utility functions for handling image URLs
 
-// CloudFront CDN domain
-const CLOUDFRONT_DOMAIN = "d27wu6gy6te9ow.cloudfront.net";
-
 /**
- * Converts a short image URL to the full CloudFront CDN URL
- * @param shortUrl - Short URL like "/api/image/filename.jpg"
- * @returns Full CloudFront CDN URL
+ * Extracts file ID from cloud storage URL
+ * @param url - Cloud storage URL like "/api/cloud/files/{uuid}"
+ * @returns File UUID
  */
-export function getFullS3Url(shortUrl: string): string {
-  if (shortUrl.startsWith("/api/image/")) {
-    const filename = shortUrl.replace("/api/image/", "");
-    return `https://${CLOUDFRONT_DOMAIN}/customers/${filename}`;
+export function extractFileId(url: string): string | null {
+  if (!url) return null;
+
+  // If it's already just a UUID
+  const uuidMatch = url.match(
+    /^([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})$/i
+  );
+  if (uuidMatch) {
+    return uuidMatch[1];
   }
-  return shortUrl; // Return as-is if not a short URL
+
+  // Extract from URL patterns
+  const urlMatch = url.match(
+    /\/(?:cloud\/)?files\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})/i
+  );
+  if (urlMatch) {
+    return urlMatch[1];
+  }
+
+  // Legacy URL support for migration
+  if (url.includes("cloudfront.net") || url.includes("customers/")) {
+    // This is a legacy URL, return as-is for now
+    // These should be migrated to cloud storage
+    return url;
+  }
+
+  return null;
 }
 
 /**
- * Converts a full CloudFront CDN URL to a short URL
- * @param fullUrl - Full CloudFront CDN URL
- * @returns Short URL like "/api/image/filename.jpg"
+ * Converts a file ID to the proxy URL
+ * @param fileId - File UUID
+ * @returns Proxy URL like "/api/cloud/files/{uuid}"
+ */
+export function getProxyUrl(fileId: string): string {
+  // If it's already a full URL, return as-is
+  if (fileId.startsWith("http") || fileId.startsWith("/")) {
+    return fileId;
+  }
+
+  // Convert UUID to proxy URL
+  return `/api/cloud/files/${fileId}`;
+}
+
+/**
+ * Legacy function for backwards compatibility
+ * @deprecated Use getProxyUrl instead
+ */
+export function getFullS3Url(url: string): string {
+  // Note: Despite the name, this now uses cloud storage, not S3
+  // Kept for backwards compatibility with existing code
+  return getProxyUrl(url);
+}
+
+/**
+ * Legacy function for backwards compatibility
+ * @deprecated Use extractFileId instead
  */
 export function getShortUrl(fullUrl: string): string {
-  if (fullUrl.includes(`${CLOUDFRONT_DOMAIN}/customers/`)) {
-    const filename = fullUrl.split("customers/")[1]?.split("?")[0]; // Remove query params if any
-    return `/api/image/${filename}`;
-  }
-  return fullUrl; // Return as-is if not a CloudFront CDN URL
+  const fileId = extractFileId(fullUrl);
+  return fileId ? getProxyUrl(fileId) : fullUrl;
 }
 
 /**
- * Extracts filename from various URL formats
- * @param url - Any image URL format
- * @returns Just the filename
+ * Legacy function for backwards compatibility
+ * @deprecated Use extractFileId instead
  */
 export function getFilenameFromUrl(url: string): string {
-  if (url.startsWith("/api/image/")) {
-    return url.replace("/api/image/", "");
-  }
-  if (url.includes("customers/")) {
-    return url.split("customers/")[1]?.split("?")[0] || "";
-  }
-  return url.split("/").pop() || "";
+  return extractFileId(url) || url.split("/").pop() || "";
 }

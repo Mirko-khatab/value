@@ -1,7 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import { getSignedReadUrl } from "@/app/lib/s3-upload";
+import { useState } from "react";
 
 interface ImageDisplayProps {
   src: string;
@@ -18,41 +17,8 @@ export default function ImageDisplay({
   height = 200,
   className = "",
 }: ImageDisplayProps) {
-  const [signedUrl, setSignedUrl] = useState<string>("");
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Extract the key from the S3 URL
-    const extractKey = (url: string) => {
-      try {
-        const urlObj = new URL(url);
-        const pathParts = urlObj.pathname.split("/");
-        // Remove the first empty element and get the rest
-        return pathParts.slice(1).join("/");
-      } catch {
-        return null;
-      }
-    };
-
-    const key = extractKey(src);
-    if (key) {
-      // Generate signed URL for secure access
-      getSignedReadUrl(key)
-        .then((url) => {
-          setSignedUrl(url);
-          setLoading(false);
-        })
-        .catch((err) => {
-          console.error("Failed to generate signed URL:", err);
-          setError(true);
-          setLoading(false);
-        });
-    } else {
-      setError(true);
-      setLoading(false);
-    }
-  }, [src]);
 
   const handleImageError = () => {
     setError(true);
@@ -89,14 +55,14 @@ export default function ImageDisplay({
     );
   }
 
-  if (loading || !signedUrl) {
+  if (loading) {
     return <div className={`bg-gray-200 animate-pulse rounded ${className}`} />;
   }
 
   return (
     <div className={`relative ${className}`}>
       <Image
-        src={signedUrl}
+        src={src}
         alt={alt}
         width={width}
         height={height}

@@ -150,7 +150,7 @@ export default function Form({
               type="text"
               required
               defaultValue={isEditMode ? project?.title_ku : ""}
-              className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+              className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-900  dark:text-gray-900"
               placeholder="Enter Kurdish title"
             />
           </div>
@@ -168,7 +168,7 @@ export default function Form({
               type="text"
               required
               defaultValue={isEditMode ? project?.title_ar : ""}
-              className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+              className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-900  dark:text-gray-900"
               placeholder="Enter Arabic title"
             />
           </div>
@@ -186,7 +186,7 @@ export default function Form({
               type="text"
               required
               defaultValue={isEditMode ? project?.title_en : ""}
-              className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+              className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-900  dark:text-gray-900"
               placeholder="Enter English title"
             />
           </div>
@@ -206,7 +206,7 @@ export default function Form({
             required
             rows={3}
             defaultValue={isEditMode ? project?.description_ku : ""}
-            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-900  dark:text-gray-900"
             placeholder="Enter Kurdish description"
           />
         </div>
@@ -224,7 +224,7 @@ export default function Form({
             required
             rows={3}
             defaultValue={isEditMode ? project?.description_ar : ""}
-            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-900  dark:text-gray-900"
             placeholder="Enter Arabic description"
           />
         </div>
@@ -242,7 +242,7 @@ export default function Form({
             required
             rows={3}
             defaultValue={isEditMode ? project?.description_en : ""}
-            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-900  dark:text-gray-900"
             placeholder="Enter English description"
           />
         </div>
@@ -267,7 +267,7 @@ export default function Form({
                   : project?.date?.toISOString().split("T")[0]
                 : ""
             }
-            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-900  dark:text-gray-900"
           />
         </div>
 
@@ -282,7 +282,7 @@ export default function Form({
         </div>
 
         {/* Hidden fields for main image (will be set by handleSubmit) */}
-        <input type="hidden" name="image_url" />
+        <input type="hidden" name="image_url"  />
         <input type="hidden" name="alt_text" />
         <input type="hidden" name="order_index" />
       </div>

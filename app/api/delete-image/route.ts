@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { deleteS3Object } from "@/app/lib/s3-upload";
+import { deleteCloudFile } from "@/app/lib/cloud-storage";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,9 +12,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-
-    // Delete the image from S3
-    const deleteResult = await deleteS3Object(imageUrl);
+    // Delete the image from cloud storage
+    const deleteResult = await deleteCloudFile(imageUrl);
 
     if (deleteResult) {
       return NextResponse.json(
@@ -29,7 +28,7 @@ export async function POST(request: NextRequest) {
       console.error(`API: Failed to delete image: ${imageUrl}`);
       return NextResponse.json(
         {
-          error: "Failed to delete image from S3",
+          error: "Failed to delete image from cloud storage",
           imageUrl: imageUrl,
           success: false,
         },

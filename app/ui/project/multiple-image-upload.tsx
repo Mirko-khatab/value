@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Button } from "@/app/ui/button";
-import { getSignedUploadUrl } from "@/app/lib/s3-upload";
+import { uploadToCloud } from "@/app/lib/cloud-upload-client";
 import { TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 interface ImageFile {
@@ -59,28 +59,6 @@ export default function MultipleImageUpload({
     }
   }, []); // Only run on mount
 
-  const uploadToS3 = async (file: File, signedUrl: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.addEventListener("load", () => {
-        if (xhr.status === 200) {
-          resolve();
-        } else {
-          reject(new Error(`Upload failed with status: ${xhr.status}`));
-        }
-      });
-
-      xhr.addEventListener("error", () => {
-        reject(new Error("Upload failed"));
-      });
-
-      xhr.open("PUT", signedUrl);
-      xhr.setRequestHeader("Content-Type", file.type);
-      xhr.send(file);
-    });
-  };
-
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
 
@@ -99,10 +77,13 @@ export default function MultipleImageUpload({
     async (index: number) => {
       const imageToDelete = images[index];
 
-      // Try to delete the image from S3 if it has a URL (was uploaded)
+      // Try to delete the image from cloud storage if it has a URL (was uploaded)
       if (imageToDelete?.url) {
         try {
-          console.log("Deleting uploaded image from S3:", imageToDelete.url);
+          console.log(
+            "Deleting uploaded image from cloud storage:",
+            imageToDelete.url
+          );
           const response = await fetch("/api/delete-image", {
             method: "POST",
             headers: {
@@ -113,15 +94,23 @@ export default function MultipleImageUpload({
 
           const result = await response.json();
           if (!response.ok || !result.success) {
-            console.error("Failed to delete uploaded image from S3:", result);
-            // Continue with removal from UI even if S3 deletion fails for uploaded images
+            console.error(
+              "Failed to delete uploaded image from cloud storage:",
+              result
+            );
+            // Continue with removal from UI even if cloud storage deletion fails for uploaded images
             // since they're not saved to the project yet
           } else {
-            console.log("Successfully deleted uploaded image from S3");
+            console.log(
+              "Successfully deleted uploaded image from cloud storage"
+            );
           }
         } catch (error) {
-          console.error("Error deleting uploaded image from S3:", error);
-          // Continue with removal from UI even if S3 deletion fails
+          console.error(
+            "Error deleting uploaded image from cloud storage:",
+            error
+          );
+          // Continue with removal from UI even if cloud storage deletion fails
         }
       }
 
@@ -149,10 +138,10 @@ export default function MultipleImageUpload({
       const imageToDelete = existingImages[index];
       let updatedImages: typeof existingImages = [];
 
-      // First, try to delete the image from S3
+      // First, try to delete the image from cloud storage
       if (imageToDelete?.url) {
         try {
-          console.log("Deleting image from S3:", imageToDelete.url);
+          console.log("Deleting image from cloud storage:", imageToDelete.url);
           const response = await fetch("/api/delete-image", {
             method: "POST",
             headers: {
@@ -163,19 +152,19 @@ export default function MultipleImageUpload({
 
           const result = await response.json();
           if (!response.ok || !result.success) {
-            console.error("Failed to delete image from S3:", result);
+            console.error("Failed to delete image from cloud storage:", result);
             showMessage("error", "Failed to delete image from storage");
-            return; // Don't remove from UI if S3 deletion failed
+            return; // Don't remove from UI if cloud storage deletion failed
           }
-          console.log("Successfully deleted image from S3");
+          console.log("Successfully deleted image from cloud storage");
         } catch (error) {
-          console.error("Error deleting image from S3:", error);
+          console.error("Error deleting image from cloud storage:", error);
           showMessage("error", "Network error while deleting image");
-          return; // Don't remove from UI if S3 deletion failed
+          return; // Don't remove from UI if cloud storage deletion failed
         }
       }
 
-      // Only update local state if S3 deletion was successful
+      // Only update local state if cloud storage deletion was successful
       setExistingImages((prev) => {
         const newImages = prev.filter((_, i) => i !== index);
         // Update order indices for remaining images
@@ -238,14 +227,8 @@ export default function MultipleImageUpload({
     setUploading(true);
     try {
       const uploadPromises = images.map(async (image) => {
-        // Get signed URL first
-        const response = await getSignedUploadUrl(
-          image.file.name,
-          image.file.type
-        );
-
-        // Upload to S3 using signed URL
-        await uploadToS3(image.file, response.signedUrl);
+        // Upload to cloud storage
+        const response = await uploadToCloud(image.file);
 
         return {
           url: response.publicUrl,
@@ -346,7 +329,7 @@ export default function MultipleImageUpload({
                       updateExistingAltText(index, e.target.value)
                     }
                     placeholder="Alt text"
-                    className="w-full text-sm border rounded px-2 py-1"
+                    className="w-full text-sm border rounded px-2 py-1 placeholder:text-gray-900  dark:text-gray-900"
                   />
                   <input
                     type="number"
@@ -356,7 +339,7 @@ export default function MultipleImageUpload({
                       updateExistingOrderIndex(index, value);
                     }}
                     min="1"
-                    className="w-full text-sm border rounded px-2 py-1"
+                    className="w-full text-sm border rounded px-2 py-1 placeholder:text-gray-900  dark:text-gray-900"
                   />
                 </div>
                 <button
@@ -393,7 +376,7 @@ export default function MultipleImageUpload({
                     value={image.altText}
                     onChange={(e) => updateAltText(index, e.target.value)}
                     placeholder="Alt text"
-                    className="w-full text-sm border rounded px-2 py-1"
+                    className="w-full text-sm border rounded px-2 py-1 placeholder:text-gray-900  dark:text-gray-900"
                   />
                   <input
                     type="number"
@@ -403,7 +386,7 @@ export default function MultipleImageUpload({
                       updateOrderIndex(index, value);
                     }}
                     min="1"
-                    className="w-full text-sm border rounded px-2 py-1"
+                    className="w-full text-sm border rounded px-2 py-1 placeholder:text-gray-900  dark:text-gray-900"
                   />
                 </div>
                 <button

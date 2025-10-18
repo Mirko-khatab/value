@@ -1,7 +1,7 @@
 import ShowcaseLayout from "@/app/ui/showcase-layout";
 import { Space } from "@/app/ui/utils/space";
-import { Machine, Gallery } from "@/app/lib/definitions";
-import { fetchMachineById, fetchMachineGalleries } from "@/app/lib/data";
+import { Product, Gallery } from "@/app/lib/definitions";
+import { fetchProductById, fetchProductGalleries } from "@/app/lib/data";
 import { notFound } from "next/navigation";
 import ProductGalleryClient from "./product-gallery-client";
 
@@ -16,16 +16,16 @@ export default async function Page({ params }: PageProps) {
   const { id: productId } = await params;
 
   // Server-side data fetching
-  const [machines, galleries] = await Promise.all([
-    fetchMachineById(productId),
-    fetchMachineGalleries(productId),
+  const [products, galleries] = await Promise.all([
+    fetchProductById(productId),
+    fetchProductGalleries(productId),
   ]);
 
-  if (machines.length === 0) {
+  if (products.length === 0) {
     notFound();
   }
 
-  const product = machines[0];
+  const product = products[0];
 
   return (
     <ShowcaseLayout>

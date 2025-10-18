@@ -4,7 +4,7 @@ import Table from "@/app/ui/products/table";
 import { CreateMachine } from "@/app/ui/products/buttons";
 import { InvoicesTableSkeleton } from "@/app/ui/skeletons";
 import { Suspense } from "react";
-import { fetchTotalMachinesPages } from "@/app/lib/data";
+import { fetchTotalProductsPages } from "@/app/lib/data";
 
 export default async function Page(props: {
   searchParams?: Promise<{
@@ -15,15 +15,19 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || "";
   const currentPage = Number(searchParams?.page) || 1;
-  const totalPages = await fetchTotalMachinesPages(query);
+  const totalPages = await fetchTotalProductsPages(query);
 
   return (
-    <div className="w-full">
+    <div className="w-full transition-colors duration-200">
       <div className="flex w-full items-center justify-between">
-        <h1 className={` text-2xl`}>Machines</h1>
+        <h1
+          className={` text-2xl text-gray-900 dark:text-gray-100 transition-colors duration-200`}
+        >
+          products
+        </h1>
       </div>
       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-        <Search placeholder="Search machines..." />
+        <Search placeholder="Search products..." />
         <CreateMachine />
       </div>
       <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>

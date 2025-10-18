@@ -1,8 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import imageCompression from "browser-image-compression";
-import { getSignedUploadUrl } from "@/app/lib/s3-upload";
-import { IMAGE_CONFIG } from "@/app/lib/aws-config";
+import { uploadToCloud, IMAGE_CONFIG } from "@/app/lib/cloud-upload-client";
 
 interface ImageUploadProps {
   onUploadComplete: (imageUrl: string) => void;
@@ -27,35 +26,6 @@ export default function ImageUpload({
       console.error("Error compressing image:", error);
       throw new Error("Failed to compress image");
     }
-  };
-
-  const uploadToS3 = async (file: File, signedUrl: string): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener("progress", (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = (event.loaded / event.total) * 100;
-          setProgress(percentComplete);
-        }
-      });
-
-      xhr.addEventListener("load", () => {
-        if (xhr.status === 200) {
-          resolve();
-        } else {
-          reject(new Error(`Upload failed with status: ${xhr.status}`));
-        }
-      });
-
-      xhr.addEventListener("error", () => {
-        reject(new Error("Upload failed"));
-      });
-
-      xhr.open("PUT", signedUrl);
-      xhr.setRequestHeader("Content-Type", file.type);
-      xhr.send(file);
-    });
   };
 
   const handleFileSelect = async (
@@ -88,14 +58,10 @@ export default function ImageUpload({
       // Compress image
       const compressedFile = await compressImage(file);
 
-      // Get signed URL from server
-      const response = await getSignedUploadUrl(
-        compressedFile.name,
-        compressedFile.type
-      );
-
-      // Upload to S3
-      await uploadToS3(compressedFile, response.signedUrl);
+      // Upload to cloud storage
+      const response = await uploadToCloud(compressedFile, (progress) => {
+        setProgress(progress);
+      });
 
       // Notify parent component with the public URL
       onUploadComplete(response.publicUrl);

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getConnection } from "./serverutils";
 import { redirect } from "next/navigation";
-import { deleteS3Object } from "./s3-upload";
+import { deleteCloudFile } from "./cloud-storage";
 
 import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
@@ -266,7 +266,7 @@ export async function deleteTeam(id: string) {
   )) as any[];
   const imageUrl = result[0]?.image_url;
   if (imageUrl) {
-    await deleteS3Object(imageUrl);
+    await deleteCloudFile(imageUrl);
   }
   await connection.execute("DELETE FROM teams WHERE id = ?", [id]);
   await connection.commit();
@@ -663,11 +663,11 @@ export async function deleteProject(id: string) {
     // Delete the project
     await connection.execute("DELETE FROM projects WHERE id = ?", [id]);
 
-    // Delete the images from S3 if they exist
+    // Delete the images from cloud storage if they exist
     if (galleryResult && galleryResult.length > 0) {
       for (const row of galleryResult) {
         if (row.image_url) {
-          await deleteS3Object(row.image_url);
+          await deleteCloudFile(row.image_url);
         }
       }
     }
@@ -1029,20 +1029,24 @@ export async function deleteBlog(id: string) {
 
     console.log("Deleting blog and associated gallery images for ID:", id);
 
-    // First, get all gallery images for this blog to delete from S3
+    // First, get all gallery images for this blog to delete from cloud storage
     const [galleries] = (await connection.execute(
       "SELECT image_url FROM galleries WHERE parent_id = ? AND parent_type = ?",
       [id, ParentType.Blog.toString()]
     )) as any[];
 
-    // Delete images from S3
+    // Delete images from cloud storage
     for (const gallery of galleries) {
       try {
-        await deleteS3Object(gallery.image_url);
-        console.log("Deleted S3 image:", gallery.image_url);
+        await deleteCloudFile(gallery.image_url);
+        console.log("Deleted cloud storage image:", gallery.image_url);
       } catch (error) {
-        console.error("Failed to delete S3 image:", gallery.image_url, error);
-        // Continue with deletion even if S3 deletion fails
+        console.error(
+          "Failed to delete cloud storage image:",
+          gallery.image_url,
+          error
+        );
+        // Continue with deletion even if cloud storage deletion fails
       }
     }
 
@@ -1066,17 +1070,6 @@ export async function deleteBlog(id: string) {
 
 //create Product
 const CreateProduct = z.object({
-  title_ar: z.string().min(1, "Title is required"),
-  title_en: z.string().min(1, "Title is required"),
-  title_ku: z.string().min(1, "Title is required"),
-  description_ar: z.string().min(1, "Description is required"),
-  description_en: z.string().min(1, "Description is required"),
-  description_ku: z.string().min(1, "Description is required"),
-});
-
-// Legacy alias for backward compatibility
-const CreateMachine = z.object({
-  machine_group_id: z.string().min(1, "Machine group is required"),
   title_ar: z.string().min(1, "Title is required"),
   title_en: z.string().min(1, "Title is required"),
   title_ku: z.string().min(1, "Title is required"),
@@ -1199,185 +1192,6 @@ export async function createProduct(
   redirect("/dashboard/products");
 }
 
-export async function createMachine(
-  prevState: MachineState,
-  formData: FormData
-) {
-  // Debug logging for development
-  console.log("Creating machine with form data");
-  console.log(
-    "Gallery images count:",
-    formData.getAll("gallery_url_0").length > 0 ? "Yes" : "No"
-  );
-
-  const validatedFields = CreateMachine.safeParse({
-    machine_group_id: formData.get("machine_group_id"),
-    title_ku: formData.get("title_ku"),
-    title_ar: formData.get("title_ar"),
-    title_en: formData.get("title_en"),
-    description_ku: formData.get("description_ku"),
-    description_ar: formData.get("description_ar"),
-    description_en: formData.get("description_en"),
-  });
-
-  if (!validatedFields.success) {
-    console.log(
-      "Validation failed:",
-      validatedFields.error.flatten().fieldErrors
-    );
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Create Machine.",
-    };
-  }
-
-  const {
-    machine_group_id,
-    title_ku,
-    title_ar,
-    title_en,
-    description_ku,
-    description_ar,
-    description_en,
-  } = validatedFields.data;
-
-  // Extract main image data (can be empty)
-  const image_url = formData.get("image_url");
-  const alt_text = formData.get("alt_text");
-  const order_index = formData.get("order_index");
-
-  const connection = await getConnection();
-  try {
-    await connection.beginTransaction();
-
-    // Check if machine name already exists in this group
-    const [existingMachine] = (await connection.execute(
-      "SELECT id FROM machines WHERE machine_group_id = ? AND (title_ar = ? OR title_en = ? OR title_ku = ?)",
-      [machine_group_id, title_ar, title_en, title_ku]
-    )) as any[];
-
-    if (existingMachine.length > 0) {
-      return {
-        errors: {
-          title_en: ["Machine with this name already exists in this group"],
-        },
-        message: "Machine name must be unique within the group.",
-      };
-    }
-
-    // Insert machine record
-    const [result] = await connection.execute(
-      "INSERT INTO machines (machine_group_id, title_ar, title_en, title_ku, description_ar, description_en, description_ku) VALUES (?, ?, ?, ?, ?, ?, ?)",
-      [
-        machine_group_id,
-        title_ar,
-        title_en,
-        title_ku,
-        description_ar,
-        description_en,
-        description_ku,
-      ]
-    );
-
-    const machineId = (result as any).insertId;
-    console.log("Machine created with ID:", machineId);
-
-    // Collect gallery images (similar to project/blog logic)
-    const galleryImages: {
-      url: string;
-      altText: string;
-      orderIndex: string;
-    }[] = [];
-
-    console.log("Processing gallery images...");
-
-    // Add main image if it exists
-    if (image_url && alt_text && order_index) {
-      galleryImages.push({
-        url: image_url.toString(),
-        altText: alt_text.toString(),
-        orderIndex: order_index.toString(),
-      });
-    }
-
-    // Collect additional gallery images
-    let index = 0;
-    while (true) {
-      const galleryUrl = formData.get(`gallery_url_${index}`);
-      const galleryAlt = formData.get(`gallery_alt_${index}`);
-      const galleryOrder = formData.get(`gallery_order_${index}`);
-
-      if (!galleryUrl || !galleryAlt || !galleryOrder) {
-        break;
-      }
-
-      // Skip if this is the main image (already added above)
-      if (galleryUrl === image_url) {
-        index++;
-        continue;
-      }
-
-      galleryImages.push({
-        url: galleryUrl.toString(),
-        altText: galleryAlt.toString(),
-        orderIndex: galleryOrder.toString(),
-      });
-
-      index++;
-    }
-
-    console.log("Collected gallery images:", galleryImages.length);
-
-    // Remove duplicates based on URL
-    const uniqueImages = galleryImages.filter(
-      (image, index, self) =>
-        index === self.findIndex((img) => img.url === image.url)
-    );
-
-    console.log("Unique gallery images after deduplication:", uniqueImages);
-
-    // Get the maximum order_index for this specific parent
-    const [maxOrderResult] = (await connection.execute(
-      "SELECT MAX(CAST(order_index AS UNSIGNED)) as max_order FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [machineId, ParentType.Machine.toString()]
-    )) as any[];
-    let nextOrderIndex = (maxOrderResult[0]?.max_order || 0) + 1;
-
-    // Insert all unique gallery images
-    for (const image of uniqueImages) {
-      console.log(
-        "Inserting gallery image:",
-        image,
-        "with order_index:",
-        nextOrderIndex
-      );
-      await connection.execute(
-        "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
-        [
-          machineId,
-          ParentType.Machine.toString(),
-          image.url,
-          image.altText,
-          nextOrderIndex.toString(),
-        ]
-      );
-      nextOrderIndex++;
-    }
-
-    console.log(`Successfully inserted ${uniqueImages.length} gallery images`);
-
-    await connection.commit();
-  } catch (error) {
-    console.error("Database Error: Failed to Create Machine.", error);
-    return {
-      errors: {},
-      message: "Database Error: Failed to create machine.",
-    };
-  }
-  revalidatePath("/dashboard/machines");
-  redirect("/dashboard/machines");
-}
-
 export type ProductState = {
   errors?: {
     title_ku?: string[];
@@ -1388,13 +1202,6 @@ export type ProductState = {
     description_en?: string[];
   };
   message?: string | null;
-};
-
-// Legacy alias for backward compatibility
-export type MachineState = ProductState & {
-  errors?: ProductState["errors"] & {
-    machine_group_id?: string[];
-  };
 };
 
 export async function updateProduct(id: string, formData: FormData) {
@@ -1532,223 +1339,6 @@ export async function deleteProduct(id: string) {
     await connection.end();
   }
   revalidatePath("/dashboard/products");
-}
-
-export async function updateMachine(id: string, formData: FormData) {
-  console.log("updateMachine called with id:", id);
-
-  const validatedFields = CreateMachine.safeParse({
-    machine_group_id: formData.get("machine_group_id"),
-    title_ku: formData.get("title_ku"),
-    title_ar: formData.get("title_ar"),
-    title_en: formData.get("title_en"),
-    description_ku: formData.get("description_ku"),
-    description_ar: formData.get("description_ar"),
-    description_en: formData.get("description_en"),
-  });
-
-  if (!validatedFields.success) {
-    console.log(
-      "Validation failed:",
-      validatedFields.error.flatten().fieldErrors
-    );
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Update Machine.",
-    };
-  }
-
-  const {
-    machine_group_id,
-    title_ku,
-    title_ar,
-    title_en,
-    description_ku,
-    description_ar,
-    description_en,
-  } = validatedFields.data;
-
-  // Extract main image data (can be empty)
-  const image_url = formData.get("image_url");
-  const alt_text = formData.get("alt_text");
-  const order_index = formData.get("order_index");
-
-  const connection = await getConnection();
-  try {
-    await connection.beginTransaction();
-
-    // Check if machine name already exists in this group (excluding current machine)
-    const [existingMachine] = (await connection.execute(
-      "SELECT id FROM machines WHERE machine_group_id = ? AND (title_ar = ? OR title_en = ? OR title_ku = ?) AND id != ?",
-      [machine_group_id, title_ar, title_en, title_ku, id]
-    )) as any[];
-
-    if (existingMachine.length > 0) {
-      return {
-        errors: {
-          title_en: ["Machine with this name already exists in this group"],
-        },
-        message: "Machine name must be unique within the group.",
-      };
-    }
-
-    // Update machine record
-    await connection.execute(
-      "UPDATE machines SET machine_group_id = ?, title_ar = ?, title_en = ?, title_ku = ?, description_ar = ?, description_en = ?, description_ku = ? WHERE id = ?",
-      [
-        machine_group_id,
-        title_ar,
-        title_en,
-        title_ku,
-        description_ar,
-        description_en,
-        description_ku,
-        id,
-      ]
-    );
-
-    console.log("Machine updated successfully");
-
-    // Clear existing gallery entries for this machine
-    await connection.execute(
-      "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [id, ParentType.Machine.toString()]
-    );
-
-    console.log("Existing gallery entries cleared");
-
-    // Collect gallery images (similar to project/blog logic)
-    const galleryImages: {
-      url: string;
-      altText: string;
-      orderIndex: string;
-    }[] = [];
-
-    // Add main image if it exists
-    if (image_url && alt_text && order_index) {
-      galleryImages.push({
-        url: image_url.toString(),
-        altText: alt_text.toString(),
-        orderIndex: order_index.toString(),
-      });
-    }
-
-    // Collect additional gallery images
-    let index = 0;
-    while (true) {
-      const galleryUrl = formData.get(`gallery_url_${index}`);
-      const galleryAlt = formData.get(`gallery_alt_${index}`);
-      const galleryOrder = formData.get(`gallery_order_${index}`);
-
-      if (!galleryUrl || !galleryAlt || !galleryOrder) {
-        break;
-      }
-
-      // Skip if this is the main image (already added above)
-      if (galleryUrl === image_url) {
-        index++;
-        continue;
-      }
-
-      galleryImages.push({
-        url: galleryUrl.toString(),
-        altText: galleryAlt.toString(),
-        orderIndex: galleryOrder.toString(),
-      });
-
-      index++;
-    }
-
-    console.log("Gallery images to insert:", galleryImages);
-
-    // Remove duplicates based on URL
-    const uniqueImages = galleryImages.filter(
-      (image, index, self) =>
-        index === self.findIndex((img) => img.url === image.url)
-    );
-
-    console.log("Unique gallery images after deduplication:", uniqueImages);
-
-    // Get the maximum order_index for this specific parent
-    const [maxOrderResult] = (await connection.execute(
-      "SELECT MAX(CAST(order_index AS UNSIGNED)) as max_order FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [id, ParentType.Machine.toString()]
-    )) as any[];
-    let nextOrderIndex = (maxOrderResult[0]?.max_order || 0) + 1;
-
-    // Insert all unique gallery images
-    for (const image of uniqueImages) {
-      console.log(
-        "Inserting gallery image:",
-        image,
-        "with order_index:",
-        nextOrderIndex
-      );
-      await connection.execute(
-        "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
-        [
-          id,
-          ParentType.Machine.toString(),
-          image.url,
-          image.altText,
-          nextOrderIndex.toString(),
-        ]
-      );
-      nextOrderIndex++;
-    }
-
-    console.log("Gallery images inserted successfully");
-
-    await connection.commit();
-    console.log("Machine update completed successfully");
-  } catch (error) {
-    console.error("Database Error: Failed to Update Machine.", error);
-    throw new Error("Failed to update machine");
-  }
-  revalidatePath("/dashboard/machines");
-  // Remove redirect since this is called from client component
-}
-
-export async function deleteMachine(id: string) {
-  try {
-    const connection = await getConnection();
-    await connection.beginTransaction();
-
-    console.log("Deleting machine and associated gallery images for ID:", id);
-
-    // First, get all gallery images for this machine to delete from S3
-    const [galleries] = (await connection.execute(
-      "SELECT image_url FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [id, ParentType.Machine.toString()]
-    )) as any[];
-
-    // Delete images from S3
-    for (const gallery of galleries) {
-      try {
-        await deleteS3Object(gallery.image_url);
-        console.log("Deleted S3 image:", gallery.image_url);
-      } catch (error) {
-        console.error("Failed to delete S3 image:", gallery.image_url, error);
-        // Continue with deletion even if S3 deletion fails
-      }
-    }
-
-    // Delete gallery entries from database
-    await connection.execute(
-      "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [id, ParentType.Machine.toString()]
-    );
-
-    // Delete the machine record
-    await connection.execute("DELETE FROM machines WHERE id = ?", [id]);
-
-    await connection.commit();
-    console.log("Machine and gallery images deleted successfully");
-  } catch (error) {
-    console.error("Database Error: Failed to Delete Machine.", error);
-    throw new Error("Failed to delete machine");
-  }
-  revalidatePath("/dashboard/machines");
 }
 
 // Quote CRUD Operations
@@ -2346,19 +1936,19 @@ export async function deleteSpecialProject(id: string) {
     connection = await getConnection();
     await connection.beginTransaction();
 
-    // Get the image URL before deleting to remove from S3
+    // Get the image URL before deleting to remove from cloud storage
     const [rows] = (await connection.execute(
       "SELECT image_url FROM special_projects WHERE id = ?",
       [id]
     )) as any[];
 
     if (rows.length > 0 && rows[0].image_url) {
-      // Delete the image from S3
+      // Delete the image from cloud storage
       try {
-        await deleteS3Object(rows[0].image_url);
-      } catch (s3Error) {
-        console.error("Failed to delete image from S3:", s3Error);
-        // Continue with database deletion even if S3 deletion fails
+        await deleteCloudFile(rows[0].image_url);
+      } catch (cloudError) {
+        console.error("Failed to delete image from cloud storage:", cloudError);
+        // Continue with database deletion even if cloud storage deletion fails
       }
     }
 
@@ -2565,14 +2155,14 @@ export async function deleteBanner(id: string) {
     if (bannerRows.length > 0) {
       const banner = bannerRows[0];
 
-      // Delete old image from S3
+      // Delete old image from cloud storage
       if (banner.image_url) {
-        await deleteS3Object(banner.image_url);
+        await deleteCloudFile(banner.image_url);
       }
 
-      // Delete old video from S3
+      // Delete old video from cloud storage
       if (banner.video_url) {
-        await deleteS3Object(banner.video_url);
+        await deleteCloudFile(banner.video_url);
       }
     }
 
@@ -2716,9 +2306,9 @@ export async function deleteAudio(id: string) {
     if (audioRows.length > 0) {
       const audio = audioRows[0];
 
-      // Delete old audio from S3
+      // Delete old audio from cloud storage
       if (audio.audio_url) {
-        await deleteS3Object(audio.audio_url);
+        await deleteCloudFile(audio.audio_url);
       }
     }
 

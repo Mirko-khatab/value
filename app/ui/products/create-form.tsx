@@ -2,20 +2,18 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
-import { createMachine, updateMachine, MachineState } from "@/app/lib/actions";
-import { Machine, MachineGroup } from "@/app/lib/definitions";
+import { createProduct, updateProduct, ProductState } from "@/app/lib/actions";
+import { Product } from "@/app/lib/definitions";
 import MultipleImageUpload from "@/app/ui/project/multiple-image-upload";
 
 export default function Form({
   mode,
-  machine,
+  product,
   initialGalleryImages = [],
-  machineGroups = [],
 }: {
   mode: "create" | "edit";
-  machine?: Machine;
+  product?: Product;
   initialGalleryImages?: { url: string; altText: string; orderIndex: number }[];
-  machineGroups?: MachineGroup[];
 }) {
   const isEditMode = mode === "edit";
 
@@ -26,23 +24,12 @@ export default function Form({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [groups, setGroups] = useState<MachineGroup[]>(machineGroups);
-
-  // Update gallery images when machine data changes
+  // Update gallery images when product data changes
   useEffect(() => {
     if (isEditMode && initialGalleryImages.length > 0) {
       setGalleryImages(initialGalleryImages);
     }
   }, [isEditMode, initialGalleryImages]);
-
-  // Load machine groups if not provided
-  useEffect(() => {
-    if (groups.length === 0) {
-      // Machine groups functionality has been removed
-      // Products no longer need to be categorized by groups
-      setGroups([]);
-    }
-  }, [groups.length]);
 
   const handleImagesChange = useCallback(
     (images: { url: string; altText: string; orderIndex: number }[]) => {
@@ -63,7 +50,7 @@ export default function Form({
       setError(null);
 
       console.log(
-        "Submitting machine form:",
+        "Submitting product form:",
         mode,
         "mode with",
         galleryImages.length,
@@ -100,12 +87,12 @@ export default function Form({
       }
 
       try {
-        if (isEditMode && machine) {
-          // Update existing machine
-          await updateMachine(machine.id, formData);
+        if (isEditMode && product) {
+          // Update existing product
+          await updateProduct(product.id, formData);
         } else {
-          // Create new machine
-          await createMachine({ message: null, errors: {} }, formData);
+          // Create new product
+          await createProduct({ message: null, errors: {} }, formData);
         }
 
         // If we reach here, the operation was successful
@@ -113,20 +100,20 @@ export default function Form({
 
         // Redirect after a short delay to show success message
         setTimeout(() => {
-          window.location.href = "/dashboard/machines";
+          window.location.href = "/dashboard/products";
         }, 1000);
       } catch (error) {
-        console.error(`Failed to ${mode} machine:`, error);
+        console.error(`Failed to ${mode} product:`, error);
         setError(
           error instanceof Error
             ? error.message
-            : `Failed to ${mode} machine. Please try again.`
+            : `Failed to ${mode} product. Please try again.`
         );
       } finally {
         setIsSubmitting(false);
       }
     },
-    [galleryImages, isSubmitting, mode, isEditMode, machine]
+    [galleryImages, isSubmitting, mode, isEditMode, product]
   );
 
   return (
@@ -135,7 +122,7 @@ export default function Form({
         {/* Success Message */}
         {success && (
           <div className="mb-4 p-4 text-sm text-green-700 bg-green-100 border border-green-400 rounded">
-            Machine {isEditMode ? "updated" : "created"} successfully!
+            Product {isEditMode ? "updated" : "created"} successfully!
             Redirecting...
           </div>
         )}
@@ -146,30 +133,6 @@ export default function Form({
             {error}
           </div>
         )}
-
-        {/* Machine Group Selection */}
-        <div className="mb-4">
-          <label
-            htmlFor="machine_group_id"
-            className="mb-2 block text-sm font-medium"
-          >
-            Machine Group <span className="text-red-500">*</span>
-          </label>
-          <select
-            id="machine_group_id"
-            name="machine_group_id"
-            required
-            defaultValue={isEditMode ? machine?.machine_group_id : ""}
-            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
-          >
-            <option value="">Select a machine group...</option>
-            {groups.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.title_en} ({group.title_ku} / {group.title_ar})
-              </option>
-            ))}
-          </select>
-        </div>
 
         {/* Title Fields */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -185,7 +148,7 @@ export default function Form({
               name="title_ku"
               type="text"
               required
-              defaultValue={isEditMode ? machine?.title_ku : ""}
+              defaultValue={isEditMode ? product?.title_ku : ""}
               className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
               placeholder="Enter Kurdish title"
             />
@@ -203,7 +166,7 @@ export default function Form({
               name="title_ar"
               type="text"
               required
-              defaultValue={isEditMode ? machine?.title_ar : ""}
+              defaultValue={isEditMode ? product?.title_ar : ""}
               className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
               placeholder="Enter Arabic title"
             />
@@ -221,7 +184,7 @@ export default function Form({
               name="title_en"
               type="text"
               required
-              defaultValue={isEditMode ? machine?.title_en : ""}
+              defaultValue={isEditMode ? product?.title_en : ""}
               className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
               placeholder="Enter English title"
             />
@@ -241,7 +204,7 @@ export default function Form({
             name="description_ku"
             required
             rows={3}
-            defaultValue={isEditMode ? machine?.description_ku : ""}
+            defaultValue={isEditMode ? product?.description_ku : ""}
             className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
             placeholder="Enter Kurdish description"
           />
@@ -259,7 +222,7 @@ export default function Form({
             name="description_ar"
             required
             rows={3}
-            defaultValue={isEditMode ? machine?.description_ar : ""}
+            defaultValue={isEditMode ? product?.description_ar : ""}
             className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
             placeholder="Enter Arabic description"
           />
@@ -277,7 +240,7 @@ export default function Form({
             name="description_en"
             required
             rows={3}
-            defaultValue={isEditMode ? machine?.description_en : ""}
+            defaultValue={isEditMode ? product?.description_en : ""}
             className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
             placeholder="Enter English description"
           />
@@ -289,7 +252,7 @@ export default function Form({
             onImagesChange={handleImagesChange}
             currentImages={galleryImages}
             initialImages={isEditMode ? initialGalleryImages : []}
-            title="Machine Images"
+            title="Product Images"
           />
         </div>
 
@@ -301,7 +264,7 @@ export default function Form({
 
       <div className="mt-6 flex justify-end gap-4">
         <Link
-          href="/dashboard/machines"
+          href="/dashboard/products"
           className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
         >
           Cancel

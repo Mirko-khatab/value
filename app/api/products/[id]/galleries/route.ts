@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchMachineGalleries } from "@/app/lib/data";
+import { fetchProductGalleries } from "@/app/lib/data";
 
 // Force dynamic rendering to avoid database connection during build
 export const dynamic = "force-dynamic";
@@ -10,12 +10,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const galleries = await fetchMachineGalleries(id);
+    const galleries = await fetchProductGalleries(id);
     return NextResponse.json(galleries);
   } catch (error) {
-    console.error("Error fetching machine galleries:", error);
+    console.error("Error fetching product galleries:", error);
     return NextResponse.json(
-      { error: "Failed to fetch machine galleries" },
+      { error: "Failed to fetch product galleries" },
       { status: 500 }
     );
   }

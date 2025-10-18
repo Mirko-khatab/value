@@ -121,7 +121,6 @@ export enum ParentType {
   Project = 0,
   Blog = 1,
   Product = 2,
-  Machine = 2, // Legacy alias
 }
 
 export type Gallery = {

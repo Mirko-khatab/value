@@ -1,12 +1,8 @@
 import ShowcaseLayout from "@/app/ui/showcase-layout";
 import { Space } from "../ui/utils/space";
 import CustomeCard from "../ui/home/custom-card";
-import { Machine, MachineGroup } from "@/app/lib/definitions";
-import {
-  fetchMachines,
-  fetchMachineGroups,
-  fetchMachinesByGroup,
-} from "@/app/lib/data";
+import { Product } from "@/app/lib/definitions";
+import { fetchProducts, fetchProductsByGroup } from "@/app/lib/data";
 import Link from "next/link";
 
 // Force dynamic rendering to avoid database connection during build
@@ -18,29 +14,26 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
 
   // Server-side data fetching with proper error handling
-  const [machines, machineGroups] = await Promise.all([
-    searchParams.groupId
-      ? fetchMachinesByGroup(searchParams.groupId)
-      : fetchMachines(),
-    fetchMachineGroups(),
-  ]);
+  const products = searchParams.groupId
+    ? await fetchProductsByGroup(searchParams.groupId)
+    : await fetchProducts();
 
-  const filteredMachines = machines.filter((machine) => {
+  const filteredProducts = products.filter((product) => {
     if (!searchParams.search) return true;
     const searchTerm = searchParams.search.toLowerCase();
     return (
-      machine.title_en?.toLowerCase().includes(searchTerm) ||
-      machine.title_ar?.toLowerCase().includes(searchTerm) ||
-      machine.title_ku?.toLowerCase().includes(searchTerm)
+      product.title_en?.toLowerCase().includes(searchTerm) ||
+      product.title_ar?.toLowerCase().includes(searchTerm) ||
+      product.title_ku?.toLowerCase().includes(searchTerm)
     );
   });
 
-  const organizeInColumns = (machines: Machine[]) => {
-    const columns: Machine[][] = [[], []];
+  const organizeInColumns = (products: Product[]) => {
+    const columns: Product[][] = [[], []];
 
-    machines.forEach((machine, index) => {
+    products.forEach((product, index) => {
       const columnIndex = Math.floor(index / 4) % 2;
-      columns[columnIndex].push(machine);
+      columns[columnIndex].push(product);
     });
 
     return columns;
@@ -51,7 +44,7 @@ export default async function Page(props: {
     return index % 4 === 0 ? 1 : 2;
   };
 
-  const organizedMachines = organizeInColumns(filteredMachines);
+  const organizedProducts = organizeInColumns(filteredProducts);
 
   return (
     <ShowcaseLayout>
@@ -98,19 +91,19 @@ export default async function Page(props: {
         </div>
       </Space>
       <Space className="flex flex-col sm:flex-row gap-8 justify-start">
-        {organizedMachines.map((column, columnIndex) => (
+        {organizedProducts.map((column, columnIndex) => (
           <div key={columnIndex} className="flex flex-col gap-4">
-            {column.map((machine, machineIndex) => {
+            {column.map((product, productIndex) => {
               const globalIndex =
-                columnIndex * Math.ceil(filteredMachines.length / 2) +
-                machineIndex;
+                columnIndex * Math.ceil(filteredProducts.length / 2) +
+                productIndex;
               return (
-                <Link key={machine.id} href={`/product/${machine.id}`}>
+                <Link key={product.id} href={`/product/${product.id}`}>
                   <CustomeCard
                     title={
-                      machine.title_en || machine.title_ar || machine.title_ku
+                      product.title_en || product.title_ar || product.title_ku
                     }
-                    image_url={machine.gallery_image_url || "/image/2.jpg"}
+                    image_url={product.gallery_image_url || "/image/2.jpg"}
                     width={400}
                     height={300}
                   />

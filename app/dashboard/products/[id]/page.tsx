@@ -1,4 +1,4 @@
-import { fetchMachineById, fetchMachineGalleries } from "@/app/lib/data";
+import { fetchProductById, fetchProductGalleries } from "@/app/lib/data";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/app/ui/products/breadcrumbs";
 import { UpdateMachine, DeleteMachine } from "@/app/ui/products/buttons";
@@ -9,26 +9,26 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const [machine, galleries] = await Promise.all([
-    fetchMachineById(id),
-    fetchMachineGalleries(id),
+  const [product, galleries] = await Promise.all([
+    fetchProductById(id),
+    fetchProductGalleries(id),
   ]);
 
-  if (!machine || machine.length === 0) {
+  if (!product || product.length === 0) {
     notFound();
   }
 
-  const machineData = machine[0];
+  const productData = product[0];
   const mainImage = galleries.length > 0 ? galleries[0] : null;
 
   return (
     <main>
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Machines", href: "/dashboard/machines" },
+          { label: "Products", href: "/dashboard/products" },
           {
-            label: machineData.title_en,
-            href: `/dashboard/machines/${id}`,
+            label: productData.title_en,
+            href: `/dashboard/products/${id}`,
             active: true,
           },
         ]}
@@ -37,7 +37,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <div className="mt-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">
-            {machineData.title_en}
+            {productData.title_en}
           </h1>
           <div className="flex gap-2">
             <UpdateMachine id={id} />
@@ -59,15 +59,15 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                   <div className="mt-2 space-y-2">
                     <p>
                       <span className="font-medium">Kurdish:</span>{" "}
-                      {machineData.title_ku}
+                      {productData.title_ku}
                     </p>
                     <p>
                       <span className="font-medium">Arabic:</span>{" "}
-                      {machineData.title_ar}
+                      {productData.title_ar}
                     </p>
                     <p>
                       <span className="font-medium">English:</span>{" "}
-                      {machineData.title_en}
+                      {productData.title_en}
                     </p>
                   </div>
                 </div>
@@ -79,22 +79,22 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                   <div className="mt-2 space-y-2">
                     <p>
                       <span className="font-medium">Kurdish:</span>{" "}
-                      {machineData.description_ku}
+                      {productData.description_ku}
                     </p>
                     <p>
                       <span className="font-medium">Arabic:</span>{" "}
-                      {machineData.description_ar}
+                      {productData.description_ar}
                     </p>
                     <p>
                       <span className="font-medium">English:</span>{" "}
-                      {machineData.description_en}
+                      {productData.description_en}
                     </p>
                   </div>
                 </div>
 
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Date</h3>
-                  <p className="mt-2">{machineData.gallery_order_index}</p>
+                  <p className="mt-2">{productData.gallery_order_index}</p>
                 </div>
               </div>
             </div>

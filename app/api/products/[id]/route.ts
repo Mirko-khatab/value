@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchMachineById } from "@/app/lib/data";
+import { fetchProductById } from "@/app/lib/data";
 
 // Force dynamic rendering to avoid database connection during build
 export const dynamic = "force-dynamic";
@@ -10,17 +10,17 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const machines = await fetchMachineById(id);
+    const products = await fetchProductById(id);
 
-    if (machines.length === 0) {
-      return NextResponse.json({ error: "Machine not found" }, { status: 404 });
+    if (products.length === 0) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    return NextResponse.json(machines[0]);
+    return NextResponse.json(products[0]);
   } catch (error) {
-    console.error("Error fetching machine:", error);
+    console.error("Error fetching product:", error);
     return NextResponse.json(
-      { error: "Failed to fetch machine" },
+      { error: "Failed to fetch product" },
       { status: 500 }
     );
   }
