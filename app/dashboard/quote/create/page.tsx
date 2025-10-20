@@ -1,12 +1,16 @@
 import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
 import DashboardForm from "@/app/ui/dashboard/form";
-import { quotesFormFields } from "@/app/ui/dashboard/config";
-import { createQuote } from "@/app/lib/actions";
+import { quotesFormFields, quotesFormHandler } from "@/app/ui/dashboard/config";
 
 export default async function Page() {
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(formData: FormData, data: Record<string, any>) {
     "use server";
-    await createQuote({ message: null, errors: {} }, formData);
+    try {
+      await quotesFormHandler("create", undefined, formData);
+    } catch (error) {
+      // Let the error bubble up to the form component
+      throw error;
+    }
   }
 
   return (

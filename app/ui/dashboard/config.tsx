@@ -705,6 +705,14 @@ export const quotesFormFields: FormField[] = [
     required: true,
     gridCol: "half",
   },
+  {
+    name: "image_url",
+    label: "Quote Image",
+    type: "file",
+    required: false,
+    gridCol: "full",
+    helpText: "Upload an image for this quote (optional for updates)",
+  },
 ];
 
 export const quotesFormHandler = async (
@@ -712,10 +720,21 @@ export const quotesFormHandler = async (
   id: string | undefined,
   formData: FormData
 ) => {
-  if (mode === "edit" && id) {
-    await updateQuote(id, formData);
-  } else {
-    await createQuote({ message: null, errors: {} }, formData);
+  try {
+    if (mode === "edit" && id) {
+      const result = await updateQuote(id, formData);
+      if (result && result.errors) {
+        throw new Error(result.message || "Update failed");
+      }
+    } else {
+      const result = await createQuote({ message: null, errors: {} }, formData);
+      if (result && result.errors) {
+        throw new Error(result.message || "Creation failed");
+      }
+    }
+  } catch (error) {
+    // Re-throw the error so the form can handle it
+    throw error;
   }
 };
 

@@ -332,6 +332,33 @@ export async function fetchCustomers() {
   }
 }
 
+// Fetch all team members for about page
+export async function fetchTeams() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(`
+      SELECT
+        id,
+        name_ku,
+        name_ar,
+        name_en,
+        position_ku,
+        position_ar,
+        position_en,
+        image_url
+      FROM teams
+      ORDER BY id ASC
+    `);
+    return rows as TeamField[];
+  } catch (err) {
+    console.error("Database Error:", err);
+    throw new Error("Failed to fetch teams.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
 export async function fetchFilteredTeams(query: string, currentPage: number) {
   let connection;
   try {
@@ -668,9 +695,9 @@ export async function fetchProducts() {
     const [rows] = await connection.execute(`
       SELECT 
         p.*,
-        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
-        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
-        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_order_index
       FROM products p
       ORDER BY p.title_en
     `);
@@ -690,9 +717,9 @@ export async function fetchProductById(id: string) {
     const [rows] = await connection.execute(
       `SELECT 
         p.*,
-        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
-        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
-        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_order_index
        FROM products p 
        WHERE p.id = ?`,
       [id]
@@ -718,9 +745,9 @@ export async function fetchFilteredProducts(
     const [rows] = await connection.execute(
       `SELECT 
         p.*,
-        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
-        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
-        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_order_index
        FROM products p
        WHERE 
          p.title_ku LIKE ? OR
@@ -809,9 +836,9 @@ export async function fetchProductsByGroup(groupId: string) {
       `
       SELECT 
         p.*,
-        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
-        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
-        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Product}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = ${ParentType.Product} ORDER BY order_index ASC LIMIT 1) as gallery_order_index
       FROM products p
       WHERE p.product_group_id = ?
       ORDER BY p.title_en
@@ -1436,6 +1463,23 @@ export async function fetchGraphicById(id: string) {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch graphic.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// ABOUT STATS DATA FETCHING (using properties table)
+export async function fetchAboutStats() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [stats] = await connection.execute(
+      "SELECT * FROM properties WHERE `key` LIKE 'about_%' AND `key` NOT LIKE '%_label' ORDER BY `key` ASC"
+    );
+    return stats as Property[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch about stats.");
   } finally {
     if (connection) await connection.end();
   }

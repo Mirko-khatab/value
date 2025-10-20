@@ -24,7 +24,7 @@ export default async function GraphicsPage() {
 
   return (
     <ShowcaseLayout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 mt-40">
         <h1 className="text-4xl font-bold text-center mb-8 text-gray-900 dark:text-white">
           Graphics Showcase
         </h1>

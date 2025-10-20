@@ -29,7 +29,7 @@ export default function Navigation() {
     { name: "About", href: "/about", key: 2 },
     { name: "Projects", href: "/projects", key: 3 },
     { name: "event", href: "/event", key: 4 },
-    { name: "Product", href: "/product", key: 5 },
+    { name: "Products", href: "/products", key: 5 },
   ];
 
   const handleNavigation = (

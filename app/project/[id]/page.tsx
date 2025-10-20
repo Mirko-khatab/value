@@ -6,6 +6,7 @@ import { Project, Gallery } from "@/app/lib/definitions";
 import Image from "next/image";
 import Link from "next/link";
 import ShowcaseLayout from "@/app/ui/showcase-layout";
+import Breadcrumbs from "@/app/ui/breadcrumbs";
 import {
   MapPinIcon,
   FolderIcon,
@@ -194,6 +195,30 @@ export default function ProjectDetailPage({ params }: PageProps) {
       <ShowcaseLayout>
         <div className="min-h-screen w-full">
           <div className="w-full pt-20">
+            {/* Breadcrumbs */}
+            <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
+              <Breadcrumbs
+                items={[
+                  {
+                    label: t("projects", {
+                      en: "Projects",
+                      ar: "المشاريع",
+                      ku: "پڕۆژەکان",
+                    }),
+                    href: "/projects",
+                  },
+                  {
+                    label:
+                      getLocalizedField(project, "title") ||
+                      t("project_details", {
+                        en: "Project Details",
+                        ar: "تفاصيل المشروع",
+                        ku: "وردەکارییەکانی پڕۆژە",
+                      }),
+                  },
+                ]}
+              />
+            </div>
             {/* Project Content - Desktop: Side by Side, Mobile: Stacked */}
             {galleries.length > 0 && (
               <div className="flex flex-col lg:relative lg:w-full lg:h-screen">
@@ -229,18 +254,20 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
                     {/* Slide Indicators - Mobile */}
                     {galleries.length > 1 && (
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-                        {galleries.map((_, index) => (
-                          <button
-                            key={index}
-                            onClick={() => goToSlide(index)}
-                            className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                              index === currentSlide
-                                ? "bg-white scale-125"
-                                : "bg-white/50 hover:bg-white/75"
-                            }`}
-                          />
-                        ))}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-32 overflow-hidden">
+                        <div className="flex gap-2 justify-center">
+                          {galleries.map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={() => goToSlide(index)}
+                              className={`w-3 h-3 rounded-full transition-all duration-200 flex-shrink-0 ${
+                                index === currentSlide
+                                  ? "bg-white scale-125"
+                                  : "bg-white/50 hover:bg-white/75"
+                              }`}
+                            />
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -282,18 +309,20 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
                     {/* Slide Indicators - Desktop */}
                     {galleries.length > 1 && (
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-30">
-                        {galleries.map((_, index) => (
-                          <button
-                            key={index}
-                            onClick={() => goToSlide(index)}
-                            className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                              index === currentSlide
-                                ? "bg-white scale-125"
-                                : "bg-white/50 hover:bg-white/75"
-                            }`}
-                          />
-                        ))}
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-40 overflow-hidden">
+                        <div className="flex gap-2 justify-center">
+                          {galleries.map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={() => goToSlide(index)}
+                              className={`w-3 h-3 rounded-full transition-all duration-200 flex-shrink-0 ${
+                                index === currentSlide
+                                  ? "bg-white scale-125"
+                                  : "bg-white/50 hover:bg-white/75"
+                              }`}
+                            />
+                          ))}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -321,7 +350,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                     {/* Status - Mobile */}
                     <div
                       className={`flex items-center gap-4 ${
-                        isRTL ? "flex-row-reverse justify-end" : ""
+                        isRTL ? "flex-row-reverse" : ""
                       }`}
                     >
                       {project.project_status === 1 ? (
@@ -413,7 +442,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                     </div>
 
                     {/* Back Button - Mobile */}
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
+                    {/* <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
                       <Link
                         href="/projects"
                         className={`inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-lg ${
@@ -431,7 +460,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                           ku: "گەڕانەوە بۆ پڕۆژەکان",
                         })}
                       </Link>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
 
@@ -472,7 +501,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                         {/* Status */}
                         <div
                           className={`flex items-center gap-4 ${
-                            isRTL ? "flex-row-reverse justify-end" : ""
+                            isRTL ? "flex-row-reverse" : ""
                           }`}
                         >
                           {project.project_status === 1 ? (
@@ -564,7 +593,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                         </div>
 
                         {/* Back Button */}
-                        <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
+                        {/* <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
                           <Link
                             href="/projects"
                             className={`inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-lg ${
@@ -582,7 +611,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                               ku: "گەڕانەوە بۆ پڕۆژەکان",
                             })}
                           </Link>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   </div>
@@ -657,18 +686,20 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
             {/* Fullscreen Indicators */}
             {galleries.length > 1 && (
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-3">
-                {galleries.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`w-4 h-4 rounded-full transition-all duration-200 ${
-                      index === currentSlide
-                        ? "bg-white scale-125"
-                        : "bg-white/50 hover:bg-white/75"
-                    }`}
-                  />
-                ))}
+              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 max-w-48 overflow-hidden">
+                <div className="flex gap-3 justify-center">
+                  {galleries.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      className={`w-4 h-4 rounded-full transition-all duration-200 flex-shrink-0 ${
+                        index === currentSlide
+                          ? "bg-white scale-125"
+                          : "bg-white/50 hover:bg-white/75"
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>

@@ -1,8 +1,7 @@
 import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
 import DashboardForm from "@/app/ui/dashboard/form";
-import { quotesFormFields } from "@/app/ui/dashboard/config";
+import { quotesFormFields, quotesFormHandler } from "@/app/ui/dashboard/config";
 import { fetchQuoteById } from "@/app/lib/data";
-import { updateQuote } from "@/app/lib/actions";
 import { notFound } from "next/navigation";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
@@ -17,9 +16,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const quoteData = quote[0];
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(formData: FormData, data: Record<string, any>) {
     "use server";
-    await updateQuote(id, formData);
+    try {
+      await quotesFormHandler("edit", id, formData);
+    } catch (error) {
+      // Let the error bubble up to the form component
+      throw error;
+    }
   }
 
   return (

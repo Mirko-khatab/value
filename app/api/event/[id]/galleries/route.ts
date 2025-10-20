@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchProductGalleries } from "@/app/lib/data";
+import { fetchBlogGalleries } from "@/app/lib/data";
 
 export async function GET(
   request: NextRequest,
@@ -7,12 +7,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const galleries = await fetchProductGalleries(id);
+    const galleries = await fetchBlogGalleries(id);
     return NextResponse.json(galleries);
   } catch (error) {
-    console.error("Failed to fetch product galleries:", error);
+    console.error("Failed to fetch event galleries:", error);
     return NextResponse.json(
-      { error: "Failed to fetch product galleries" },
+      { error: "Failed to fetch event galleries" },
       { status: 500 }
     );
   }

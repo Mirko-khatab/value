@@ -2,6 +2,12 @@ import { UpdateQuote, DeleteQuote } from "@/app/ui/quote/buttons";
 import { fetchFilteredQuotes } from "@/app/lib/data";
 import Image from "next/image";
 
+// Utility function to truncate text
+function truncateText(text: string, maxLength: number = 100): string {
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + "...";
+}
+
 export default async function QuotesTable({
   query,
   currentPage,
@@ -24,15 +30,24 @@ export default async function QuotesTable({
                 <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-4">
                   <div>
                     <div className="mb-2 flex items-center">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
-                        {quote.title_en}
+                      <p
+                        className="text-sm font-medium text-gray-900 dark:text-white"
+                        title={quote.title_en}
+                      >
+                        {truncateText(quote.title_en)}
                       </p>
                     </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {quote.title_ku}
+                    <p
+                      className="text-sm text-gray-500 dark:text-gray-400"
+                      title={quote.title_ku}
+                    >
+                      {truncateText(quote.title_ku)}
                     </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {quote.title_ar}
+                    <p
+                      className="text-sm text-gray-500 dark:text-gray-400"
+                      title={quote.title_ar}
+                    >
+                      {truncateText(quote.title_ar)}
                     </p>
                   </div>
                 </div>
@@ -83,16 +98,25 @@ export default async function QuotesTable({
                   key={quote.id}
                   className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
                 >
-                  <td className="whitespace-nowrap px-4 py-3 pl-6">
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {quote.title_en}
+                  <td className="px-4 py-3 pl-6 max-w-xs">
+                    <p
+                      className="font-medium text-gray-900 dark:text-white"
+                      title={quote.title_en}
+                    >
+                      {truncateText(quote.title_en)}
                     </p>
                   </td>
-                  <td className="whitespace-nowrap px-3 py-3 text-gray-900 dark:text-gray-100">
-                    {quote.title_ku}
+                  <td
+                    className="px-3 py-3 text-gray-900 dark:text-gray-100 max-w-xs"
+                    title={quote.title_ku}
+                  >
+                    {truncateText(quote.title_ku)}
                   </td>
-                  <td className="whitespace-nowrap px-3 py-3 text-gray-900 dark:text-gray-100">
-                    {quote.title_ar}
+                  <td
+                    className="px-3 py-3 text-gray-900 dark:text-gray-100 max-w-xs"
+                    title={quote.title_ar}
+                  >
+                    {truncateText(quote.title_ar)}
                   </td>
                   <td className="px-3 py-3">
                     {quote.image_url ? (

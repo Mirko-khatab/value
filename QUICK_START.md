@@ -227,3 +227,6 @@ A: Just type the Kurdish name in the search box. It works!
 ---
 
 **Need more details?** Check `LOCATION_MANAGEMENT_GUIDE.md` for comprehensive documentation!
+
+
+

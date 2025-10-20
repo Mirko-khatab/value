@@ -10,6 +10,7 @@ export type FieldType =
   | "number"
   | "select"
   | "checkbox"
+  | "file"
   | "custom";
 
 export interface FormField {
@@ -148,8 +149,16 @@ export default function DashboardForm<T>({
         const dataToSubmit = beforeSubmit ? beforeSubmit(formData) : formData;
 
         // Add/override with state data (for fields managed by React state)
+        // Skip file inputs as they're already in nativeFormData
         Object.keys(dataToSubmit).forEach((key) => {
           const value = dataToSubmit[key];
+          const field = fields.find((f) => f.name === key);
+
+          // Don't override file inputs - they're handled by the form itself
+          if (field?.type === "file") {
+            return;
+          }
+
           if (value !== null && value !== undefined) {
             // Remove existing value if any
             nativeFormData.delete(key);
@@ -253,6 +262,43 @@ export default function DashboardForm<T>({
             onChange={(e) => handleInputChange(field.name, e.target.checked)}
             className="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           />
+        );
+
+      case "file":
+        return (
+          <div className="space-y-2">
+            <input
+              type="file"
+              id={field.name}
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  try {
+                    setError(null);
+                    // Upload file to cloud storage
+                    const { uploadToCloud } = await import(
+                      "@/app/lib/cloud-upload-client"
+                    );
+                    const result = await uploadToCloud(file);
+                    // Update form data with the public URL
+                    handleInputChange(field.name, result.publicUrl);
+                  } catch (error) {
+                    console.error("File upload error:", error);
+                    setError("Failed to upload image. Please try again.");
+                  }
+                }
+              }}
+              className={baseInputClass}
+            />
+            {/* Hidden input to store the uploaded URL */}
+            <input type="hidden" name={field.name} value={value || ""} />
+            {value && (
+              <div className="text-sm text-green-600 dark:text-green-400">
+                ✓ Image uploaded successfully
+              </div>
+            )}
+          </div>
         );
 
       case "date":

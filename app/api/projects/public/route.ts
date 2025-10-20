@@ -8,6 +8,7 @@ export async function GET(request: Request) {
     const location = searchParams.get("location") || undefined;
     const category = searchParams.get("category") || undefined;
     const status = searchParams.get("status") || undefined;
+    const limit = searchParams.get("limit");
 
     const projects = await fetchPublicProjects({
       search,
@@ -16,7 +17,10 @@ export async function GET(request: Request) {
       status,
     });
 
-    return NextResponse.json(projects);
+    // Apply limit if specified
+    const result = limit ? projects.slice(0, parseInt(limit)) : projects;
+
+    return NextResponse.json(result);
   } catch (error) {
     console.error("Error fetching public projects:", error);
     return NextResponse.json(

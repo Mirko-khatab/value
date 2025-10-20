@@ -3,7 +3,8 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { getConnection } from "./serverutils";
 import { redirect } from "next/navigation";
-import { deleteCloudFile } from "./cloud-storage";
+import { deleteCloudFile, uploadFileToCloud } from "./cloud-storage";
+import { getPublicFileUrl } from "./cloud-storage-utils";
 import * as mysql from "mysql2/promise";
 
 import { signIn, signOut } from "@/auth";
@@ -742,6 +743,11 @@ const CreateBlog = z.object({
 export async function createBlog(prevState: BlogState, formData: FormData) {
   // Debug logging for development
   console.log("Creating event with form data");
+  console.log("DEBUG: ParentType.Blog value is:", ParentType.Blog);
+  console.log(
+    "DEBUG: ParentType.Blog.toString() is:",
+    ParentType.Blog.toString()
+  );
   console.log(
     "Gallery images count:",
     formData.getAll("gallery_url_0").length > 0 ? "Yes" : "No"
@@ -869,6 +875,12 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
         image,
         "with order_index:",
         nextOrderIndex
+      );
+      console.log(
+        "DEBUG: Inserting gallery with parent_type:",
+        ParentType.Blog.toString(),
+        "which equals:",
+        ParentType.Blog
       );
       await connection.execute(
         "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
@@ -1040,6 +1052,12 @@ export async function updateBlog(id: string, formData: FormData) {
         image,
         "with order_index:",
         nextOrderIndex
+      );
+      console.log(
+        "DEBUG: Updating gallery with parent_type:",
+        ParentType.Blog.toString(),
+        "which equals:",
+        ParentType.Blog
       );
       await connection.execute(
         "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
@@ -1390,7 +1408,14 @@ const CreateQuote = z.object({
   title_ku: z.string().min(1, "Kurdish title is required"),
   title_en: z.string().min(1, "English title is required"),
   title_ar: z.string().min(1, "Arabic title is required"),
-  image_url: z.string().min(1, "Image is required"),
+  image_url: z.string().optional(),
+});
+
+const UpdateQuote = z.object({
+  title_ku: z.string().min(1, "Kurdish title is required"),
+  title_en: z.string().min(1, "English title is required"),
+  title_ar: z.string().min(1, "Arabic title is required"),
+  image_url: z.string().optional(),
 });
 
 export type QuoteState = {
@@ -1404,11 +1429,14 @@ export type QuoteState = {
 };
 
 export async function createQuote(prevState: QuoteState, formData: FormData) {
+  // Get the image URL (already uploaded by client)
+  const imageUrl = formData.get("image_url") as string;
+
   const validatedFields = CreateQuote.safeParse({
     title_ku: formData.get("title_ku"),
     title_en: formData.get("title_en"),
     title_ar: formData.get("title_ar"),
-    image_url: formData.get("image_url"),
+    image_url: imageUrl || "",
   });
 
   if (!validatedFields.success) {
@@ -1419,7 +1447,7 @@ export async function createQuote(prevState: QuoteState, formData: FormData) {
   }
 
   const { title_ku, title_en, title_ar, image_url } = validatedFields.data;
-  console.log(image_url);
+  console.log("Quote image URL:", image_url);
   const connection = await getConnection();
   try {
     await connection.beginTransaction();
@@ -1431,6 +1459,7 @@ export async function createQuote(prevState: QuoteState, formData: FormData) {
     )) as any[];
 
     if (existingQuote.length > 0) {
+      await connection.end();
       return {
         errors: {
           title_en: ["Quote with this name already exists"],
@@ -1441,12 +1470,14 @@ export async function createQuote(prevState: QuoteState, formData: FormData) {
 
     // Insert quote record
     await connection.execute(
-      "INSERT INTO quotes (title_ku, title_en, title_ar,image_url) VALUES (?, ?, ?,?)",
+      "INSERT INTO quotes (title_ku, title_en, title_ar, image_url) VALUES (?, ?, ?, ?)",
       [title_ku, title_en, title_ar, image_url]
     );
 
     await connection.commit();
+    await connection.end();
   } catch (error) {
+    await connection.end();
     console.error("Database Error: Failed to Create Quote.", error);
     return {
       errors: {},
@@ -1458,8 +1489,8 @@ export async function createQuote(prevState: QuoteState, formData: FormData) {
 }
 
 export async function deleteQuote(id: string) {
+  const connection = await getConnection();
   try {
-    const connection = await getConnection();
     await connection.beginTransaction();
 
     console.log("Deleting quote for ID:", id);
@@ -1468,8 +1499,10 @@ export async function deleteQuote(id: string) {
     await connection.execute("DELETE FROM quotes WHERE id = ?", [id]);
 
     await connection.commit();
+    await connection.end();
     console.log("Quote deleted successfully");
   } catch (error) {
+    await connection.end();
     console.error("Database Error: Failed to Delete Quote.", error);
     throw new Error("Failed to delete quote");
   }
@@ -1477,11 +1510,33 @@ export async function deleteQuote(id: string) {
 }
 
 export async function updateQuote(id: string, formData: FormData) {
-  const validatedFields = CreateQuote.safeParse({
+  // Get the image URL (either new upload or existing)
+  let imageUrl = formData.get("image_url") as string;
+
+  // If no new image URL provided, keep the existing one
+  if (!imageUrl) {
+    const connection = await getConnection();
+    try {
+      const [existingQuote] = (await connection.execute(
+        "SELECT image_url FROM quotes WHERE id = ?",
+        [id]
+      )) as any[];
+
+      if (existingQuote.length > 0) {
+        imageUrl = existingQuote[0].image_url || "";
+      }
+      await connection.end();
+    } catch (error) {
+      await connection.end();
+      console.error("Error fetching existing quote:", error);
+    }
+  }
+
+  const validatedFields = UpdateQuote.safeParse({
     title_ku: formData.get("title_ku"),
     title_en: formData.get("title_en"),
     title_ar: formData.get("title_ar"),
-    image_url: formData.get("image_url"),
+    image_url: imageUrl || "",
   });
 
   if (!validatedFields.success) {
@@ -1505,6 +1560,7 @@ export async function updateQuote(id: string, formData: FormData) {
     )) as any[];
 
     if (existingQuote.length > 0) {
+      await connection.end();
       return {
         errors: {
           title_en: ["Quote with this name already exists"],
@@ -1520,7 +1576,9 @@ export async function updateQuote(id: string, formData: FormData) {
     );
     console.log("Quote updated successfully");
     await connection.commit();
+    await connection.end();
   } catch (error) {
+    await connection.end();
     console.error("Database Error: Failed to Update Quote.", error);
     throw new Error("Failed to update quote");
   }

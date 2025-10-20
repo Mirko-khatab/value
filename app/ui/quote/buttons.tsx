@@ -27,13 +27,19 @@ export function UpdateQuote({ id }: { id: string }) {
 }
 
 export function DeleteQuote({ id }: { id: string }) {
-  const deleteQuoteWithId = async (formData: FormData) => {
+  const handleDelete = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to delete this quote? This action cannot be undone."
+      )
+    ) {
+      return;
+    }
+
     try {
       await deleteQuote(id);
-      // If successful, redirect or refresh
       window.location.href = "/dashboard/quote";
     } catch (error) {
-      // Show user-friendly error message
       const errorMessage =
         error instanceof Error ? error.message : "Failed to delete quote";
       alert(errorMessage);
@@ -41,25 +47,13 @@ export function DeleteQuote({ id }: { id: string }) {
   };
 
   return (
-    <>
-      <form action={deleteQuoteWithId}>
-        <button
-          type="submit"
-          className="rounded-md border p-2 hover:bg-gray-100"
-          onClick={(e) => {
-            if (
-              !confirm(
-                "Are you sure you want to delete this quote? This action cannot be undone."
-              )
-            ) {
-              e.preventDefault();
-            }
-          }}
-        >
-          <span className="sr-only">Delete</span>
-          <TrashIcon className="w-5" />
-        </button>
-      </form>
-    </>
+    <button
+      type="button"
+      onClick={handleDelete}
+      className="rounded-md border p-2 hover:bg-gray-100 dark:hover:bg-gray-700"
+    >
+      <span className="sr-only">Delete</span>
+      <TrashIcon className="w-5" />
+    </button>
   );
 }

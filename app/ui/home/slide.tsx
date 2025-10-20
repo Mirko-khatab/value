@@ -3,28 +3,57 @@
 import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/app/lib/language-context";
+import Link from "next/link";
 
-interface Banner {
+interface Project {
   id: string;
   title_ku: string;
   title_en: string;
   title_ar: string;
-  image_url: string;
-  video_url: string;
-  type: "image" | "video";
-  is_active: boolean;
-  sort_order: number;
+  description_ku: string;
+  description_ar: string;
+  description_en: string;
+  gallery_image_url?: string;
 }
 
-interface MediaItem {
-  type: "image" | "video";
-  src: string;
-  alt?: string;
-  poster?: string;
-  title?: string;
-  title_en?: string;
-  title_ar?: string;
-  title_ku?: string;
+interface Product {
+  id: string;
+  title_ku: string;
+  title_en: string;
+  title_ar: string;
+  description_ku: string;
+  description_ar: string;
+  description_en: string;
+  gallery_image_url?: string;
+}
+
+interface Graphic {
+  id: string;
+  image_url: string;
+  created_at: string;
+}
+
+interface Event {
+  id: string;
+  title_ku: string;
+  title_en: string;
+  title_ar: string;
+  description_ku: string;
+  description_ar: string;
+  description_en: string;
+  gallery_image_url?: string;
+}
+
+interface SlideItem {
+  type: "projects" | "products" | "graphics" | "events";
+  title_ku: string;
+  title_en: string;
+  title_ar: string;
+  description_ku: string;
+  description_ar: string;
+  description_en: string;
+  items: (Project | Product | Graphic | Event)[];
+  link: string;
 }
 
 interface SlideProps {
@@ -36,86 +65,144 @@ export const Slide: React.FC<SlideProps> = ({
   autoPlay = true,
   interval = 8000,
 }) => {
-  const { language } = useLanguage();
-  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const { language, t } = useLanguage();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [graphics, setGraphics] = useState<Graphic[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
-  // Fetch banners from database
+  // Helper function to get localized field
+  const getLocalizedField = (item: any, fieldName: string): string => {
+    const field = `${fieldName}_${language}`;
+    return item[field] || item[`${fieldName}_en`] || "";
+  };
+
+  // Check if language is RTL
+  const isRTL = language === "ar" || language === "ku";
+
+  // Fetch latest content from all sections
   useEffect(() => {
-    const fetchBanners = async () => {
+    const fetchLatestContent = async () => {
       try {
-        const response = await fetch("/api/banners");
-        if (!response.ok) {
-          throw new Error("Failed to fetch banners");
+        setLoading(true);
+        const [
+          projectsResponse,
+          productsResponse,
+          graphicsResponse,
+          eventsResponse,
+        ] = await Promise.all([
+          fetch("/api/projects/public?limit=6"),
+          fetch("/api/products/public?limit=6"),
+          fetch("/api/graphics?limit=6"),
+          fetch("/api/event?limit=6"),
+        ]);
+
+        if (projectsResponse.ok) {
+          const projectsData = await projectsResponse.json();
+          setProjects(projectsData.slice(0, 6));
         }
-        const banners: Banner[] = await response.json();
 
-        // Convert banners to media items
-        const items: MediaItem[] = banners.map((banner) => ({
-          type: banner.type,
-          src: banner.type === "video" ? banner.video_url : banner.image_url,
-          alt: banner.title_en,
-          title: banner.title_en, // Default to English
-          title_en: banner.title_en,
-          title_ar: banner.title_ar,
-          title_ku: banner.title_ku,
-        }));
+        if (productsResponse.ok) {
+          const productsData = await productsResponse.json();
+          setProducts(productsData.slice(0, 6));
+        }
 
-        setMediaItems(items);
+        if (graphicsResponse.ok) {
+          const graphicsData = await graphicsResponse.json();
+          setGraphics(graphicsData.slice(0, 6));
+        }
+
+        if (eventsResponse.ok) {
+          const eventsData = await eventsResponse.json();
+          setEvents(eventsData.slice(0, 6));
+        }
       } catch (error) {
-        console.error("Error fetching banners:", error);
-        // Set empty array if fetch fails
-        setMediaItems([]);
+        console.error("Error fetching latest content:", error);
+        // Set fallback data
+        setProjects([]);
+        setProducts([]);
+        setGraphics([]);
+        setEvents([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBanners();
+    fetchLatestContent();
   }, []);
 
-  // Get title based on current language
-  const getCurrentTitle = (item: MediaItem) => {
-    switch (language) {
-      case "ku":
-        return item.title_ku || item.title_en;
-      case "ar":
-        return item.title_ar || item.title_en;
-      default:
-        return item.title_en || item.title;
-    }
-  };
+  // Create slide items from fetched data (only if items exist)
+  const slideItems: SlideItem[] = [];
 
-  const isRTL = language === "ar" || language === "ku";
+  if (projects.length > 0) {
+    slideItems.push({
+      type: "projects",
+      title_ku: "پڕۆژەکان",
+      title_en: "Projects",
+      title_ar: "المشاريع",
+      description_ku: "دوایین پڕۆژە ئەندازیارییەکانمان ببینن",
+      description_en: "Explore our latest engineering projects",
+      description_ar: "استكشف أحدث مشاريعنا الهندسية",
+      items: projects,
+      link: "/projects",
+    });
+  }
 
+  if (products.length > 0) {
+    slideItems.push({
+      type: "products",
+      title_ku: "بەرهەمەکان",
+      title_en: "Products",
+      title_ar: "المنتجات",
+      description_ku: "دوایین بەرهەمەکانمان ببینن",
+      description_en: "Discover our latest products",
+      description_ar: "اكتشف أحدث منتجاتنا",
+      items: products,
+      link: "/product",
+    });
+  }
+
+  if (graphics.length > 0) {
+    slideItems.push({
+      type: "graphics",
+      title_ku: "گرافیکەکان",
+      title_en: "Graphics",
+      title_ar: "الرسوميات",
+      description_ku: "دوایین دیزاینە داهێنەرەکانمان ببینن",
+      description_en: "Discover our latest creative graphic designs",
+      description_ar: "اكتشف أحدث تصاميمنا الجرافيكية الإبداعية",
+      items: graphics,
+      link: "/graphics",
+    });
+  }
+
+  if (events.length > 0) {
+    slideItems.push({
+      type: "events",
+      title_ku: "ڕووداوەکان",
+      title_en: "Events",
+      title_ar: "الأحداث",
+      description_ku: "دوایین ڕووداوە گرنگەکانمان ببینن",
+      description_en: "Check out our latest important events",
+      description_ar: "تحقق من أحدث أحداثنا المهمة",
+      items: events,
+      link: "/event",
+    });
+  }
+
+  // Auto-play functionality
   useEffect(() => {
-    if (autoPlay && mediaItems.length > 1) {
+    if (autoPlay && slideItems.length > 1) {
       const timer = setInterval(() => {
         setCurrentIndex((prev) =>
-          prev === mediaItems.length - 1 ? 0 : prev + 1
+          prev === slideItems.length - 1 ? 0 : prev + 1
         );
       }, interval);
       return () => clearInterval(timer);
     }
-  }, [autoPlay, interval, mediaItems.length]);
-
-  // Control video playback based on active slide
-  useEffect(() => {
-    videoRefs.current.forEach((video, index) => {
-      if (video) {
-        if (index === currentIndex) {
-          video.play().catch((error) => {
-            console.log("Video play failed:", error);
-          });
-        } else {
-          video.pause();
-          video.currentTime = 0;
-        }
-      }
-    });
-  }, [currentIndex]);
+  }, [autoPlay, interval, slideItems.length]);
 
   const goToSlide = (index: number) => setCurrentIndex(index);
 
@@ -123,140 +210,249 @@ export const Slide: React.FC<SlideProps> = ({
   if (loading) {
     return (
       <div className="relative w-full h-screen overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
-        <div className="text-gray-600 dark:text-gray-400">
-          Loading banners...
+        <div className="text-gray-600 dark:text-gray-400 text-xl">
+          {t("loading", {
+            en: "Loading content...",
+            ar: "جاري تحميل المحتوى...",
+            ku: "بارکردنی ناوەڕۆک...",
+          })}
         </div>
       </div>
     );
   }
 
-  // Show empty state if no banners
-  if (mediaItems.length === 0) {
+  // Show empty state if no content
+  if (slideItems.length === 0) {
     return (
-      <div className="relative w-full h-screen overflow-hidden bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
-        <div className="text-gray-500 dark:text-gray-400">
-          No banners available
+      <div className="relative w-full h-screen overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-4">
+            {t("no_content", {
+              en: "No content available",
+              ar: "لا يوجد محتوى متاح",
+              ku: "هیچ ناوەڕۆکێک بەردەست نییە",
+            })}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            {t("check_back", {
+              en: "Please check back later",
+              ar: "يرجى المراجعة لاحقاً",
+              ku: "تکایە دواتر بگەڕێوە",
+            })}
+          </p>
         </div>
       </div>
     );
   }
+
+  const currentSlide = slideItems[currentIndex];
+
+  // Get background image from the first item of current slide
+  const getBackgroundImage = (slide: SlideItem): string => {
+    if (slide.items.length === 0) return "/image/2.jpg";
+
+    const firstItem = slide.items[0];
+    if (slide.type === "graphics") {
+      const imageUrl = (firstItem as Graphic).image_url;
+      return imageUrl && imageUrl.trim() !== "" ? imageUrl : "/image/2.jpg";
+    } else {
+      const galleryImageUrl = (firstItem as Project | Product | Event)
+        .gallery_image_url;
+      return galleryImageUrl && galleryImageUrl.trim() !== ""
+        ? galleryImageUrl
+        : "/image/2.jpg";
+    }
+  };
 
   return (
-    <div
-      className={
-        // Responsive height: shorter on phones, full-screen from md+
-        "relative w-full h-screen overflow-hidden"
-      }
-    >
-      {/* Slides */}
-      <div className="relative w-full h-full">
-        {mediaItems.map((item, index) => {
-          const isActive = index === currentIndex;
-          return (
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* Full-Screen Background Image */}
+      <div className="absolute inset-0">
+        <Image
+          src={getBackgroundImage(currentSlide)}
+          alt={getLocalizedField(currentSlide, "title")}
+          fill
+          className="object-cover"
+          priority
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            if (target.src !== "/image/2.jpg") {
+              target.src = "/image/2.jpg";
+            }
+          }}
+        />
+        <div className="absolute inset-0 bg-black/60"></div>
+      </div>
+
+      {/* Content Overlay */}
+      <div className="relative z-10 h-full flex items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
             <div
-              key={index}
               className={`${
-                isActive ? "block" : "hidden"
-              } duration-700 ease-in-out absolute inset-0`}
+                isRTL ? "lg:order-2 text-right" : "lg:order-1 text-left"
+              }`}
             >
-              {item.type === "image" ? (
-                <Image
-                  src={item.src}
-                  className="w-full h-full object-cover"
-                  alt={item.alt || `Slide ${index + 1}`}
-                  fill
-                  quality={100}
-                  priority={index === 0}
-                  sizes="100vw"
-                  loading={isActive || index === 0 ? "eager" : "lazy"}
-                />
-              ) : (
-                <video
-                  ref={(el) => {
-                    videoRefs.current[index] = el;
-                  }}
-                  className="w-full h-full object-cover"
-                  muted
-                  loop
-                  poster={item.poster}
-                  preload="auto"
-                  playsInline
+              <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 drop-shadow-2xl">
+                {getLocalizedField(currentSlide, "title")}
+              </h1>
+              <p className="text-xl lg:text-2xl text-white/90 mb-8 leading-relaxed drop-shadow-lg">
+                {getLocalizedField(currentSlide, "description")}
+              </p>
+
+              {/* View All Button */}
+              <Link
+                href={currentSlide.link}
+                className="inline-flex items-center px-8 py-4 bg-[#2E5A7A] text-white font-semibold rounded-full hover:bg-[#1e3a4a] transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+              >
+                {t("explore_more", {
+                  en: "Explore More",
+                  ar: "استكشف المزيد",
+                  ku: "زیاتر بگەڕێ",
+                })}
+                <svg
+                  className={`w-5 h-5 ${isRTL ? "mr-2" : "ml-2"}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
                 >
-                  <source src={item.src} type="video/mp4" />
-                  <source
-                    src={item.src.replace(".mp4", ".webm")}
-                    type="video/webm"
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d={isRTL ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"}
                   />
-                  Your browser does not support the video tag.
-                </video>
+                </svg>
+              </Link>
+            </div>
+
+            {/* Items Grid */}
+            <div className={`${isRTL ? "lg:order-1" : "lg:order-2"}`}>
+              {currentSlide.items.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {currentSlide.items.slice(0, 6).map((item, index) => (
+                    <Link
+                      key={item.id}
+                      href={
+                        currentSlide.type === "projects"
+                          ? `/project/${item.id}`
+                          : currentSlide.type === "products"
+                          ? `/product/${item.id}`
+                          : currentSlide.type === "events"
+                          ? `/event/${item.id}`
+                          : "#"
+                      }
+                    >
+                      <div className="group bg-white/10 backdrop-blur-sm dark:bg-gray-800/20 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden cursor-pointer hover:scale-105 border border-white/20">
+                        <div className="relative h-32 overflow-hidden">
+                          <Image
+                            src={
+                              currentSlide.type === "graphics"
+                                ? (item as Graphic).image_url || "/image/2.jpg"
+                                : (item as Project | Product | Event)
+                                    .gallery_image_url || "/image/2.jpg"
+                            }
+                            alt={
+                              currentSlide.type === "graphics"
+                                ? "Graphic Design"
+                                : getLocalizedField(item, "title")
+                            }
+                            fill
+                            className="object-cover group-hover:scale-110 transition-transform duration-300"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              if (target.src !== "/image/2.jpg") {
+                                target.src = "/image/2.jpg";
+                              }
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+
+                        {/* Show title for projects, products and events */}
+                        {currentSlide.type !== "graphics" && (
+                          <div className="p-3">
+                            <h3 className="text-sm font-semibold text-white line-clamp-2 drop-shadow-lg">
+                              {getLocalizedField(item, "title")}
+                            </h3>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                  ))}
+                </div>
               )}
             </div>
-          );
-        })}
-      </div>
-
-      {/* Bottom gradient overlay for better title visibility */}
-      <div
-        className="absolute bottom-0 left-0 right-0 h-48 sm:h-56 md:h-64 z-10 pointer-events-none"
-        style={{
-          background:
-            "linear-gradient(to top, rgba(0, 0, 0, 0.4), transparent)",
-        }}
-      />
-
-      {/* Side blur overlays — hidden on small screens */}
-      <div
-        className="hidden md:block absolute top-0 left-0 w-24 lg:w-28 xl:w-32 2xl:w-36 h-full z-10 pointer-events-none transition-all duration-300"
-        style={{
-          background: "linear-gradient(to right, #596A86, transparent)",
-          opacity: 0.9,
-          filter: "blur(8px)",
-        }}
-      />
-      <div
-        className="hidden md:block absolute top-0 right-0 w-24 lg:w-28 xl:w-32 2xl:w-36 h-full z-10 pointer-events-none transition-all duration-300"
-        style={{
-          background: "linear-gradient(to left, #596A86, transparent)",
-          opacity: 0.9,
-          filter: "blur(8px)",
-        }}
-      />
-
-      {/* Slide Title */}
-      {mediaItems[currentIndex] && (
-        <div className="absolute z-20 bottom-20 sm:bottom-24 md:bottom-28 left-1/2 transform -translate-x-1/2 text-center">
-          <h2
-            className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white drop-shadow-lg px-4 py-2"
-            dir={isRTL ? "rtl" : "ltr"}
-            style={{
-              fontFamily: isRTL ? "'Arial', 'Tahoma', sans-serif" : "inherit",
-            }}
-          >
-            {getCurrentTitle(mediaItems[currentIndex])}
-          </h2>
+          </div>
         </div>
-      )}
-
-      {/* Dots */}
-      <div className="absolute z-30 flex -translate-x-1/2 bottom-4 sm:bottom-6 md:bottom-8 left-1/2 space-x-2 sm:space-x-3 md:space-x-4">
-        {mediaItems.map((_, index) => {
-          const active = index === currentIndex;
-          return (
-            <button
-              key={index}
-              type="button"
-              className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full transition-all duration-300 ${
-                active
-                  ? "bg-white shadow-lg scale-110"
-                  : "bg-white/50 hover:bg-white/70 hover:scale-105"
-              }`}
-              aria-current={active ? "true" : "false"}
-              aria-label={`Go to slide ${index + 1}`}
-              onClick={() => goToSlide(index)}
-            />
-          );
-        })}
       </div>
+
+      {/* Navigation Dots */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
+        {slideItems.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => goToSlide(index)}
+            className={`w-4 h-4 rounded-full transition-all duration-300 ${
+              index === currentIndex
+                ? "bg-[#2E5A7A] scale-125"
+                : "bg-white/50 hover:bg-white/75"
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Navigation Arrows */}
+      <button
+        onClick={() =>
+          goToSlide(
+            currentIndex === 0 ? slideItems.length - 1 : currentIndex - 1
+          )
+        }
+        className={`absolute top-1/2 transform -translate-y-1/2 ${
+          isRTL ? "right-4" : "left-4"
+        } z-20 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 backdrop-blur-sm`}
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d={isRTL ? "M9 5l7 7-7 7" : "M15 19l-7-7 7-7"}
+          />
+        </svg>
+      </button>
+
+      <button
+        onClick={() =>
+          goToSlide(
+            currentIndex === slideItems.length - 1 ? 0 : currentIndex + 1
+          )
+        }
+        className={`absolute top-1/2 transform -translate-y-1/2 ${
+          isRTL ? "left-4" : "right-4"
+        } z-20 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-300 backdrop-blur-sm`}
+      >
+        <svg
+          className="w-6 h-6"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d={isRTL ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"}
+          />
+        </svg>
+      </button>
     </div>
   );
 };
