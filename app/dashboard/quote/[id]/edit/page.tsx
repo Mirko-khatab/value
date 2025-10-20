@@ -1,6 +1,8 @@
-import Form from "@/app/ui/quote/form";
-import Breadcrumbs from "@/app/ui/quote/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
+import DashboardForm from "@/app/ui/dashboard/form";
+import { quotesFormFields } from "@/app/ui/dashboard/config";
 import { fetchQuoteById } from "@/app/lib/data";
+import { updateQuote } from "@/app/lib/actions";
 import { notFound } from "next/navigation";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
@@ -15,14 +17,10 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const quoteData = quote[0];
 
-  // Convert to plain object to ensure proper serialization
-  const serializedQuote = {
-    id: quoteData.id,
-    title_ku: quoteData.title_ku,
-    title_ar: quoteData.title_ar,
-    title_en: quoteData.title_en,
-    image_url: quoteData.image_url,
-  };
+  async function handleSubmit(formData: FormData) {
+    "use server";
+    await updateQuote(id, formData);
+  }
 
   return (
     <main>
@@ -36,7 +34,19 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           },
         ]}
       />
-      <Form mode="edit" quote={serializedQuote} />
+      <div className="mt-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Edit Quote
+        </h1>
+        <DashboardForm
+          fields={quotesFormFields}
+          onSubmit={handleSubmit}
+          cancelPath="/dashboard/quote"
+          entityName="Quote"
+          mode="edit"
+          initialData={quoteData}
+        />
+      </div>
     </main>
   );
 }

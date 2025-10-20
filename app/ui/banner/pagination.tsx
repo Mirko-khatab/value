@@ -82,14 +82,13 @@ function PaginationNumber({
 }) {
   const className = classNames(
     "flex h-10 w-10 items-center justify-center text-sm border",
-    {
-      "rounded-l-md": position === "first" || position === "single",
-      "rounded-r-md": position === "last" || position === "single",
-      "z-10 bg-blue-600 border-blue-600 text-white": isActive,
-      "hover:bg-gray-100 dark:hover:bg-gray-700":
-        !isActive && position !== "middle",
-      "text-gray-300 dark:text-gray-600": position === "middle",
-    }
+    (position === "first" || position === "single") && "rounded-l-md",
+    (position === "last" || position === "single") && "rounded-r-md",
+    isActive && "z-10 bg-blue-600 border-blue-600 text-white",
+    !isActive &&
+      position !== "middle" &&
+      "hover:bg-gray-100 dark:hover:bg-gray-700",
+    position === "middle" && "text-gray-300 dark:text-gray-600"
   );
 
   return isActive || position === "middle" ? (
@@ -112,12 +111,10 @@ function PaginationArrow({
 }) {
   const className = classNames(
     "flex h-10 w-10 items-center justify-center rounded-md border",
-    {
-      "pointer-events-none text-gray-300 dark:text-gray-600": isDisabled,
-      "hover:bg-gray-100 dark:hover:bg-gray-700": !isDisabled,
-      "mr-2 md:mr-4": direction === "left",
-      "ml-2 md:ml-4": direction === "right",
-    }
+    isDisabled && "pointer-events-none text-gray-300 dark:text-gray-600",
+    !isDisabled && "hover:bg-gray-100 dark:hover:bg-gray-700",
+    direction === "left" && "mr-2 md:mr-4",
+    direction === "right" && "ml-2 md:ml-4"
   );
 
   const icon =

@@ -4,7 +4,7 @@ import Pagination from "@/app/ui/banner/pagination";
 import Search from "@/app/ui/banner/search";
 import BannersTable from "@/app/ui/banner/table";
 import { CreateBanner } from "@/app/ui/banner/buttons";
-import Breadcrumbs from "@/app/ui/banner/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
 
 export default async function Page({
   searchParams,

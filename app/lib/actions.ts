@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getConnection } from "./serverutils";
 import { redirect } from "next/navigation";
 import { deleteCloudFile } from "./cloud-storage";
+import * as mysql from "mysql2/promise";
 
 import { signIn, signOut } from "@/auth";
 import { AuthError } from "next-auth";
@@ -13,7 +14,6 @@ import {
   SocialMedia,
   SocialMediaType,
   Banner,
-  Audio,
 } from "./definitions";
 
 const FormSchema = z.object({
@@ -132,7 +132,6 @@ const CreateTeam = z.object({
   position_ar: z.string().min(1, "Position is required"),
   position_en: z.string().min(1, "Position is required"),
   image_url: z.string().min(1, "Image is required"),
-  special: z.string().min(1, "Special is required"),
 });
 
 export async function createTeam(prevState: TeamState, formData: FormData) {
@@ -144,7 +143,6 @@ export async function createTeam(prevState: TeamState, formData: FormData) {
     position_ar: formData.get("position_ar"),
     position_en: formData.get("position_en"),
     image_url: formData.get("image_url"),
-    special: formData.get("special"),
   });
 
   if (!validatedFields.success) {
@@ -166,12 +164,11 @@ export async function createTeam(prevState: TeamState, formData: FormData) {
     position_ar,
     position_en,
     image_url,
-    special,
   } = validatedFields.data;
   try {
     const connection = await getConnection();
     await connection.execute(
-      "INSERT INTO teams (name_ku, name_ar, name_en, position_ku, position_ar, position_en, image_url, special) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO teams (name_ku, name_ar, name_en, position_ku, position_ar, position_en, image_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
         name_ku,
         name_ar,
@@ -180,7 +177,6 @@ export async function createTeam(prevState: TeamState, formData: FormData) {
         position_ar,
         position_en,
         image_url,
-        special,
       ]
     );
     await connection.commit();
@@ -204,7 +200,6 @@ export type TeamState = {
     position_ar?: string[];
     position_en?: string[];
     image_url?: string[];
-    special?: string[];
   };
   message?: string | null;
 };
@@ -218,7 +213,6 @@ export async function updateTeam(id: string, formData: FormData) {
     position_ar,
     position_en,
     image_url,
-    special,
   } = CreateTeam.parse({
     name_ku: formData.get("name_ku"),
     name_ar: formData.get("name_ar"),
@@ -227,7 +221,6 @@ export async function updateTeam(id: string, formData: FormData) {
     position_ar: formData.get("position_ar"),
     position_en: formData.get("position_en"),
     image_url: formData.get("image_url"),
-    special: formData.get("special"),
   });
 
   try {
@@ -235,7 +228,7 @@ export async function updateTeam(id: string, formData: FormData) {
 
     // Update the team with new data
     await connection.execute(
-      "UPDATE teams SET name_ku = ?, name_ar = ?, name_en = ?, position_ku = ?, position_ar = ?, position_en = ?, image_url = ?, special = ? WHERE id = ?",
+      "UPDATE teams SET name_ku = ?, name_ar = ?, name_en = ?, position_ku = ?, position_ar = ?, position_en = ?, image_url = ? WHERE id = ?",
       [
         name_ku,
         name_ar,
@@ -244,7 +237,6 @@ export async function updateTeam(id: string, formData: FormData) {
         position_ar,
         position_en,
         image_url,
-        special,
         id,
       ]
     );
@@ -281,9 +273,21 @@ const CreateProject = z.object({
   description_ar: z.string().min(1, "Description is required"),
   description_en: z.string().min(1, "Description is required"),
   date: z.string(),
-  image_url: z.string().optional(),
-  alt_text: z.string().optional(),
-  order_index: z.string().optional(),
+  project_category: z.coerce
+    .number()
+    .int()
+    .min(1, "Project category is required"),
+  project_status: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .max(1, "Project status must be 0 (InProgress) or 1 (Finish)"),
+  location_ku: z.string().min(1, "Location (Kurdish) is required"),
+  location_en: z.string().min(1, "Location (English) is required"),
+  location_ar: z.string().min(1, "Location (Arabic) is required"),
+  image_url: z.string().nullish(),
+  alt_text: z.string().nullish(),
+  order_index: z.string().nullish(),
 });
 
 export type ProjectState = {
@@ -295,6 +299,11 @@ export type ProjectState = {
     description_ar?: string[];
     description_en?: string[];
     date?: string[];
+    project_category?: string[];
+    project_status?: string[];
+    location_ku?: string[];
+    location_en?: string[];
+    location_ar?: string[];
     image_url?: string[];
     alt_text?: string[];
     order_index?: string[];
@@ -320,6 +329,11 @@ export async function createProject(
     description_ar: formData.get("description_ar"),
     description_en: formData.get("description_en"),
     date: formData.get("date"),
+    project_category: formData.get("project_category"),
+    project_status: formData.get("project_status"),
+    location_ku: formData.get("location_ku"),
+    location_en: formData.get("location_en"),
+    location_ar: formData.get("location_ar"),
     image_url: formData.get("image_url"),
     alt_text: formData.get("alt_text"),
     order_index: formData.get("order_index"),
@@ -344,6 +358,11 @@ export async function createProject(
     description_ar,
     description_en,
     date,
+    project_category,
+    project_status,
+    location_ku,
+    location_en,
+    location_ar,
     image_url,
     alt_text,
     order_index,
@@ -354,7 +373,7 @@ export async function createProject(
 
     // Insert only the basic project fields into projects table
     const [result] = await connection.execute(
-      "INSERT INTO projects (title_ku, title_ar, title_en, description_ku, description_ar, description_en, date) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO projects (title_ku, title_ar, title_en, description_ku, description_ar, description_en, date, project_category, project_status, location_ku, location_en, location_ar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
         title_ku,
         title_ar,
@@ -363,6 +382,11 @@ export async function createProject(
         description_ar,
         description_en,
         date,
+        project_category,
+        project_status,
+        location_ku,
+        location_en,
+        location_ar,
       ]
     );
 
@@ -480,6 +504,11 @@ export async function updateProject(id: string, formData: FormData) {
       description_ar: formData.get("description_ar"),
       description_en: formData.get("description_en"),
       date: formData.get("date"),
+      project_category: formData.get("project_category"),
+      project_status: formData.get("project_status"),
+      location_ku: formData.get("location_ku"),
+      location_en: formData.get("location_en"),
+      location_ar: formData.get("location_ar"),
       image_url: formData.get("image_url"),
       alt_text: formData.get("alt_text"),
       order_index: formData.get("order_index"),
@@ -495,6 +524,11 @@ export async function updateProject(id: string, formData: FormData) {
         description_ar: formData.get("description_ar"),
         description_en: formData.get("description_en"),
         date: formData.get("date"),
+        project_category: formData.get("project_category"),
+        project_status: formData.get("project_status"),
+        location_ku: formData.get("location_ku"),
+        location_en: formData.get("location_en"),
+        location_ar: formData.get("location_ar"),
         image_url: formData.get("image_url"),
         alt_text: formData.get("alt_text"),
         order_index: formData.get("order_index"),
@@ -512,6 +546,11 @@ export async function updateProject(id: string, formData: FormData) {
       description_ar,
       description_en,
       date,
+      project_category,
+      project_status,
+      location_ku,
+      location_en,
+      location_ar,
       image_url,
       alt_text,
       order_index,
@@ -528,7 +567,7 @@ export async function updateProject(id: string, formData: FormData) {
 
     // Update the project with new data
     await connection.execute(
-      "UPDATE projects SET title_ku = ?, title_ar = ?, title_en = ?, description_ku = ?, description_ar = ?, description_en = ?, date = ? WHERE id = ?",
+      "UPDATE projects SET title_ku = ?, title_ar = ?, title_en = ?, description_ku = ?, description_ar = ?, description_en = ?, date = ?, project_category = ?, project_status = ?, location_ku = ?, location_en = ?, location_ar = ? WHERE id = ?",
       [
         title_ku,
         title_ar,
@@ -537,6 +576,11 @@ export async function updateProject(id: string, formData: FormData) {
         description_ar,
         description_en,
         date,
+        project_category,
+        project_status,
+        location_ku,
+        location_en,
+        location_ar,
         id,
       ]
     );
@@ -684,7 +728,7 @@ export async function deleteProject(id: string) {
   revalidatePath("/dashboard/projects");
 }
 
-//create Blog
+//create event
 
 const CreateBlog = z.object({
   title_ku: z.string().min(1, "Title is required"),
@@ -697,7 +741,7 @@ const CreateBlog = z.object({
 
 export async function createBlog(prevState: BlogState, formData: FormData) {
   // Debug logging for development
-  console.log("Creating blog with form data");
+  console.log("Creating event with form data");
   console.log(
     "Gallery images count:",
     formData.getAll("gallery_url_0").length > 0 ? "Yes" : "No"
@@ -719,7 +763,7 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
     );
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Create Blog.",
+      message: "Missing Fields. Failed to Create event.",
     };
   }
 
@@ -741,9 +785,9 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
   try {
     await connection.beginTransaction();
 
-    // Insert blog record
+    // Insert event record
     const [result] = await connection.execute(
-      "INSERT INTO blogs (title_ku, title_ar, title_en, description_ku, description_ar, description_en) VALUES (?, ?, ?, ?, ?, ?)",
+      "INSERT INTO event (title_ku, title_ar, title_en, description_ku, description_ar, description_en) VALUES (?, ?, ?, ?, ?, ?)",
       [
         title_ku,
         title_ar,
@@ -755,7 +799,7 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
     );
 
     const blogId = (result as any).insertId;
-    console.log("Blog created with ID:", blogId);
+    console.log("event created with ID:", blogId);
 
     // Collect gallery images (similar to project logic)
     const galleryImages: {
@@ -843,14 +887,14 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
 
     await connection.commit();
   } catch (error) {
-    console.error("Database Error: Failed to Create Blog.", error);
+    console.error("Database Error: Failed to Create event.", error);
     return {
       errors: {},
-      message: "Database Error: Failed to create blog.",
+      message: "Database Error: Failed to create event.",
     };
   }
-  revalidatePath("/dashboard/blogs");
-  redirect("/dashboard/blogs");
+  revalidatePath("/dashboard/event");
+  redirect("/dashboard/event");
 }
 
 export type BlogState = {
@@ -884,7 +928,7 @@ export async function updateBlog(id: string, formData: FormData) {
     );
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Update Blog.",
+      message: "Missing Fields. Failed to Update event.",
     };
   }
 
@@ -906,9 +950,9 @@ export async function updateBlog(id: string, formData: FormData) {
   try {
     await connection.beginTransaction();
 
-    // Update blog record
+    // Update event record
     await connection.execute(
-      "UPDATE blogs SET title_ku = ?, title_ar = ?, title_en = ?, description_ku = ?, description_ar = ?, description_en = ? WHERE id = ?",
+      "UPDATE event SET title_ku = ?, title_ar = ?, title_en = ?, description_ku = ?, description_ar = ?, description_en = ? WHERE id = ?",
       [
         title_ku,
         title_ar,
@@ -920,9 +964,9 @@ export async function updateBlog(id: string, formData: FormData) {
       ]
     );
 
-    console.log("Blog updated successfully");
+    console.log("event updated successfully");
 
-    // Clear existing gallery entries for this blog
+    // Clear existing gallery entries for this event
     await connection.execute(
       "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
       [id, ParentType.Blog.toString()]
@@ -1013,12 +1057,12 @@ export async function updateBlog(id: string, formData: FormData) {
     console.log("Gallery images inserted successfully");
 
     await connection.commit();
-    console.log("Blog update completed successfully");
+    console.log("event update completed successfully");
   } catch (error) {
-    console.error("Database Error: Failed to Update Blog.", error);
-    throw new Error("Failed to update blog");
+    console.error("Database Error: Failed to Update event.", error);
+    throw new Error("Failed to update event");
   }
-  revalidatePath("/dashboard/blogs");
+  revalidatePath("/dashboard/event");
   // Remove redirect since this is called from client component
 }
 
@@ -1027,9 +1071,9 @@ export async function deleteBlog(id: string) {
     const connection = await getConnection();
     await connection.beginTransaction();
 
-    console.log("Deleting blog and associated gallery images for ID:", id);
+    console.log("Deleting event and associated gallery images for ID:", id);
 
-    // First, get all gallery images for this blog to delete from cloud storage
+    // First, get all gallery images for this event to delete from cloud storage
     const [galleries] = (await connection.execute(
       "SELECT image_url FROM galleries WHERE parent_id = ? AND parent_type = ?",
       [id, ParentType.Blog.toString()]
@@ -1056,16 +1100,16 @@ export async function deleteBlog(id: string) {
       [id, ParentType.Blog.toString()]
     );
 
-    // Delete the blog record
-    await connection.execute("DELETE FROM blogs WHERE id = ?", [id]);
+    // Delete the event record
+    await connection.execute("DELETE FROM event WHERE id = ?", [id]);
 
     await connection.commit();
-    console.log("Blog and gallery images deleted successfully");
+    console.log("event and gallery images deleted successfully");
   } catch (error) {
-    console.error("Database Error: Failed to Delete Blog.", error);
-    throw new Error("Failed to delete blog");
+    console.error("Database Error: Failed to Delete event.", error);
+    throw new Error("Failed to delete event");
   }
-  revalidatePath("/dashboard/blogs");
+  revalidatePath("/dashboard/event");
 }
 
 //create Product
@@ -2325,4 +2369,275 @@ export async function deleteAudio(id: string) {
     await connection.end();
   }
   revalidatePath("/dashboard/audios");
+}
+
+// PROJECT CATEGORY CRUD
+const CreateProjectCategory = z.object({
+  title_ku: z.string().min(1, "Kurdish title is required"),
+  title_en: z.string().min(1, "English title is required"),
+  title_ar: z.string().min(1, "Arabic title is required"),
+});
+
+export type ProjectCategoryState = {
+  errors?: {
+    title_ku?: string[];
+    title_en?: string[];
+    title_ar?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createProjectCategory(
+  prevState: ProjectCategoryState,
+  formData: FormData
+) {
+  const validatedFields = CreateProjectCategory.safeParse({
+    title_ku: formData.get("title_ku"),
+    title_en: formData.get("title_en"),
+    title_ar: formData.get("title_ar"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Create Project Category.",
+    };
+  }
+
+  const { title_ku, title_en, title_ar } = validatedFields.data;
+
+  try {
+    const connection = await getConnection();
+    await connection.execute(
+      "INSERT INTO project_categories (title_ku, title_en, title_ar) VALUES (?, ?, ?)",
+      [title_ku, title_en, title_ar]
+    );
+    await connection.end();
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Create Project Category.",
+    };
+  }
+
+  revalidatePath("/dashboard/project-category");
+  redirect("/dashboard/project-category");
+}
+
+export async function updateProjectCategory(id: string, formData: FormData) {
+  const validatedFields = CreateProjectCategory.safeParse({
+    title_ku: formData.get("title_ku"),
+    title_en: formData.get("title_en"),
+    title_ar: formData.get("title_ar"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Update Project Category.",
+    };
+  }
+
+  const { title_ku, title_en, title_ar } = validatedFields.data;
+
+  try {
+    const connection = await getConnection();
+    await connection.execute(
+      "UPDATE project_categories SET title_ku = ?, title_en = ?, title_ar = ? WHERE id = ?",
+      [title_ku, title_en, title_ar, id]
+    );
+    await connection.end();
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Update Project Category.",
+    };
+  }
+
+  revalidatePath("/dashboard/project-category");
+  redirect("/dashboard/project-category");
+}
+
+export async function deleteProjectCategory(id: string) {
+  try {
+    const connection = await getConnection();
+    await connection.execute("DELETE FROM project_categories WHERE id = ?", [
+      id,
+    ]);
+    await connection.end();
+    revalidatePath("/dashboard/project-category");
+    return { message: "Project Category Deleted Successfully." };
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Delete Project Category.",
+    };
+  }
+}
+
+// GRAPHICS CRUD
+const CreateGraphic = z.object({
+  image_url: z.string().min(1, "Image URL is required"),
+});
+
+export type GraphicState = {
+  errors?: {
+    image_url?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createGraphic(
+  prevState: GraphicState,
+  formData: FormData
+) {
+  console.log("=== CREATE GRAPHIC START ===");
+  console.log("Form data image_url:", formData.get("image_url"));
+
+  const validatedFields = CreateGraphic.safeParse({
+    image_url: formData.get("image_url"),
+  });
+
+  if (!validatedFields.success) {
+    console.log(
+      "Validation failed:",
+      validatedFields.error.flatten().fieldErrors
+    );
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Create Graphic.",
+    };
+  }
+
+  const { image_url } = validatedFields.data;
+  console.log("Validated image_url:", image_url);
+
+  try {
+    const connection = await getConnection();
+    const [result] = await connection.execute(
+      "INSERT INTO graphics (image_url) VALUES (?)",
+      [image_url]
+    );
+    console.log("Insert result:", result);
+    await connection.end();
+    console.log("=== CREATE GRAPHIC SUCCESS ===");
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Create Graphic.",
+    };
+  }
+
+  revalidatePath("/dashboard/graphics");
+  redirect("/dashboard/graphics");
+}
+
+export async function updateGraphic(
+  id: string,
+  prevState: GraphicState,
+  formData: FormData
+) {
+  console.log("=== UPDATE GRAPHIC START ===");
+  console.log("ID:", id);
+  console.log("Form data image_url:", formData.get("image_url"));
+
+  const validatedFields = CreateGraphic.safeParse({
+    image_url: formData.get("image_url"),
+  });
+
+  if (!validatedFields.success) {
+    console.log(
+      "Validation failed:",
+      validatedFields.error.flatten().fieldErrors
+    );
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Update Graphic.",
+    };
+  }
+
+  const { image_url } = validatedFields.data;
+  console.log("Validated image_url:", image_url);
+
+  try {
+    const connection = await getConnection();
+    const [result] = await connection.execute(
+      "UPDATE graphics SET image_url = ? WHERE id = ?",
+      [image_url, id]
+    );
+    console.log("Update result:", result);
+    await connection.end();
+    console.log("=== UPDATE GRAPHIC SUCCESS ===");
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Update Graphic.",
+    };
+  }
+
+  revalidatePath("/dashboard/graphics");
+  redirect("/dashboard/graphics");
+}
+
+export async function deleteGraphic(id: string, formData?: FormData) {
+  try {
+    const connection = await getConnection();
+    const [rows] = await connection.execute(
+      "SELECT image_url FROM graphics WHERE id = ?",
+      [id]
+    );
+    const graphic = rows as any[];
+
+    if (graphic.length > 0 && graphic[0].image_url) {
+      try {
+        await deleteCloudFile(graphic[0].image_url);
+      } catch (error) {
+        console.error("Failed to delete image from cloud:", error);
+      }
+    }
+
+    await connection.execute("DELETE FROM graphics WHERE id = ?", [id]);
+    await connection.end();
+    revalidatePath("/dashboard/graphics");
+    return { message: "Graphic Deleted Successfully." };
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Delete Graphic.",
+    };
+  }
+}
+
+export async function createGraphicsBulk(imageUrls: string[]) {
+  if (!imageUrls || imageUrls.length === 0) {
+    return {
+      success: false,
+      message: "No images to upload.",
+    };
+  }
+
+  try {
+    const connection = await getConnection();
+
+    // Prepare bulk insert query
+    const values = imageUrls.map((url) => `('${url}')`).join(",");
+    const query = `INSERT INTO graphics (image_url) VALUES ${values}`;
+
+    await connection.execute(query);
+    await connection.end();
+
+    revalidatePath("/dashboard/graphics");
+
+    return {
+      success: true,
+      message: `Successfully created ${imageUrls.length} graphics.`,
+      count: imageUrls.length,
+    };
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      success: false,
+      message: "Database Error: Failed to Create Graphics.",
+    };
+  }
 }

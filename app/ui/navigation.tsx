@@ -27,8 +27,9 @@ export default function Navigation() {
   const navItems = [
     { name: "Home", href: "/", key: 1 },
     { name: "About", href: "/about", key: 2 },
-    { name: "Blog", href: "/blog", key: 3 },
-    { name: "Product", href: "/product", key: 4 },
+    { name: "Projects", href: "/projects", key: 3 },
+    { name: "event", href: "/event", key: 4 },
+    { name: "Product", href: "/product", key: 5 },
   ];
 
   const handleNavigation = (

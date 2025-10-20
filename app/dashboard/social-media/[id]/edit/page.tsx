@@ -1,6 +1,8 @@
-import Form from "@/app/ui/social-media/form";
-import Breadcrumbs from "@/app/ui/social-media/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
+import DashboardForm from "@/app/ui/dashboard/form";
+import { socialMediaFormFields } from "@/app/ui/dashboard/config";
 import { fetchSocialMediaById } from "@/app/lib/data";
+import { updateSocialMedia } from "@/app/lib/actions";
 import { notFound } from "next/navigation";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
@@ -15,12 +17,10 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const socialMediaData = socialMedia[0];
 
-  // Convert to plain object to ensure proper serialization
-  const serializedSocialMedia = {
-    id: socialMediaData.id,
-    type: socialMediaData.type,
-    url: socialMediaData.url,
-  };
+  async function handleSubmit(formData: FormData) {
+    "use server";
+    await updateSocialMedia(id, formData);
+  }
 
   return (
     <main>
@@ -34,7 +34,20 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           },
         ]}
       />
-      <Form key={id} mode="edit" socialMedia={serializedSocialMedia} />
+      <div className="mt-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Edit Social Media
+        </h1>
+        <DashboardForm
+          key={id}
+          fields={socialMediaFormFields}
+          onSubmit={handleSubmit}
+          cancelPath="/dashboard/social-media"
+          entityName="Social Media"
+          mode="edit"
+          initialData={socialMediaData}
+        />
+      </div>
     </main>
   );
 }

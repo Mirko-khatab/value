@@ -13,7 +13,7 @@ interface ImageFile {
 }
 
 interface MultipleImageUploadProps {
-  onImagesChange: (
+  onImagesChange?: (
     images: { url: string; altText: string; orderIndex: number }[]
   ) => void;
   initialImages?: { url: string; altText: string; orderIndex: number }[];
@@ -55,7 +55,7 @@ export default function MultipleImageUpload({
         altText: img.altText,
         orderIndex: img.orderIndex,
       }));
-      onImagesChange(finalImages);
+      onImagesChange?.(finalImages);
     }
   }, []); // Only run on mount
 
@@ -128,7 +128,7 @@ export default function MultipleImageUpload({
 
       // Call onImagesChange with existing images after state update
       // Use setTimeout to defer the call until after the current render cycle
-      setTimeout(() => onImagesChange(existingImages), 0);
+      setTimeout(() => onImagesChange?.(existingImages), 0);
     },
     [images, existingImages, showMessage]
   );
@@ -178,7 +178,7 @@ export default function MultipleImageUpload({
       });
 
       // Call onImagesChange after state update using setTimeout to defer
-      setTimeout(() => onImagesChange(updatedImages), 0);
+      setTimeout(() => onImagesChange?.(updatedImages), 0);
     },
     [existingImages, showMessage]
   );
@@ -220,7 +220,7 @@ export default function MultipleImageUpload({
   const uploadImages = async () => {
     if (images.length === 0) {
       // Just update with existing images
-      onImagesChange(existingImages);
+      onImagesChange?.(existingImages);
       return;
     }
 
@@ -248,7 +248,7 @@ export default function MultipleImageUpload({
       console.log("All images (existing + uploaded):", allImages);
       console.log("Calling onImagesChange with:", allImages);
 
-      onImagesChange(allImages);
+      onImagesChange?.(allImages);
       setImages([]);
       setExistingImages(allImages);
       showMessage(
@@ -283,7 +283,7 @@ export default function MultipleImageUpload({
       )}
 
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium text-gray-900">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
           {title || "Project Images"}
         </h3>
         <Button
@@ -309,7 +309,9 @@ export default function MultipleImageUpload({
       {/* Existing Images */}
       {existingImages.length > 0 && (
         <div className="space-y-4">
-          <h4 className="text-sm font-medium text-gray-700">Existing Images</h4>
+          <h4 className="text-sm font-medium text-gray-700 dark:text-white">
+            Existing Images
+          </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {existingImages.map((image, index) => (
               <div
@@ -329,7 +331,7 @@ export default function MultipleImageUpload({
                       updateExistingAltText(index, e.target.value)
                     }
                     placeholder="Alt text"
-                    className="w-full text-sm border rounded px-2 py-1 placeholder:text-gray-900  dark:text-gray-900"
+                    className="w-full text-sm border rounded px-2 py-1 placeholder:text-gray-900  dark:text-gray-900 dark:placeholder:text-gray-400"
                   />
                   <input
                     type="number"

@@ -108,7 +108,7 @@ async function seedGalleries(connection: mysql.Connection) {
 
 async function seedBlogs(connection: mysql.Connection) {
   await connection.execute(`
-    CREATE TABLE IF NOT EXISTS blogs (
+    CREATE TABLE IF NOT EXISTS event (
       id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
       title_ku VARCHAR(255) NOT NULL,
       title_ar VARCHAR(255) NOT NULL,

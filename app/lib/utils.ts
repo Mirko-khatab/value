@@ -13,6 +13,8 @@ import {
   PhotoIcon,
   PresentationChartBarIcon,
   MusicalNoteIcon,
+  FolderIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { Revenue } from "./definitions";
 
@@ -96,6 +98,11 @@ export const links = [
   //   icon: DocumentDuplicateIcon,
   // },
   { name: "Projects", href: "/dashboard/projects", icon: BuildingOfficeIcon },
+  {
+    name: "Project Categories",
+    href: "/dashboard/project-category",
+    icon: FolderIcon,
+  },
   { name: "Products", href: "/dashboard/products", icon: TruckIcon },
   { name: "Quotes", href: "/dashboard/quote", icon: ChatBubbleLeftRightIcon },
   { name: "Social Media", href: "/dashboard/social-media", icon: ShareIcon },
@@ -109,7 +116,7 @@ export const links = [
     href: "/dashboard/special-projects",
     icon: PhotoIcon,
   },
-  { name: "Blogs", href: "/dashboard/blogs", icon: NewspaperIcon },
+  { name: "event", href: "/dashboard/event", icon: NewspaperIcon },
   { name: "Teams", href: "/dashboard/teams", icon: UserGroupIcon },
   {
     name: "Banners",
@@ -120,5 +127,10 @@ export const links = [
     name: "Audios",
     href: "/dashboard/audios",
     icon: MusicalNoteIcon,
+  },
+  {
+    name: "Graphics",
+    href: "/dashboard/graphics",
+    icon: SparklesIcon,
   },
 ];

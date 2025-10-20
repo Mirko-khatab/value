@@ -1,14 +1,22 @@
-import Form from "@/app/ui/project/create-form";
-import Breadcrumbs from "@/app/ui/project/breadcrumbs";
-import { fetchProjectById, fetchProjectGalleries } from "@/app/lib/data";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
+import DashboardForm from "@/app/ui/dashboard/form";
+import { projectsFormFields } from "@/app/ui/dashboard/config";
+import {
+  fetchProjectById,
+  fetchProjectCategories,
+  fetchProjectGalleries,
+} from "@/app/lib/data";
+import { updateProject } from "@/app/lib/actions";
 import { notFound } from "next/navigation";
+import MultipleImageUpload from "@/app/ui/project/multiple-image-upload";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const [project, galleries] = await Promise.all([
+  const [project, categories, galleries] = await Promise.all([
     fetchProjectById(id),
+    fetchProjectCategories(),
     fetchProjectGalleries(id),
   ]);
 
@@ -18,12 +26,32 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const projectData = project[0];
 
-  // Convert galleries to the format expected by the form
+  // Convert galleries to the format expected by the upload component
   const initialGalleryImages = galleries.map((gallery) => ({
     url: gallery.image_url,
     altText: gallery.alt_text,
-    orderIndex: parseInt(gallery.order_index) || 1, // Handle potential parsing errors
+    orderIndex: parseInt(gallery.order_index) || 1,
   }));
+
+  async function handleSubmit(formData: FormData) {
+    "use server";
+    await updateProject(id, formData);
+  }
+
+  // Update the project_category field with dynamic options
+  const formFields = projectsFormFields.map((field) => {
+    if (field.name === "project_category") {
+      return {
+        ...field,
+        type: "select" as const,
+        options: categories.map((cat) => ({
+          value: cat.id,
+          label: cat.title_en,
+        })),
+      };
+    }
+    return field;
+  });
 
   return (
     <main>
@@ -37,10 +65,24 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           },
         ]}
       />
-      <Form
+      <DashboardForm
+        fields={formFields}
         mode="edit"
-        project={projectData}
-        initialGalleryImages={initialGalleryImages}
+        initialData={projectData}
+        onSubmit={handleSubmit}
+        cancelPath="/dashboard/projects"
+        entityName="Project"
+        customContent={
+          <div className="mb-4">
+            <label className="mb-3 block text-sm font-medium">
+              Project Images
+            </label>
+            <MultipleImageUpload
+              initialImages={initialGalleryImages}
+              title="Upload project images"
+            />
+          </div>
+        }
       />
     </main>
   );

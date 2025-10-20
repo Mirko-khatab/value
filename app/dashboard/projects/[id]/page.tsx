@@ -1,6 +1,6 @@
 import { fetchProjectById, fetchProjectGalleries } from "@/app/lib/data";
 import { notFound } from "next/navigation";
-import Breadcrumbs from "@/app/ui/project/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
 import { UpdateProject, DeleteProject } from "@/app/ui/project/buttons";
 import GalleryList from "@/app/ui/project/gallery-list";
 import Image from "next/image";

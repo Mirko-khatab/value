@@ -1,7 +1,9 @@
-import Form from "@/app/ui/properties/form";
-import Breadcrumbs from "@/app/ui/properties/breadcrumbs";
+import DashboardForm from "@/app/ui/dashboard/form";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
+import { propertiesFormFields } from "@/app/ui/dashboard/config";
 import { fetchPropertyById } from "@/app/lib/data";
 import { notFound } from "next/navigation";
+import { updateProperty } from "@/app/lib/actions";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -15,14 +17,10 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const propertyData = property[0];
 
-  // Convert to plain object to ensure proper serialization
-  const serializedProperty = {
-    id: propertyData.id,
-    key: propertyData.key,
-    value_ku: propertyData.value_ku,
-    value_ar: propertyData.value_ar,
-    value_en: propertyData.value_en,
-  };
+  async function handleSubmit(formData: FormData) {
+    "use server";
+    await updateProperty(id, formData);
+  }
 
   return (
     <main>
@@ -36,7 +34,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           },
         ]}
       />
-      <Form mode="edit" property={serializedProperty} />
+      <DashboardForm
+        fields={propertiesFormFields}
+        mode="edit"
+        initialData={propertyData}
+        onSubmit={handleSubmit}
+        cancelPath="/dashboard/properties"
+        entityName="Property"
+      />
     </main>
   );
 }

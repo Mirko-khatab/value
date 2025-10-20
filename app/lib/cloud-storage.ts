@@ -52,7 +52,9 @@ export async function uploadFileToCloud(
     const uniqueFileName = `${timestamp}-${randomString}-${baseName}${fileExtension}`;
 
     // Create a Blob from the buffer for the file
-    const blob = new Blob([fileBuffer], { type: fileType });
+    const blob = new Blob([fileBuffer.buffer as ArrayBuffer], {
+      type: fileType,
+    });
     formData.append("file", blob, uniqueFileName);
 
     // Add metadata if provided

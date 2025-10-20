@@ -1,6 +1,8 @@
-import Form from "@/app/ui/banner/form";
-import Breadcrumbs from "@/app/ui/banner/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
+import DashboardForm from "@/app/ui/dashboard/form";
+import { bannersFormFields } from "@/app/ui/dashboard/config";
 import { fetchBannerById } from "@/app/lib/data";
+import { updateBanner } from "@/app/lib/actions";
 import { notFound } from "next/navigation";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
@@ -15,18 +17,10 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const bannerData = banner[0];
 
-  // Convert to plain object to ensure proper serialization
-  const serializedBanner = {
-    id: bannerData.id,
-    title_ku: bannerData.title_ku,
-    title_ar: bannerData.title_ar,
-    title_en: bannerData.title_en,
-    image_url: bannerData.image_url,
-    video_url: bannerData.video_url,
-    type: bannerData.type,
-    is_active: bannerData.is_active,
-    sort_order: bannerData.sort_order,
-  };
+  async function handleSubmit(formData: FormData) {
+    "use server";
+    await updateBanner(id, formData);
+  }
 
   return (
     <main>
@@ -40,7 +34,19 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           },
         ]}
       />
-      <Form mode="edit" banner={serializedBanner} />
+      <div className="mt-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Edit Banner
+        </h1>
+        <DashboardForm
+          fields={bannersFormFields}
+          onSubmit={handleSubmit}
+          cancelPath="/dashboard/banners"
+          entityName="Banner"
+          mode="edit"
+          initialData={bannerData}
+        />
+      </div>
     </main>
   );
 }

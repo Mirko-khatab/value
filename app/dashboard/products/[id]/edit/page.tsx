@@ -1,5 +1,5 @@
 import Form from "@/app/ui/products/create-form";
-import Breadcrumbs from "@/app/ui/products/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
 import { fetchProductById, fetchProductGalleries } from "@/app/lib/data";
 import { notFound } from "next/navigation";
 
@@ -40,11 +40,16 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           },
         ]}
       />
-      <Form
-        mode="edit"
-        product={productData}
-        initialGalleryImages={initialGalleryImages}
-      />
+      <div className="mt-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Edit Product
+        </h1>
+        <Form
+          mode="edit"
+          product={productData}
+          initialGalleryImages={initialGalleryImages}
+        />
+      </div>
     </main>
   );
 }

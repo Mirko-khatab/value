@@ -1,7 +1,10 @@
-import Form from "@/app/ui/teams/form";
-import Breadcrumbs from "@/app/ui/project/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
+import DashboardForm from "@/app/ui/dashboard/form";
+import { teamsFormFields } from "@/app/ui/dashboard/config";
 import { fetchTeamById } from "@/app/lib/data";
+import { updateTeam } from "@/app/lib/actions";
 import { notFound } from "next/navigation";
+import TeamImageUpload from "@/app/ui/teams/team-image-upload";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -10,6 +13,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   if (!team || team.length === 0) {
     notFound();
+  }
+
+  async function handleSubmit(formData: FormData) {
+    "use server";
+    await updateTeam(id, formData);
   }
 
   return (
@@ -24,7 +32,22 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           },
         ]}
       />
-      <Form team={team[0]} mode="edit" />
+      <div className="mt-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Edit Team Member
+        </h1>
+        <DashboardForm
+          fields={teamsFormFields}
+          onSubmit={handleSubmit}
+          cancelPath="/dashboard/teams"
+          entityName="Team Member"
+          mode="edit"
+          initialData={team[0]}
+          customContent={
+            <TeamImageUpload initialImageUrl={team[0].image_url} />
+          }
+        />
+      </div>
     </main>
   );
 }

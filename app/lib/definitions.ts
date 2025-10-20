@@ -50,6 +50,16 @@ export type Banner = {
   sort_order: number;
 };
 
+export type Audio = {
+  id: string;
+  title_ku: string;
+  title_en: string;
+  title_ar: string;
+  audio_url: string;
+  is_active: boolean;
+  use_for: "landing" | "intro" | "both";
+};
+
 export enum SocialMediaType {
   Instagram = 0,
   Facebook = 1,
@@ -110,10 +120,33 @@ export type Project = {
   description_ar: string;
   description_en: string;
   date: string | Date;
+  project_category: number;
+  project_status: number; // 0 or 1
+  location_ku: string;
+  location_en: string;
+  location_ar: string;
   // Gallery fields (from JOIN queries)
   gallery_image_url?: string;
   gallery_alt_text?: string;
   gallery_order_index?: string;
+  // Category names from JOIN (multi-language)
+  category_name?: string; // Legacy - English only
+  category_name_en?: string;
+  category_name_ku?: string;
+  category_name_ar?: string;
+};
+
+export type ProjectCategory = {
+  id: string;
+  title_ku: string;
+  title_en: string;
+  title_ar: string;
+};
+
+export type Graphic = {
+  id: string;
+  image_url: string;
+  created_at?: string;
 };
 
 //0=project 1=blog 2=product	 parent_type
@@ -201,7 +234,6 @@ export type TeamField = {
   position_ar: string;
   position_en: string;
   image_url: string;
-  special: string;
 };
 
 export type InvoiceForm = {

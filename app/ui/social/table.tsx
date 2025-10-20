@@ -30,11 +30,6 @@ export default async function QuotesTable({
                   </div>
                 </div>
                 <div className="flex w-full items-center justify-between pt-4">
-                  <div className="max-w-[200px] truncate">
-                    <p className="text-sm text-gray-600">
-                      {quote.description_en}
-                    </p>
-                  </div>
                   <div className="flex justify-end gap-2">
                     <UpdateQuote id={quote.id} />
                     <DeleteQuote id={quote.id} />
@@ -55,9 +50,6 @@ export default async function QuotesTable({
                 <th scope="col" className="px-3 py-5 font-medium">
                   Arabic Title
                 </th>
-                <th scope="col" className="px-3 py-5 font-medium">
-                  Description
-                </th>
                 <th scope="col" className="relative py-3 pl-6 pr-3">
                   <span className="sr-only">Edit</span>
                 </th>
@@ -77,11 +69,6 @@ export default async function QuotesTable({
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
                     {quote.title_ar}
-                  </td>
-                  <td className="px-3 py-3">
-                    <div className="max-w-[300px] truncate">
-                      {quote.description_en}
-                    </div>
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">

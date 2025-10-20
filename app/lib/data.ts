@@ -5,12 +5,15 @@ import {
   Revenue,
   Blog,
   Machine,
+  Product,
   Quote,
   SocialMedia,
   Property,
   SpecialProjects,
   Banner,
   Audio,
+  ProjectCategory,
+  Graphic,
 } from "./definitions";
 import { getConnection } from "./serverutils";
 import { Project } from "./definitions";
@@ -91,10 +94,19 @@ export async function fetchProjectById(id: string) {
     connection = await getConnection();
     const [rows] = await connection.execute(
       `SELECT projects.*, 
+        pc.title_en as category_name,
+        pc.title_en as category_name_en,
+        pc.title_ku as category_name_ku,
+        pc.title_ar as category_name_ar,
+        l.city_en as location_en,
+        l.city_ku as location_ku,
+        l.city_ar as location_ar,
         (SELECT image_url FROM galleries WHERE parent_id = projects.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
         (SELECT alt_text FROM galleries WHERE parent_id = projects.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
         (SELECT order_index FROM galleries WHERE parent_id = projects.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
       FROM projects 
+      LEFT JOIN project_categories pc ON projects.project_category = pc.id
+      LEFT JOIN locations l ON projects.location_id = l.id
       WHERE projects.id = ?`,
       [id]
     );
@@ -308,8 +320,7 @@ export async function fetchCustomers() {
         position_ku,
         position_ar,
         position_en,
-        image_url,
-        special
+        image_url
       FROM teams
     `);
     return rows as TeamField[];
@@ -393,10 +404,19 @@ export async function fetchFilteredProjects(
       `
       SELECT 
         p.*,
+        pc.title_en as category_name,
+        pc.title_en as category_name_en,
+        pc.title_ku as category_name_ku,
+        pc.title_ar as category_name_ar,
+        l.city_en as location_en,
+        l.city_ku as location_ku,
+        l.city_ar as location_ar,
         (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
         (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
         (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
       FROM projects p
+      LEFT JOIN project_categories pc ON p.project_category = pc.id
+      LEFT JOIN locations l ON p.location_id = l.id
       WHERE p.title_ku LIKE ? OR p.title_ar LIKE ? OR p.title_en LIKE ?
       ORDER BY p.date DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
@@ -412,7 +432,118 @@ export async function fetchFilteredProjects(
   }
 }
 
-// Blog data functions
+// Public projects showcase with advanced filters
+export async function fetchPublicProjects(filters?: {
+  search?: string;
+  location?: string;
+  category?: string;
+  status?: string;
+}) {
+  let connection;
+  try {
+    connection = await getConnection();
+
+    // Build WHERE clause based on filters
+    const conditions: string[] = [];
+    const params: string[] = [];
+
+    if (filters?.search) {
+      conditions.push(
+        "(p.title_ku LIKE ? OR p.title_ar LIKE ? OR p.title_en LIKE ? OR p.description_ku LIKE ? OR p.description_ar LIKE ? OR p.description_en LIKE ?)"
+      );
+      params.push(
+        `%${filters.search}%`,
+        `%${filters.search}%`,
+        `%${filters.search}%`,
+        `%${filters.search}%`,
+        `%${filters.search}%`,
+        `%${filters.search}%`
+      );
+    }
+
+    if (filters?.location) {
+      conditions.push(
+        "(l.city_ku LIKE ? OR l.city_ar LIKE ? OR l.city_en LIKE ?)"
+      );
+      params.push(
+        `%${filters.location}%`,
+        `%${filters.location}%`,
+        `%${filters.location}%`
+      );
+    }
+
+    if (filters?.category) {
+      conditions.push("p.project_category = ?");
+      params.push(filters.category);
+    }
+
+    if (filters?.status !== undefined && filters?.status !== "") {
+      conditions.push("p.project_status = ?");
+      params.push(filters.status);
+    }
+
+    const whereClause =
+      conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
+
+    const [rows] = await connection.execute(
+      `
+      SELECT 
+        p.*,
+        pc.title_en as category_name_en,
+        pc.title_ku as category_name_ku,
+        pc.title_ar as category_name_ar,
+        l.city_en as location_en,
+        l.city_ku as location_ku,
+        l.city_ar as location_ar,
+        (SELECT image_url FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = p.id AND parent_type = '${ParentType.Project}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM projects p
+      LEFT JOIN project_categories pc ON p.project_category = pc.id
+      LEFT JOIN locations l ON p.location_id = l.id
+      ${whereClause}
+      ORDER BY p.date DESC
+    `,
+      params
+    );
+    return rows as Project[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch public projects.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// Get unique locations from projects
+export async function fetchProjectLocations() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(`
+      SELECT DISTINCT 
+        l.city_en as location_en, 
+        l.city_ku as location_ku, 
+        l.city_ar as location_ar 
+      FROM projects p
+      LEFT JOIN locations l ON p.location_id = l.id
+      WHERE l.city_en IS NOT NULL AND l.city_en != ''
+      ORDER BY l.city_en ASC
+    `);
+    return rows as Array<{
+      location_en: string;
+      location_ku: string;
+      location_ar: string;
+    }>;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch project locations.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// event data functions
 export async function fetchBlogs() {
   let connection;
   try {
@@ -423,13 +554,13 @@ export async function fetchBlogs() {
         (SELECT image_url FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
         (SELECT alt_text FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
         (SELECT order_index FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
-      FROM blogs b
+      FROM event b
       ORDER BY b.id DESC
     `);
     return rows as Blog[];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch blogs.");
+    throw new Error("Failed to fetch event.");
   } finally {
     if (connection) await connection.end();
   }
@@ -440,18 +571,18 @@ export async function fetchBlogById(id: string) {
   try {
     connection = await getConnection();
     const [rows] = await connection.execute(
-      `SELECT blogs.*, 
-        (SELECT image_url FROM galleries WHERE parent_id = blogs.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
-        (SELECT alt_text FROM galleries WHERE parent_id = blogs.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
-        (SELECT order_index FROM galleries WHERE parent_id = blogs.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
-      FROM blogs 
-      WHERE blogs.id = ?`,
+      `SELECT event.*, 
+        (SELECT image_url FROM galleries WHERE parent_id = event.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
+        (SELECT alt_text FROM galleries WHERE parent_id = event.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
+        (SELECT order_index FROM galleries WHERE parent_id = event.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
+      FROM event 
+      WHERE event.id = ?`,
       [id]
     );
     return rows as Blog[];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch blog.");
+    throw new Error("Failed to fetch event.");
   } finally {
     if (connection) await connection.end();
   }
@@ -469,7 +600,7 @@ export async function fetchFilteredBlogs(query: string, currentPage: number) {
         (SELECT image_url FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_image_url,
         (SELECT alt_text FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_alt_text,
         (SELECT order_index FROM galleries WHERE parent_id = b.id AND parent_type = '${ParentType.Blog}' ORDER BY order_index ASC LIMIT 1) as gallery_order_index
-      FROM blogs b
+      FROM event b
       WHERE b.title_ku LIKE ? OR b.title_ar LIKE ? OR b.title_en LIKE ?
       ORDER BY b.id DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
@@ -479,7 +610,7 @@ export async function fetchFilteredBlogs(query: string, currentPage: number) {
     return rows as Blog[];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch blogs.");
+    throw new Error("Failed to fetch event.");
   } finally {
     if (connection) await connection.end();
   }
@@ -491,7 +622,7 @@ export async function fetchTotalBlogsPages(query: string) {
     connection = await getConnection();
     const [rows] = await connection.execute(
       `SELECT COUNT(*) as count
-    FROM blogs
+    FROM event
     WHERE
       title_ku LIKE ? OR
       title_ar LIKE ? OR
@@ -506,7 +637,7 @@ export async function fetchTotalBlogsPages(query: string) {
     return totalPages;
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch total number of blogs.");
+    throw new Error("Failed to fetch total number of event.");
   } finally {
     if (connection) await connection.end();
   }
@@ -523,7 +654,7 @@ export async function fetchBlogGalleries(blogId: string) {
     return rows as Gallery[];
   } catch (error) {
     console.error("Database Error:", error);
-    throw new Error("Failed to fetch blog galleries.");
+    throw new Error("Failed to fetch event galleries.");
   } finally {
     if (connection) await connection.end();
   }
@@ -1237,6 +1368,74 @@ export async function fetchActiveAudios(useFor?: "landing" | "intro" | "both") {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch active audios.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// PROJECT CATEGORY DATA FETCHING
+export async function fetchProjectCategories() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      "SELECT id, title_ku, title_en, title_ar FROM project_categories ORDER BY id DESC"
+    );
+    return rows as ProjectCategory[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch project categories.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchProjectCategoryById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      "SELECT id, title_ku, title_en, title_ar FROM project_categories WHERE id = ?",
+      [id]
+    );
+    return rows as ProjectCategory[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch project category.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// GRAPHICS DATA FETCHING
+export async function fetchGraphics() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      "SELECT id, image_url, created_at FROM graphics ORDER BY created_at DESC"
+    );
+    return rows as Graphic[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch graphics.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchGraphicById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      "SELECT id, image_url, created_at FROM graphics WHERE id = ?",
+      [id]
+    );
+    return rows as Graphic[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch graphic.");
   } finally {
     if (connection) await connection.end();
   }

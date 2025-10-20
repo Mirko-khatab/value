@@ -1,0 +1,527 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import { useLanguage } from "@/app/lib/language-context";
+import { Project, ProjectCategory } from "@/app/lib/definitions";
+import Image from "next/image";
+import Link from "next/link";
+import ShowcaseLayout from "@/app/ui/showcase-layout";
+import {
+  MagnifyingGlassIcon,
+  MapPinIcon,
+  FolderIcon,
+  ClockIcon,
+  AdjustmentsHorizontalIcon,
+} from "@heroicons/react/24/outline";
+
+export default function ProjectsPage() {
+  const { language, t } = useLanguage();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [categories, setCategories] = useState<ProjectCategory[]>([]);
+  const [locations, setLocations] = useState<
+    Array<{ location_en: string; location_ku: string; location_ar: string }>
+  >([]);
+  const [loading, setLoading] = useState(true);
+
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+
+  // Fetch data on mount
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+
+        // Fetch all data in parallel
+        const [projectsRes, categoriesRes, locationsRes] = await Promise.all([
+          fetch("/api/projects/public"),
+          fetch("/api/project-categories"),
+          fetch("/api/projects/locations"),
+        ]);
+
+        if (projectsRes.ok) {
+          const projectsData = await projectsRes.json();
+          setProjects(projectsData);
+        }
+
+        if (categoriesRes.ok) {
+          const categoriesData = await categoriesRes.json();
+          setCategories(categoriesData);
+        }
+
+        if (locationsRes.ok) {
+          const locationsData = await locationsRes.json();
+          setLocations(locationsData);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  // Filter projects based on current filters
+  const filteredProjects = useMemo(() => {
+    return projects.filter((project) => {
+      // Search filter
+      if (searchQuery) {
+        const query = searchQuery.toLowerCase();
+        const matchesSearch =
+          project.title_en?.toLowerCase().includes(query) ||
+          project.title_ku?.toLowerCase().includes(query) ||
+          project.title_ar?.toLowerCase().includes(query) ||
+          project.description_en?.toLowerCase().includes(query) ||
+          project.description_ku?.toLowerCase().includes(query) ||
+          project.description_ar?.toLowerCase().includes(query);
+
+        if (!matchesSearch) return false;
+      }
+
+      // Location filter
+      if (selectedLocation) {
+        const matchesLocation =
+          project.location_en?.includes(selectedLocation) ||
+          project.location_ku?.includes(selectedLocation) ||
+          project.location_ar?.includes(selectedLocation);
+
+        if (!matchesLocation) return false;
+      }
+
+      // Category filter
+      if (selectedCategory) {
+        if (project.project_category !== parseInt(selectedCategory))
+          return false;
+      }
+
+      // Status filter
+      if (selectedStatus !== "") {
+        if (project.project_status !== parseInt(selectedStatus)) return false;
+      }
+
+      return true;
+    });
+  }, [
+    projects,
+    searchQuery,
+    selectedLocation,
+    selectedCategory,
+    selectedStatus,
+  ]);
+
+  // Get localized field helper
+  const getLocalizedField = (obj: any, field: string) => {
+    if (!obj) return "";
+    return obj[`${field}_${language}`] || obj[`${field}_en`] || "";
+  };
+
+  // Check if current language is RTL
+  const isRTL = language === "ar" || language === "ku";
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchQuery("");
+    setSelectedLocation("");
+    setSelectedCategory("");
+    setSelectedStatus("");
+    setShowFilters(false); // Close mobile filters when reset
+  };
+
+  return (
+    <ShowcaseLayout>
+      <div
+        className={`min-h-screen w-full ${isRTL ? "rtl" : "ltr"}`}
+        dir={isRTL ? "rtl" : "ltr"}
+      >
+        {/* Header Section - Full Screen Width */}
+        <div className="w-full bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 pt-40">
+          {/* Title */}
+          {/* <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white text-center">
+              {t("projects", {
+                en: "Our Projects",
+                ar: "مشاريعنا",
+                ku: "پڕۆژەکانمان",
+              })}
+            </h1>
+          </div> */}
+
+          {/* Search and Filters - Full Width Container */}
+          <div className="w-full px-4 sm:px-6 lg:px-8 pb-8">
+            {/* Search Bar and Filter Toggle */}
+            <div className="flex gap-4 mb-8">
+              {isRTL ? (
+                <>
+                  {/* Filter Toggle Button - Mobile Only (RTL: appears first/left) */}
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="lg:hidden flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-md"
+                  >
+                    <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                  </button>
+
+                  {/* Search Bar - RTL: positioned on the right */}
+                  <div className="relative flex-1 max-w-md ml-auto">
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="block w-full pr-10 pl-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base shadow-md text-right"
+                      placeholder={t("search", {
+                        en: "Search projects...",
+                        ar: "البحث في المشاريع...",
+                        ku: "گەڕان لە پڕۆژەکان...",
+                      })}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Search Bar - LTR: positioned on the left */}
+                  <div className="relative flex-1 max-w-md">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base shadow-md text-left"
+                      placeholder={t("search", {
+                        en: "Search projects...",
+                        ar: "البحث في المشاريع...",
+                        ku: "گەڕان لە پڕۆژەکان...",
+                      })}
+                    />
+                  </div>
+
+                  {/* Filter Toggle Button - Mobile Only (LTR: appears second/right) */}
+                  <button
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="lg:hidden flex items-center justify-center px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors shadow-md"
+                  >
+                    <AdjustmentsHorizontalIcon className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Filters - Responsive Grid */}
+            <div
+              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 transition-all duration-300 ${
+                showFilters ? "block" : "hidden lg:grid"
+              }`}
+            >
+              {/* Location Filter */}
+              <div className="w-full">
+                <label
+                  className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 ${
+                    isRTL ? "text-right" : "text-left"
+                  }`}
+                >
+                  {isRTL ? (
+                    <>
+                      {t("location", {
+                        en: "Location",
+                        ar: "الموقع",
+                        ku: "شوێن",
+                      })}
+                      <MapPinIcon className="inline-block h-5 w-5 mr-2" />
+                    </>
+                  ) : (
+                    <>
+                      <MapPinIcon className="inline-block h-5 w-5 mr-2" />
+                      {t("location", {
+                        en: "Location",
+                        ar: "الموقع",
+                        ku: "شوێن",
+                      })}
+                    </>
+                  )}
+                </label>
+                <select
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  className={`block w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-md appearance-none ${
+                    isRTL
+                      ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_16px_center] bg-no-repeat"
+                      : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_16px_center] bg-no-repeat"
+                  }`}
+                >
+                  <option value="">
+                    {t("all_locations", {
+                      en: "All Locations",
+                      ar: "جميع المواقع",
+                      ku: "هەموو شوێنەکان",
+                    })}
+                  </option>
+                  {locations.map((loc, index) => (
+                    <option key={index} value={loc.location_en}>
+                      {getLocalizedField(loc, "location")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Category Filter */}
+              <div className="w-full">
+                <label
+                  className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 ${
+                    isRTL ? "text-right" : "text-left"
+                  }`}
+                >
+                  {isRTL ? (
+                    <>
+                      {t("category", {
+                        en: "Category",
+                        ar: "الفئة",
+                        ku: "جۆر",
+                      })}
+                      <FolderIcon className="inline-block h-5 w-5 mr-2" />
+                    </>
+                  ) : (
+                    <>
+                      <FolderIcon className="inline-block h-5 w-5 mr-2" />
+                      {t("category", {
+                        en: "Category",
+                        ar: "الفئة",
+                        ku: "جۆر",
+                      })}
+                    </>
+                  )}
+                </label>
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className={`block w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-md appearance-none ${
+                    isRTL
+                      ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_16px_center] bg-no-repeat"
+                      : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_16px_center] bg-no-repeat"
+                  }`}
+                >
+                  <option value="">
+                    {t("all_categories", {
+                      en: "All Categories",
+                      ar: "جميع الفئات",
+                      ku: "هەموو جۆرەکان",
+                    })}
+                  </option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {getLocalizedField(cat, "title")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Status Filter */}
+              <div className="w-full sm:col-span-2 lg:col-span-1">
+                <label
+                  className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 ${
+                    isRTL ? "text-right" : "text-left"
+                  }`}
+                >
+                  {isRTL ? (
+                    <>
+                      {t("status", { en: "Status", ar: "الحالة", ku: "دۆخ" })}
+                      <ClockIcon className="inline-block h-5 w-5 mr-2" />
+                    </>
+                  ) : (
+                    <>
+                      <ClockIcon className="inline-block h-5 w-5 mr-2" />
+                      {t("status", { en: "Status", ar: "الحالة", ku: "دۆخ" })}
+                    </>
+                  )}
+                </label>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className={`block w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-md appearance-none ${
+                    isRTL
+                      ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_16px_center] bg-no-repeat"
+                      : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_16px_center] bg-no-repeat"
+                  }`}
+                >
+                  <option value="">
+                    {t("all_statuses", {
+                      en: "All Statuses",
+                      ar: "جميع الحالات",
+                      ku: "هەموو دۆخەکان",
+                    })}
+                  </option>
+                  <option value="0">
+                    {t("in_progress", {
+                      en: "In Progress",
+                      ar: "قيد التنفيذ",
+                      ku: "لە جێبەجێکردندا",
+                    })}
+                  </option>
+                  <option value="1">
+                    {t("finished", {
+                      en: "Finished",
+                      ar: "منتهي",
+                      ku: "تەواوبوو",
+                    })}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            {/* Filter Summary & Reset - Full Width */}
+            <div
+              className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 text-sm transition-all duration-300 ${
+                showFilters ? "block" : "hidden lg:flex"
+              } ${
+                isRTL ? "sm:flex-row-reverse sm:justify-end" : "justify-between"
+              }`}
+            >
+              <p
+                className={`text-gray-600 dark:text-gray-400 text-base ${
+                  isRTL ? "text-right" : "text-left"
+                }`}
+              >
+                {t("showing_results", {
+                  en: `Showing ${filteredProjects.length} of ${projects.length} projects`,
+                  ar: `عرض ${filteredProjects.length} من ${projects.length} مشروع`,
+                  ku: `پیشاندانی ${filteredProjects.length} لە ${projects.length} پڕۆژە`,
+                })}
+              </p>
+              {(searchQuery ||
+                selectedLocation ||
+                selectedCategory ||
+                selectedStatus !== "") && (
+                <button
+                  onClick={resetFilters}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-base"
+                >
+                  {t("reset_filters", {
+                    en: "Reset Filters",
+                    ar: "إعادة تعيين الفلاتر",
+                    ku: "ڕێکخستنەوەی فلتەرەکان",
+                  })}
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Results Summary - Always Visible */}
+            <div
+              className={`lg:hidden flex items-center mb-4 ${
+                isRTL ? "flex-row-reverse justify-end" : "justify-between"
+              }`}
+            >
+              <p
+                className={`text-gray-600 dark:text-gray-400 text-sm ${
+                  isRTL ? "text-right" : "text-left"
+                }`}
+              >
+                {t("showing_results", {
+                  en: `${filteredProjects.length} of ${projects.length} projects`,
+                  ar: `${filteredProjects.length} من ${projects.length} مشروع`,
+                  ku: `${filteredProjects.length} لە ${projects.length} پڕۆژە`,
+                })}
+              </p>
+              {(searchQuery ||
+                selectedLocation ||
+                selectedCategory ||
+                selectedStatus !== "") && (
+                <button
+                  onClick={resetFilters}
+                  className={`px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm ${
+                    isRTL ? "mr-4" : "ml-4"
+                  }`}
+                >
+                  {t("reset_filters", {
+                    en: "Reset",
+                    ar: "إعادة تعيين",
+                    ku: "ڕێکخستنەوە",
+                  })}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Projects Grid - Full Width */}
+        <div className="w-full  py-8 sm:py-12">
+          <div className="w-full px-4 sm:px-6 lg:px-8">
+            {loading ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              </div>
+            ) : filteredProjects.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-xl text-gray-500 dark:text-gray-400">
+                  {t("no_projects", {
+                    en: "No projects found",
+                    ar: "لم يتم العثور على مشاريع",
+                    ku: "هیچ پڕۆژەیەک نەدۆزرایەوە",
+                  })}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 sm:gap-8">
+                {filteredProjects.map((project) => (
+                  <Link
+                    key={project.id}
+                    href={`/project/${project.id}`}
+                    className="group bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-200 dark:border-gray-700 hover:scale-105 hover:-translate-y-2"
+                  >
+                    {/* Project Image */}
+                    <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
+                      {project.gallery_image_url ? (
+                        <Image
+                          src={project.gallery_image_url}
+                          alt={getLocalizedField(project, "title") || "Project"}
+                          fill
+                          className="object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-gray-400">
+                          <FolderIcon className="h-16 w-16 sm:h-20 sm:w-20" />
+                        </div>
+                      )}
+
+                      {/* Overlay gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </div>
+
+                    {/* Project Title */}
+                    <div className="p-5 sm:p-6">
+                      <h3
+                        className={`text-lg sm:text-xl font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight ${
+                          isRTL ? "text-right" : "text-left"
+                        }`}
+                      >
+                        {getLocalizedField(project, "title")}
+                      </h3>
+
+                      {/* Optional: Add a subtle description or category */}
+                      {project.category_name_en && (
+                        <p
+                          className={`text-sm text-gray-500 dark:text-gray-400 mt-2 ${
+                            isRTL ? "text-right" : "text-left"
+                          }`}
+                        >
+                          {getLocalizedField(project, "category_name")}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </ShowcaseLayout>
+  );
+}

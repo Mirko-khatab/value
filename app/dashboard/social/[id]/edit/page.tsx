@@ -1,6 +1,8 @@
-import Form from "@/app/ui/quote/form";
-import Breadcrumbs from "@/app/ui/quote/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
+import DashboardForm from "@/app/ui/dashboard/form";
+import { socialFormFields } from "@/app/ui/dashboard/config";
 import { fetchQuoteById } from "@/app/lib/data";
+import { updateQuote } from "@/app/lib/actions";
 import { notFound } from "next/navigation";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
@@ -15,30 +17,36 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const quoteData = quote[0];
 
-  // Convert to plain object to ensure proper serialization
-  const serializedQuote = {
-    id: quoteData.id,
-    title_ku: quoteData.title_ku,
-    title_ar: quoteData.title_ar,
-    title_en: quoteData.title_en,
-    description_ku: quoteData.description_ku,
-    description_ar: quoteData.description_ar,
-    description_en: quoteData.description_en,
-  };
+  async function handleSubmit(formData: FormData) {
+    "use server";
+    await updateQuote(id, formData);
+  }
 
   return (
     <main>
       <Breadcrumbs
         breadcrumbs={[
-          { label: "Quotes", href: "/dashboard/quote" },
+          { label: "Social", href: "/dashboard/social" },
           {
-            label: "Edit Quote",
-            href: `/dashboard/quote/${id}/edit`,
+            label: "Edit Social",
+            href: `/dashboard/social/${id}/edit`,
             active: true,
           },
         ]}
       />
-      <Form mode="edit" quote={serializedQuote} />
+      <div className="mt-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Edit Social
+        </h1>
+        <DashboardForm
+          fields={socialFormFields}
+          onSubmit={handleSubmit}
+          cancelPath="/dashboard/social"
+          entityName="Social"
+          mode="edit"
+          initialData={quoteData}
+        />
+      </div>
     </main>
   );
 }

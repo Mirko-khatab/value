@@ -1,7 +1,14 @@
-import Form from "@/app/ui/banner/form";
-import Breadcrumbs from "@/app/ui/banner/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
+import DashboardForm from "@/app/ui/dashboard/form";
+import { bannersFormFields } from "@/app/ui/dashboard/config";
+import { createBanner } from "@/app/lib/actions";
 
 export default function Page() {
+  async function handleSubmit(formData: FormData) {
+    "use server";
+    await createBanner({ message: null, errors: {} }, formData);
+  }
+
   return (
     <main>
       <Breadcrumbs
@@ -14,7 +21,18 @@ export default function Page() {
           },
         ]}
       />
-      <Form mode="create" />
+      <div className="mt-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Create New Banner
+        </h1>
+        <DashboardForm
+          fields={bannersFormFields}
+          onSubmit={handleSubmit}
+          cancelPath="/dashboard/banners"
+          entityName="Banner"
+          mode="create"
+        />
+      </div>
     </main>
   );
 }

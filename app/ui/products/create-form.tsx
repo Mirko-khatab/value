@@ -118,10 +118,10 @@ export default function Form({
 
   return (
     <form action={handleSubmit}>
-      <div className="rounded-md bg-gray-50 p-4 md:p-6">
+      <div className="rounded-md bg-gray-50 dark:bg-gray-800 p-4 md:p-6">
         {/* Success Message */}
         {success && (
-          <div className="mb-4 p-4 text-sm text-green-700 bg-green-100 border border-green-400 rounded">
+          <div className="mb-4 p-4 text-sm text-green-700 dark:text-green-400 bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 rounded">
             Product {isEditMode ? "updated" : "created"} successfully!
             Redirecting...
           </div>
@@ -129,7 +129,7 @@ export default function Form({
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-4 text-sm text-red-700 bg-red-100 border border-red-400 rounded">
+          <div className="mb-4 p-4 text-sm text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-600 rounded">
             {error}
           </div>
         )}
@@ -139,7 +139,7 @@ export default function Form({
           <div className="mb-4">
             <label
               htmlFor="title_ku"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-200"
             >
               Title (Kurdish) <span className="text-red-500">*</span>
             </label>
@@ -149,7 +149,7 @@ export default function Form({
               type="text"
               required
               defaultValue={isEditMode ? product?.title_ku : ""}
-              className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+              className="peer block w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-sm text-gray-900 dark:text-gray-100 outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400"
               placeholder="Enter Kurdish title"
             />
           </div>
@@ -157,7 +157,7 @@ export default function Form({
           <div className="mb-4">
             <label
               htmlFor="title_ar"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-200"
             >
               Title (Arabic) <span className="text-red-500">*</span>
             </label>
@@ -167,7 +167,7 @@ export default function Form({
               type="text"
               required
               defaultValue={isEditMode ? product?.title_ar : ""}
-              className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+              className="peer block w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-sm text-gray-900 dark:text-gray-100 outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400"
               placeholder="Enter Arabic title"
             />
           </div>
@@ -175,7 +175,7 @@ export default function Form({
           <div className="mb-4">
             <label
               htmlFor="title_en"
-              className="mb-2 block text-sm font-medium"
+              className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-200"
             >
               Title (English) <span className="text-red-500">*</span>
             </label>
@@ -185,7 +185,7 @@ export default function Form({
               type="text"
               required
               defaultValue={isEditMode ? product?.title_en : ""}
-              className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+              className="peer block w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-sm text-gray-900 dark:text-gray-100 outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400"
               placeholder="Enter English title"
             />
           </div>
@@ -195,7 +195,7 @@ export default function Form({
         <div className="mb-4">
           <label
             htmlFor="description_ku"
-            className="mb-2 block text-sm font-medium"
+            className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-200"
           >
             Description (Kurdish) <span className="text-red-500">*</span>
           </label>
@@ -205,7 +205,7 @@ export default function Form({
             required
             rows={3}
             defaultValue={isEditMode ? product?.description_ku : ""}
-            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+            className="peer block w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-sm text-gray-900 dark:text-gray-100 outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400"
             placeholder="Enter Kurdish description"
           />
         </div>
@@ -213,7 +213,7 @@ export default function Form({
         <div className="mb-4">
           <label
             htmlFor="description_ar"
-            className="mb-2 block text-sm font-medium"
+            className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-200"
           >
             Description (Arabic) <span className="text-red-500">*</span>
           </label>
@@ -223,7 +223,7 @@ export default function Form({
             required
             rows={3}
             defaultValue={isEditMode ? product?.description_ar : ""}
-            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+            className="peer block w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-sm text-gray-900 dark:text-gray-100 outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400"
             placeholder="Enter Arabic description"
           />
         </div>
@@ -231,7 +231,7 @@ export default function Form({
         <div className="mb-4">
           <label
             htmlFor="description_en"
-            className="mb-2 block text-sm font-medium"
+            className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-200"
           >
             Description (English) <span className="text-red-500">*</span>
           </label>
@@ -241,7 +241,7 @@ export default function Form({
             required
             rows={3}
             defaultValue={isEditMode ? product?.description_en : ""}
-            className="peer block w-full rounded-md border border-gray-200 py-2 px-3 text-sm outline-2 placeholder:text-gray-500"
+            className="peer block w-full rounded-md border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-sm text-gray-900 dark:text-gray-100 outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400"
             placeholder="Enter English description"
           />
         </div>
@@ -265,7 +265,7 @@ export default function Form({
       <div className="mt-6 flex justify-end gap-4">
         <Link
           href="/dashboard/products"
-          className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
+          className="flex h-10 items-center rounded-lg bg-gray-100 dark:bg-gray-700 px-4 text-sm font-medium text-gray-600 dark:text-gray-200 transition-colors hover:bg-gray-200 dark:hover:bg-gray-600"
         >
           Cancel
         </Link>

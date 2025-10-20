@@ -53,7 +53,7 @@ async function fixUrls() {
     const updates = [
       { table: "projects", column: "image_url" },
       { table: "galleries", column: "image_url" },
-      { table: "blogs", column: "image_url" },
+      { table: "event", column: "image_url" },
       { table: "banners", column: "image_url" },
       { table: "banners", column: "video_url" },
       { table: "audios", column: "audio_url" },

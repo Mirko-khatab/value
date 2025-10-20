@@ -1,6 +1,6 @@
 import { fetchProductById, fetchProductGalleries } from "@/app/lib/data";
 import { notFound } from "next/navigation";
-import Breadcrumbs from "@/app/ui/products/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
 import { UpdateMachine, DeleteMachine } from "@/app/ui/products/buttons";
 import GalleryList from "@/app/ui/products/gallery-list";
 import Image from "next/image";

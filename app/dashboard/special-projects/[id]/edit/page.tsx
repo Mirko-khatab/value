@@ -1,6 +1,8 @@
-import Form from "@/app/ui/special_projects/form";
-import Breadcrumbs from "@/app/ui/project/breadcrumbs";
+import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
+import DashboardForm from "@/app/ui/dashboard/form";
+import { specialProjectsFormFields } from "@/app/ui/dashboard/config";
 import { fetchSpecialProjectsById } from "@/app/lib/data";
+import { updateSpecialProject } from "@/app/lib/actions";
 import { notFound } from "next/navigation";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
@@ -10,6 +12,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   if (!specialProject || specialProject.length === 0) {
     notFound();
+  }
+
+  async function handleSubmit(formData: FormData) {
+    "use server";
+    await updateSpecialProject(id, formData);
   }
 
   return (
@@ -24,7 +31,19 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           },
         ]}
       />
-      <Form specialProject={specialProject[0]} mode="edit" />
+      <div className="mt-6">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          Edit Special Project
+        </h1>
+        <DashboardForm
+          fields={specialProjectsFormFields}
+          onSubmit={handleSubmit}
+          cancelPath="/dashboard/special-projects"
+          entityName="Special Project"
+          mode="edit"
+          initialData={specialProject[0]}
+        />
+      </div>
     </main>
   );
 }
