@@ -388,18 +388,85 @@ export const Slide: React.FC<SlideProps> = ({
         </div>
       </div>
 
-      {/* Navigation Dots */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
-        {slideItems.map((_, index) => (
+      {/* Category Navigation Boxes */}
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-wrap justify-center gap-2 md:gap-4 z-20 px-4">
+        {slideItems.map((slide, index) => (
           <button
             key={index}
             onClick={() => goToSlide(index)}
-            className={`w-4 h-4 rounded-full transition-all duration-300 ${
+            className={`group relative px-3 md:px-6 py-2 md:py-3 rounded-xl backdrop-blur-sm border transition-all duration-500 transform ${
               index === currentIndex
-                ? "bg-[#2E5A7A] scale-125"
-                : "bg-white/50 hover:bg-white/75"
+                ? "bg-[#2E5A7A]/90 border-[#2E5A7A] text-white scale-110 -translate-y-2 shadow-2xl"
+                : "bg-white/20 border-white/30 text-white hover:bg-white/30 hover:scale-105 hover:-translate-y-1 shadow-lg"
             }`}
-          />
+          >
+            {/* Icon */}
+            <div className="flex items-center space-x-1 md:space-x-2">
+              <div
+                className={`w-4 h-4 md:w-5 md:h-5 transition-all duration-300 ${
+                  index === currentIndex ? "scale-110" : "group-hover:scale-105"
+                }`}
+              >
+                {slide.type === "projects" && (
+                  <svg
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    className="drop-shadow-sm"
+                  >
+                    <path d="M12 2L2 7v10c0 5.55 3.84 9.95 9 11 5.16-1.05 9-5.45 9-11V7l-10-5z" />
+                  </svg>
+                )}
+                {slide.type === "products" && (
+                  <svg
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    className="drop-shadow-sm"
+                  >
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                  </svg>
+                )}
+                {slide.type === "graphics" && (
+                  <svg
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    className="drop-shadow-sm"
+                  >
+                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" />
+                  </svg>
+                )}
+                {slide.type === "events" && (
+                  <svg
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                    className="drop-shadow-sm"
+                  >
+                    <path d="M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z" />
+                  </svg>
+                )}
+              </div>
+
+              {/* Text */}
+              <span
+                className={`font-semibold text-xs md:text-sm transition-all duration-300 whitespace-nowrap ${
+                  index === currentIndex ? "text-white" : "text-white/90"
+                }`}
+              >
+                {getLocalizedField(slide, "title")}
+              </span>
+            </div>
+
+            {/* Active indicator line */}
+            <div
+              className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-white transition-all duration-300 ${
+                index === currentIndex ? "w-full" : "w-0 group-hover:w-1/2"
+              }`}
+            />
+
+            {/* Glow effect for active state */}
+            {index === currentIndex && (
+              <div className="absolute inset-0 rounded-xl bg-[#2E5A7A]/20 blur-xl -z-10 animate-pulse" />
+            )}
+          </button>
         ))}
       </div>
 
