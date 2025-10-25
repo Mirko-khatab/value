@@ -242,3 +242,19 @@ export type InvoiceForm = {
   amount: number;
   status: "pending" | "paid";
 };
+
+export type FooterProperty = {
+  id: string;
+  property_key: string;
+  title_en: string;
+  title_ar: string;
+  title_ku: string;
+  content_en: string;
+  content_ar: string;
+  content_ku: string;
+  property_type: "about" | "stats" | "contact" | "social";
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};

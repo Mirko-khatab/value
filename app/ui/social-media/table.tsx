@@ -75,12 +75,12 @@ export default async function SocialMediaTable({
   return (
     <div className="mt-6 flow-root">
       <div className="inline-block min-w-full align-middle">
-        <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
-          <div className="md:hidden">
+        <div className="rounded-lg bg-gray-50 text-gray-900 dark:bg-gray-700 p-2 md:pt-0">
+          <div className="md:hidden text-gray-900 dark:text-gray-100 transition-colors duration-200 dark:border-gray-600 [&:hover>td]:bg-gray-100 dark:[&:hover>td]:bg-gray-600 [&:hover>td]:text-gray-900 dark:[&:hover>td]:text-gray-100 ">
             {socialMedia?.map((social) => (
               <div
                 key={social.id}
-                className="mb-2 w-full rounded-md bg-white p-4"
+                className="mb-2 w-full rounded-md bg-white text-gray-900 dark:bg-gray-800 p-4"
               >
                 <div className="flex items-center justify-between border-b pb-4">
                   <div className="flex items-center space-x-3">
@@ -102,7 +102,7 @@ export default async function SocialMediaTable({
             ))}
           </div>
           <table className="hidden min-w-full text-gray-900 md:table">
-            <thead className="rounded-lg text-left text-sm font-normal">
+            <thead className="rounded-lg text-left text-sm font-normal text-gray-900 dark:text-gray-100 transition-colors duration-200 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
                   Platform
@@ -115,11 +115,11 @@ export default async function SocialMediaTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white">
+            <tbody className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 transition-colors duration-200 dark:border-gray-600 [&:hover>td]:bg-gray-100 dark:[&:hover>td]:bg-gray-600 [&:hover>td]:text-gray-900 dark:[&:hover>td]:text-gray-100   ">
               {socialMedia?.map((social) => (
                 <tr
                   key={social.id}
-                  className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
+                  className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg text-gray-900 dark:text-gray-100 transition-colors duration-200 dark:border-gray-600 [&:hover>td]:bg-gray-100 dark:[&:hover>td]:bg-gray-600 [&:hover>td]:text-gray-900 dark:[&:hover>td]:text-gray-100   "
                 >
                   <td className="whitespace-nowrap px-4 py-3 pl-6">
                     <div className="flex items-center space-x-3">

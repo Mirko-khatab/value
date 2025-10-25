@@ -254,19 +254,327 @@ export default function AboutPage() {
                   ku: "تیمەکەمان",
                 })}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 justify-items-center">
                 {teams.map((member) => (
-                  <Card
-                    key={member.id}
-                    src={member.image_url || "/image/barham.jpg"}
-                    title={getLocalizedField(member, "name")}
-                    description={getLocalizedField(member, "position")}
-                  />
+                  <div key={member.id} className="w-full max-w-sm">
+                    <Card
+                      src={member.image_url || "/image/barham.jpg"}
+                      title={getLocalizedField(member, "name")}
+                      description={getLocalizedField(member, "position")}
+                    />
+                  </div>
                 ))}
               </div>
             </div>
           </div>
         )}
+
+        {/* Location Section */}
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-12 bg-white dark:bg-black">
+          <div className="max-w-7xl mx-auto">
+            <h2
+              className={`text-3xl font-bold text-gray-900 dark:text-white mb-12 ${
+                isRTL ? "text-right" : "text-left"
+              }`}
+            >
+              {t("our_location", {
+                en: "Our Location",
+                ar: "موقعنا",
+                ku: "شوێنەکەمان",
+              })}
+            </h2>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+              {/* Location Details */}
+              <div className={`${isRTL ? "lg:order-2" : ""}`}>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-8 shadow-lg">
+                  <h3
+                    className={`text-xl font-semibold text-gray-900 dark:text-white mb-6 ${
+                      isRTL ? "text-right" : "text-left"
+                    }`}
+                    dir={
+                      language === "ar"
+                        ? "rtl"
+                        : language === "ku"
+                        ? "rtl"
+                        : "ltr"
+                    }
+                  >
+                    {t("contact_info", {
+                      en: "Contact Information",
+                      ar: "معلومات الاتصال",
+                      ku: "زانیاری پەیوەندی",
+                    })}
+                  </h3>
+
+                  <div className="space-y-6">
+                    {/* Address */}
+                    <div
+                      className="flex items-start gap-4"
+                      dir={
+                        language === "ar"
+                          ? "rtl"
+                          : language === "ku"
+                          ? "rtl"
+                          : "ltr"
+                      }
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-[#2E5A7A] rounded-lg flex items-center justify-center">
+                        <svg
+                          className="w-5 h-5 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <div
+                        className={`${isRTL ? "text-right" : "text-left"}`}
+                        dir={
+                          language === "ar"
+                            ? "rtl"
+                            : language === "ku"
+                            ? "rtl"
+                            : "ltr"
+                        }
+                      >
+                        <h4 className="font-medium text-gray-900 dark:text-white mb-1">
+                          {t("address", {
+                            en: "Address",
+                            ar: "العنوان",
+                            ku: "ناونیشان",
+                          })}
+                        </h4>
+                        <p className="text-gray-600 dark:text-gray-300 font-medium">
+                          {t("business_name", {
+                            en: "Darwaza pshw rest & cafe",
+                            ar: "دروازة بشو ريست وكافيه",
+                            ku: "دەروازە پشو ڕێست و کافێ",
+                          })}
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-300 mt-1">
+                          {t("detailed_address", {
+                            en: "Darwaza city 3 Sulaymaniyah",
+                            ar: "مدينة دروازة ٣ السليمانية",
+                            ku: "شاری دەروازە ٣ سلێمانی",
+                          })}
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-300">
+                          {t("area_info", {
+                            en: "Darwaza city 3 emaray 3",
+                            ar: "مدينة دروازة ٣ عمارة ٣",
+                            ku: "شاری دەروازە ٣ عیمارەی ٣",
+                          })}
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-300">
+                          {t("region", {
+                            en: "Kurdistan Region, Iraq",
+                            ar: "إقليم كردستان، العراق",
+                            ku: "هەرێمی کوردستان، عێراق",
+                          })}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 font-mono">
+                          35.56363° N, 45.37964° E
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Registration */}
+                    <div
+                      className="flex items-start gap-4"
+                      dir={
+                        language === "ar"
+                          ? "rtl"
+                          : language === "ku"
+                          ? "rtl"
+                          : "ltr"
+                      }
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-[#2E5A7A] rounded-lg flex items-center justify-center">
+                        <svg
+                          className="w-5 h-5 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V4a2 2 0 00-2-2H6zm1 2a1 1 0 000 2h6a1 1 0 100-2H7zm6 7a1 1 0 011 1v3a1 1 0 11-2 0v-3a1 1 0 011-1zm-3 3a1 1 0 100 2h.01a1 1 0 100-2H10zm-4 1a1 1 0 011-1h.01a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 100 2h.01a1 1 0 100-2H7zm2 0a1 1 0 100 2h.01a1 1 0 100-2H9zm2 0a1 1 0 100 2h.01a1 1 0 100-2H11z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <div
+                        className={`${isRTL ? "text-right" : "text-left"}`}
+                        dir={
+                          language === "ar"
+                            ? "rtl"
+                            : language === "ku"
+                            ? "rtl"
+                            : "ltr"
+                        }
+                      >
+                        <h4 className="font-medium text-gray-900 dark:text-white mb-1">
+                          {t("registration", {
+                            en: "Registration",
+                            ar: "التسجيل",
+                            ku: "تۆمارکردن",
+                          })}
+                        </h4>
+                        <p className="text-gray-600 dark:text-gray-300">
+                          {t("keu_license", {
+                            en: "Kurdistan Engineering Union (KEU)",
+                            ar: "نقابة المهندسين الكردستانية",
+                            ku: "یەکێتی ئەندازیارانی کوردستان",
+                          })}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                          {t("license_number", {
+                            en: "License #308",
+                            ar: "رخصة رقم ٣٠٨",
+                            ku: "مۆڵەت ژمارە ٣٠٨",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Established */}
+                    <div
+                      className={`flex items-start gap-4 ${
+                        isRTL ? "text-right" : "text-left"
+                      }`}
+                      dir={
+                        language === "ar"
+                          ? "rtl"
+                          : language === "ku"
+                          ? "rtl"
+                          : "ltr"
+                      }
+                    >
+                      <div className="flex-shrink-0 w-10 h-10 bg-[#2E5A7A] rounded-lg flex items-center justify-center">
+                        <svg
+                          className="w-5 h-5 text-white"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <div
+                        className={`${isRTL ? "text-right" : "text-left"}`}
+                        dir={
+                          language === "ar"
+                            ? "rtl"
+                            : language === "ku"
+                            ? "rtl"
+                            : "ltr"
+                        }
+                      >
+                        <h4 className="font-medium text-gray-900 dark:text-white mb-1">
+                          {t("established", {
+                            en: "Established",
+                            ar: "تأسست",
+                            ku: "دامەزراوە",
+                          })}
+                        </h4>
+                        <p className="text-gray-600 dark:text-gray-300">
+                          {t("establishment_year", {
+                            en: "2020",
+                            ar: "٢٠٢٠",
+                            ku: "٢٠٢٠",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Google Map */}
+              <div className={`${isRTL ? "lg:order-1" : ""}`}>
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 shadow-lg">
+                  <div className="relative w-full h-96 rounded-xl overflow-hidden">
+                    <iframe
+                      src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345093747!2d45.37964!3d35.56363!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDMzJzQ5LjEiTiA0NcKwMjInNDYuNyJF!5e0!3m2!1sen!2s!4v1635789012345!5m2!1sen!2s&q=Darwaza+pshw+rest+cafe+Darwaza+city+3+Sulaymaniyah`}
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      className="rounded-xl"
+                      title={t("office_location", {
+                        en: "Value Architects Office Location",
+                        ar: "موقع مكتب فاليو للمعمار",
+                        ku: "شوێنی ئۆفیسی ڤالیو ئارکیتێکتس",
+                      })}
+                    />
+
+                    {/* Map overlay for dark mode styling */}
+                    <div className="absolute inset-0 pointer-events-none rounded-xl ring-1 ring-gray-200 dark:ring-gray-700"></div>
+                  </div>
+
+                  {/* Map Actions */}
+                  <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=Darwaza+pshw+rest+cafe+Darwaza+city+3+Sulaymaniyah`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-[#2E5A7A] hover:bg-[#1e3a52] text-white px-4 py-3 rounded-lg font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {t("get_directions", {
+                        en: "Get Directions",
+                        ar: "احصل على الاتجاهات",
+                        ku: "ڕێگا وەربگرە",
+                      })}
+                    </a>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=Darwaza+pshw+rest+cafe+Darwaza+city+3+Sulaymaniyah`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-900 dark:text-white px-4 py-3 rounded-lg font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2"
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      {t("view_on_maps", {
+                        en: "View on Maps",
+                        ar: "عرض على الخرائط",
+                        ku: "لە نەخشەدا ببینە",
+                      })}
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </ShowcaseLayout>
   );

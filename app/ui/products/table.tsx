@@ -15,12 +15,12 @@ export default async function MachinesTable({
   return (
     <div className="mt-6 flow-root">
       <div className="inline-block min-w-full align-middle">
-      <div className="rounded-lg bg-gray-50 dark:bg-gray-700 p-2 md:pt-0 transition-colors duration-200">
-      <div className="md:hidden">
+        <div className="rounded-lg bg-gray-50 text-gray-900 dark:bg-gray-700 p-2 md:pt-0 transition-colors duration-200">
+          <div className="md:hidden">
             {products?.map((machine, index) => (
               <div
                 key={`mobile-${machine.id}-${index}`}
-                className="mb-2 w-full rounded-md bg-white dark:bg-gray-800 p-4 transition-colors duration-200"
+                className="mb-2 w-full rounded-md bg-white text-gray-900 dark:bg-gray-800 p-4 transition-colors duration-200"
               >
                 <div className="flex items-center justify-between border-b border-gray-200 dark:border-gray-600 pb-4">
                   <div>
@@ -70,7 +70,7 @@ export default async function MachinesTable({
             ))}
           </div>
           <table className="hidden min-w-full text-gray-900 md:table">
-            <thead className="rounded-lg text-left text-sm font-normal bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+            <thead className="rounded-lg text-left text-sm font-normal bg-gray-50 text-gray-900 dark:bg-gray-700 dark:text-gray-100 transition-colors duration-200">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
                   Product
@@ -89,11 +89,11 @@ export default async function MachinesTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white dark:bg-gray-800">
+            <tbody className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 transition-colors duration-200 dark:border-gray-600 [&:hover>td]:bg-gray-100 dark:[&:hover>td]:bg-gray-600 [&:hover>td]:text-gray-900 dark:[&:hover>td]:text-gray-100   ">
               {products?.map((machine, index) => (
                 <tr
                   key={`table-${machine.id}-${index}`}
-                  className="w-full border-b border-gray-200 dark:border-gray-600 py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
+                  className="w-full border-b border-gray-200 text-gray-900 dark:text-gray-100 transition-colors duration-200 dark:border-gray-600 py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
                 >
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex items-center gap-3">

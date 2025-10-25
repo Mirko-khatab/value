@@ -1484,3 +1484,101 @@ export async function fetchAboutStats() {
     if (connection) await connection.end();
   }
 }
+
+// FOOTER PROPERTIES DATA FETCHING
+export async function fetchFooterProperties() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      "SELECT * FROM footer_properties WHERE is_active = TRUE ORDER BY property_type, display_order ASC"
+    );
+    return rows as FooterProperty[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch footer properties.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFooterPropertiesByType(type: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      "SELECT * FROM footer_properties WHERE property_type = ? AND is_active = TRUE ORDER BY display_order ASC",
+      [type]
+    );
+    return rows as FooterProperty[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch footer properties by type.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFooterPropertyById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      "SELECT * FROM footer_properties WHERE id = ?",
+      [id]
+    );
+    return rows as FooterProperty[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch footer property.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredFooterProperties(
+  query: string,
+  currentPage: number
+) {
+  let connection;
+  try {
+    const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `
+      SELECT * FROM footer_properties
+      WHERE title_en LIKE ? OR title_ar LIKE ? OR title_ku LIKE ? OR content_en LIKE ?
+      ORDER BY property_type, display_order ASC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    `,
+      [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    return rows as FooterProperty[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch footer properties.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchTotalFooterPropertiesPages(query: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT COUNT(*) as count FROM footer_properties
+       WHERE title_en LIKE ? OR title_ar LIKE ? OR title_ku LIKE ? OR content_en LIKE ?`,
+      [`%${query}%`, `%${query}%`, `%${query}%`, `%${query}%`]
+    );
+    const totalPages = Math.ceil(
+      Number((rows as any)[0].count) / ITEMS_PER_PAGE
+    );
+    return totalPages;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total footer properties pages.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}

@@ -2699,3 +2699,197 @@ export async function createGraphicsBulk(imageUrls: string[]) {
     };
   }
 }
+
+// FOOTER PROPERTIES ACTIONS
+const FooterPropertySchema = z.object({
+  id: z.string(),
+  property_key: z.string().min(1, "Property key is required"),
+  title_en: z.string().min(1, "English title is required"),
+  title_ar: z.string().min(1, "Arabic title is required"),
+  title_ku: z.string().min(1, "Kurdish title is required"),
+  content_en: z.string().min(1, "English content is required"),
+  content_ar: z.string().min(1, "Arabic content is required"),
+  content_ku: z.string().min(1, "Kurdish content is required"),
+  property_type: z.enum(["about", "stats", "contact", "social"]),
+  display_order: z.coerce.number(),
+  is_active: z.boolean(),
+});
+
+const CreateFooterProperty = FooterPropertySchema.omit({ id: true });
+const UpdateFooterProperty = FooterPropertySchema.omit({ id: true });
+
+export type FooterPropertyState = {
+  errors?: {
+    property_key?: string[];
+    title_en?: string[];
+    title_ar?: string[];
+    title_ku?: string[];
+    content_en?: string[];
+    content_ar?: string[];
+    content_ku?: string[];
+    property_type?: string[];
+    display_order?: string[];
+    is_active?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createFooterProperty(
+  prevState: FooterPropertyState,
+  formData: FormData
+) {
+  const validatedFields = CreateFooterProperty.safeParse({
+    property_key: formData.get("property_key"),
+    title_en: formData.get("title_en"),
+    title_ar: formData.get("title_ar"),
+    title_ku: formData.get("title_ku"),
+    content_en: formData.get("content_en"),
+    content_ar: formData.get("content_ar"),
+    content_ku: formData.get("content_ku"),
+    property_type: formData.get("property_type"),
+    display_order: formData.get("display_order"),
+    is_active: formData.get("is_active") === "on",
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Create Footer Property.",
+    };
+  }
+
+  const {
+    property_key,
+    title_en,
+    title_ar,
+    title_ku,
+    content_en,
+    content_ar,
+    content_ku,
+    property_type,
+    display_order,
+    is_active,
+  } = validatedFields.data;
+
+  let connection;
+  try {
+    connection = await getConnection();
+    await connection.execute(
+      `INSERT INTO footer_properties (property_key, title_en, title_ar, title_ku, content_en, content_ar, content_ku, property_type, display_order, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        property_key,
+        title_en,
+        title_ar,
+        title_ku,
+        content_en,
+        content_ar,
+        content_ku,
+        property_type,
+        display_order,
+        is_active,
+      ]
+    );
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Create Footer Property.",
+    };
+  } finally {
+    if (connection) await connection.end();
+  }
+
+  revalidatePath("/dashboard/footer-properties");
+  redirect("/dashboard/footer-properties");
+}
+
+export async function updateFooterProperty(
+  id: string,
+  prevState: FooterPropertyState,
+  formData: FormData
+) {
+  const validatedFields = UpdateFooterProperty.safeParse({
+    property_key: formData.get("property_key"),
+    title_en: formData.get("title_en"),
+    title_ar: formData.get("title_ar"),
+    title_ku: formData.get("title_ku"),
+    content_en: formData.get("content_en"),
+    content_ar: formData.get("content_ar"),
+    content_ku: formData.get("content_ku"),
+    property_type: formData.get("property_type"),
+    display_order: formData.get("display_order"),
+    is_active: formData.get("is_active") === "on",
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Update Footer Property.",
+    };
+  }
+
+  const {
+    property_key,
+    title_en,
+    title_ar,
+    title_ku,
+    content_en,
+    content_ar,
+    content_ku,
+    property_type,
+    display_order,
+    is_active,
+  } = validatedFields.data;
+
+  let connection;
+  try {
+    connection = await getConnection();
+    await connection.execute(
+      `UPDATE footer_properties 
+       SET property_key = ?, title_en = ?, title_ar = ?, title_ku = ?, content_en = ?, content_ar = ?, content_ku = ?, property_type = ?, display_order = ?, is_active = ?
+       WHERE id = ?`,
+      [
+        property_key,
+        title_en,
+        title_ar,
+        title_ku,
+        content_en,
+        content_ar,
+        content_ku,
+        property_type,
+        display_order,
+        is_active,
+        id,
+      ]
+    );
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Update Footer Property.",
+    };
+  } finally {
+    if (connection) await connection.end();
+  }
+
+  revalidatePath("/dashboard/footer-properties");
+  redirect("/dashboard/footer-properties");
+}
+
+export async function deleteFooterProperty(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    await connection.execute("DELETE FROM footer_properties WHERE id = ?", [
+      id,
+    ]);
+    revalidatePath("/dashboard/footer-properties");
+    return { message: "Deleted Footer Property." };
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Delete Footer Property.",
+    };
+  } finally {
+    if (connection) await connection.end();
+  }
+}

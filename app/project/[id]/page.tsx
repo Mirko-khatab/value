@@ -135,16 +135,25 @@ export default function ProjectDetailPage({ params }: PageProps) {
     setIsFullscreen(!isFullscreen);
   };
 
-  // Close fullscreen on escape key
+  // Keyboard navigation and fullscreen controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setIsFullscreen(false);
+      } else if (e.key === "ArrowLeft" && galleries.length > 1) {
+        e.preventDefault();
+        setCurrentSlide(
+          (prev) => (prev - 1 + galleries.length) % galleries.length
+        );
+      } else if (e.key === "ArrowRight" && galleries.length > 1) {
+        e.preventDefault();
+        setCurrentSlide((prev) => (prev + 1) % galleries.length);
       }
     };
 
+    document.addEventListener("keydown", handleKeyDown);
+
     if (isFullscreen) {
-      document.addEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "hidden";
     } else {
       document.body.style.overflow = "unset";
@@ -154,7 +163,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "unset";
     };
-  }, [isFullscreen]);
+  }, [isFullscreen, galleries.length]);
 
   if (loading) {
     return (
@@ -254,17 +263,18 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
                     {/* Slide Indicators - Mobile */}
                     {galleries.length > 1 && (
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-32 overflow-hidden">
-                        <div className="flex gap-2 justify-center">
+                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-xs overflow-hidden">
+                        <div className="flex gap-2 justify-center bg-black/30 rounded-full px-3 py-2">
                           {galleries.map((_, index) => (
                             <button
                               key={index}
                               onClick={() => goToSlide(index)}
-                              className={`w-3 h-3 rounded-full transition-all duration-200 flex-shrink-0 ${
+                              className={`w-3 h-3 rounded-full transition-all duration-200 flex-shrink-0 touch-manipulation ${
                                 index === currentSlide
                                   ? "bg-white scale-125"
                                   : "bg-white/50 hover:bg-white/75"
                               }`}
+                              style={{ minHeight: "24px", minWidth: "24px" }}
                             />
                           ))}
                         </div>
@@ -281,7 +291,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                 >
                   <div
                     ref={sliderRef}
-                    className="relative w-full h-full"
+                    className="relative w-full h-full group"
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
@@ -307,18 +317,36 @@ export default function ProjectDetailPage({ params }: PageProps) {
                       </div>
                     ))}
 
+                    {/* Desktop Navigation Arrows */}
+                    {galleries.length > 1 && (
+                      <>
+                        <button
+                          onClick={prevSlide}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 opacity-0 hover:opacity-100 group-hover:opacity-100 z-10"
+                        >
+                          <ChevronLeftIcon className="h-6 w-6" />
+                        </button>
+                        <button
+                          onClick={nextSlide}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 opacity-0 hover:opacity-100 group-hover:opacity-100 z-10"
+                        >
+                          <ChevronRightIcon className="h-6 w-6" />
+                        </button>
+                      </>
+                    )}
+
                     {/* Slide Indicators - Desktop */}
                     {galleries.length > 1 && (
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-40 overflow-hidden">
-                        <div className="flex gap-2 justify-center">
+                      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 max-w-md overflow-hidden z-10">
+                        <div className="flex gap-3 justify-center bg-black/50 hover:bg-black/70 rounded-full px-6 py-4 transition-all duration-200">
                           {galleries.map((_, index) => (
                             <button
                               key={index}
                               onClick={() => goToSlide(index)}
-                              className={`w-3 h-3 rounded-full transition-all duration-200 flex-shrink-0 ${
+                              className={`w-3 h-3 rounded-full transition-all duration-200 flex-shrink-0 hover:scale-125 ${
                                 index === currentSlide
-                                  ? "bg-white scale-125"
-                                  : "bg-white/50 hover:bg-white/75"
+                                  ? "bg-white scale-150 shadow-lg"
+                                  : "bg-white/60 hover:bg-white/90"
                               }`}
                             />
                           ))}
@@ -624,13 +652,15 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
       {/* Fullscreen Modal */}
       {isFullscreen && (
-        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black z-[9999] flex items-center justify-center">
+          {/* Close button with better positioning and touch target */}
           <button
             onClick={toggleFullscreen}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 z-60"
+            className="absolute top-4 right-4 z-[10000] text-white hover:text-gray-300 bg-black/50 hover:bg-black/70 p-3 rounded-full transition-all duration-200 touch-manipulation"
+            style={{ minHeight: "48px", minWidth: "48px" }}
           >
             <svg
-              className="w-8 h-8"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -671,32 +701,35 @@ export default function ProjectDetailPage({ params }: PageProps) {
               <>
                 <button
                   onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-200"
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 sm:p-4 rounded-full transition-all duration-200 z-[9998] touch-manipulation"
+                  style={{ minHeight: "48px", minWidth: "48px" }}
                 >
-                  <ChevronLeftIcon className="h-8 w-8" />
+                  <ChevronLeftIcon className="h-6 w-6 sm:h-8 sm:w-8" />
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-4 rounded-full transition-all duration-200"
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 sm:p-4 rounded-full transition-all duration-200 z-[9998] touch-manipulation"
+                  style={{ minHeight: "48px", minWidth: "48px" }}
                 >
-                  <ChevronRightIcon className="h-8 w-8" />
+                  <ChevronRightIcon className="h-6 w-6 sm:h-8 sm:w-8" />
                 </button>
               </>
             )}
 
             {/* Fullscreen Indicators */}
             {galleries.length > 1 && (
-              <div className="absolute bottom-8 left-1/2 -translate-x-1/2 max-w-48 overflow-hidden">
-                <div className="flex gap-3 justify-center">
+              <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 max-w-xs sm:max-w-48 overflow-hidden z-[9998]">
+                <div className="flex gap-2 sm:gap-3 justify-center bg-black/30 rounded-full px-4 py-2">
                   {galleries.map((_, index) => (
                     <button
                       key={index}
                       onClick={() => goToSlide(index)}
-                      className={`w-4 h-4 rounded-full transition-all duration-200 flex-shrink-0 ${
+                      className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full transition-all duration-200 flex-shrink-0 touch-manipulation ${
                         index === currentSlide
                           ? "bg-white scale-125"
                           : "bg-white/50 hover:bg-white/75"
                       }`}
+                      style={{ minHeight: "24px", minWidth: "24px" }}
                     />
                   ))}
                 </div>

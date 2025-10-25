@@ -872,18 +872,6 @@ export const socialMediaFormHandler = async (
   }
 };
 
-// SPECIAL PROJECTS FORM
-export const specialProjectsFormFields: FormField[] = [
-  {
-    name: "sort_order",
-    label: "Sort Order",
-    type: "number",
-    required: true,
-    defaultValue: 0,
-    gridCol: "half",
-  },
-];
-
 export const specialProjectsFormHandler = async (
   mode: "create" | "edit",
   id: string | undefined,

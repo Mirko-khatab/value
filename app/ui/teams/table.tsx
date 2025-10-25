@@ -20,14 +20,11 @@ export default async function TeamsTable({
     "position_en",
     "image_url",
   ];
-  // const teams = await fetchFilteredTeams(query, currentPage);
 
   return (
-    <div className="overflow-x-auto ">
-      {/* <table className=" min-w-full overflow-x-auto scrollbar-hide 
-       text-gray-900 md:table"> */}
-      <table className="w-full text-sm text-left rtl:text-right text-gray-500 ">
-        <thead className="rounded-lg text-left text-sm font-normal">
+    <div className="overflow-x-auto text-gray-900 dark:text-gray-100 transition-colors duration-200">
+      <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-100 transition-colors duration-200">
+        <thead className="rounded-lg text-left text-sm font-normal text-gray-900 dark:text-gray-100 transition-colors duration-200">
           <tr>
             {data.map((item) => (
               <th
@@ -46,9 +43,12 @@ export default async function TeamsTable({
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white">
+        <tbody className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 transition-colors duration-200">
           {teams.map((team) => (
-            <tr key={team.id}>
+            <tr
+              key={team.id}
+              className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg text-gray-900 dark:text-gray-100 transition-colors duration-200 dark:border-gray-600 [&:hover>td]:bg-gray-100 dark:[&:hover>td]:bg-gray-600 [&:hover>td]:text-gray-900 dark:[&:hover>td]:text-gray-100       "
+            >
               {data.map((item) => (
                 <td key={item} className="whitespace-nowrap px-4 py-5 sm:pl-6">
                   {item === "image_url" ? (
@@ -64,7 +64,7 @@ export default async function TeamsTable({
                   )}
                 </td>
               ))}
-              <td className="whitespace-nowrap py-3 pl-6 pr-3">
+              <td className="whitespace-nowrap py-3 pl-6 pr-3 text-gray-900 dark:text-gray-100 transition-colors duration-200">
                 <div className="flex justify-center gap-3">
                   <UpdateTeam id={team.id} />
                   <DeleteTeam id={team.id} />

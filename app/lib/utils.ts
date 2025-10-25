@@ -111,18 +111,10 @@ export const links = [
     href: "/dashboard/properties",
     icon: DocumentDuplicateIcon,
   },
-  {
-    name: "Special Projects",
-    href: "/dashboard/special-projects",
-    icon: PhotoIcon,
-  },
+
   { name: "event", href: "/dashboard/event", icon: NewspaperIcon },
   { name: "Teams", href: "/dashboard/teams", icon: UserGroupIcon },
-  {
-    name: "Banners",
-    href: "/dashboard/banners",
-    icon: PresentationChartBarIcon,
-  },
+
   {
     name: "Audios",
     href: "/dashboard/audios",

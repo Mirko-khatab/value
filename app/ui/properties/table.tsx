@@ -1,6 +1,18 @@
 import { UpdateProperty, DeleteProperty } from "@/app/ui/properties/button";
 import { fetchFilteredProperties } from "@/app/lib/data";
 
+// Utility function to truncate text at 50 words
+function truncateText(text: string, wordLimit: number = 50): string {
+  if (!text) return "";
+
+  const words = text.trim().split(/\s+/);
+  if (words.length <= wordLimit) {
+    return text;
+  }
+
+  return words.slice(0, wordLimit).join(" ") + "...";
+}
+
 export default async function PropertiesTable({
   query,
   currentPage,
@@ -13,25 +25,31 @@ export default async function PropertiesTable({
   return (
     <div className="mt-6 flow-root">
       <div className="inline-block min-w-full align-middle">
-        <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
+        <div className="rounded-lg bg-gray-50 text-gray-900 dark:bg-gray-700 p-2 md:pt-0">
           <div className="md:hidden">
             {properties?.map((property) => (
               <div
                 key={property.id}
-                className="mb-2 w-full rounded-md bg-white p-4"
+                className="mb-2 w-full rounded-md bg-white text-gray-900 dark:bg-gray-800 p-4"
               >
                 <div className="flex items-center justify-between border-b pb-4">
                   <div>
                     <div className="mb-2 flex items-center">
                       <p className="text-sm font-medium">{property.key}</p>
                     </div>
-                    <p className="text-sm text-gray-500">{property.value_en}</p>
-                    <p className="text-sm text-gray-500">{property.value_ku}</p>
+                    <p className="text-sm text-gray-500">
+                      {truncateText(property.value_en)}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {truncateText(property.value_ku)}
+                    </p>
                   </div>
                 </div>
                 <div className="flex w-full items-center justify-between pt-4">
-                  <div className="max-w-[200px] truncate">
-                    <p className="text-sm text-gray-600">{property.value_ar}</p>
+                  <div className="max-w-[200px]">
+                    <p className="text-sm text-gray-600">
+                      {truncateText(property.value_ar)}
+                    </p>
                   </div>
                   <div className="flex justify-end gap-2">
                     <UpdateProperty id={property.id} />
@@ -42,7 +60,7 @@ export default async function PropertiesTable({
             ))}
           </div>
           <table className="hidden min-w-full text-gray-900 md:table">
-            <thead className="rounded-lg text-left text-sm font-normal">
+            <thead className="rounded-lg text-left text-sm font-normal text-gray-900 dark:text-gray-100 transition-colors duration-200 dark:bg-gray-700 dark:border-gray-600">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
                   Property Key
@@ -61,24 +79,28 @@ export default async function PropertiesTable({
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white">
+            <tbody className="bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 transition-colors duration-200 dark:border-gray-600 [&:hover>td]:bg-gray-100 dark:[&:hover>td]:bg-gray-600 [&:hover>td]:text-gray-900 dark:[&:hover>td]:text-gray-100">
               {properties?.map((property) => (
                 <tr
                   key={property.id}
-                  className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg"
+                  className="w-full border-b py-3 text-sm last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg text-gray-900 dark:text-gray-100 transition-colors duration-200 dark:border-gray-600 [&:hover>td]:bg-gray-100 dark:[&:hover>td]:bg-gray-600 [&:hover>td]:text-gray-900 dark:[&:hover>td]:text-gray-100       "
                 >
                   <td className="whitespace-nowrap px-4 py-3 pl-6">
                     <p className="font-medium">{property.key}</p>
                   </td>
-                  <td className="whitespace-nowrap px-3 py-3">
-                    {property.value_en}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-3">
-                    {property.value_ku}
+                  <td className="px-3 py-3">
+                    <div className="max-w-[300px]">
+                      {truncateText(property.value_en)}
+                    </div>
                   </td>
                   <td className="px-3 py-3">
-                    <div className="max-w-[300px] truncate">
-                      {property.value_ar}
+                    <div className="max-w-[300px]">
+                      {truncateText(property.value_ku)}
+                    </div>
+                  </td>
+                  <td className="px-3 py-3">
+                    <div className="max-w-[300px]">
+                      {truncateText(property.value_ar)}
                     </div>
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">

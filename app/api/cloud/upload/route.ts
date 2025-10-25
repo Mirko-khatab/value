@@ -46,13 +46,34 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Upload error:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
+    // Check if it's a rate limiting error
+    if (
+      errorMessage.includes("Too many requests") ||
+      errorMessage.includes("rate limit")
+    ) {
+      console.warn("⚠️  Cloud storage rate limit reached during upload");
+      return NextResponse.json(
+        {
+          warning: "Rate limit reached",
+          message:
+            "Too many upload requests. Please wait a moment and try again.",
+          canRetry: true,
+        },
+        { status: 429 }
+      );
+    }
+
+    console.warn("⚠️  Upload warning:", error);
     return NextResponse.json(
       {
-        error: "Upload failed",
-        message: error instanceof Error ? error.message : "Unknown error",
+        warning: "Upload temporarily unavailable",
+        message: errorMessage,
+        canRetry: true,
       },
-      { status: 500 }
+      { status: 503 } // Service Unavailable instead of Internal Server Error
     );
   }
 }

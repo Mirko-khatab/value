@@ -181,7 +181,7 @@ export const Slide: React.FC<SlideProps> = ({
   if (events.length > 0) {
     slideItems.push({
       type: "events",
-      title_ku: "ڕووداوەکان",
+      title_ku: "کارو چالاکی",
       title_en: "Events",
       title_ar: "الأحداث",
       description_ku: "دوایین ڕووداوە گرنگەکانمان ببینن",
@@ -389,7 +389,7 @@ export const Slide: React.FC<SlideProps> = ({
       </div>
 
       {/* Category Navigation Boxes */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-wrap justify-center gap-2 md:gap-4 z-20 px-4">
+      <div className="absolute bottom-20 md:bottom-8 left-1/2 transform -translate-x-1/2 flex flex-row justify-center gap-2 md:gap-4 z-20 px-4">
         {slideItems.map((slide, index) => (
           <button
             key={index}

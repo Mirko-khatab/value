@@ -319,6 +319,81 @@ async function seedBanners(connection: mysql.Connection) {
   }
 }
 
+async function seedFooterProperties(connection: mysql.Connection) {
+  await connection.execute(`
+    CREATE TABLE IF NOT EXISTS footer_properties (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      property_key VARCHAR(100) NOT NULL UNIQUE,
+      title_en VARCHAR(255) NOT NULL,
+      title_ar VARCHAR(255) NOT NULL,
+      title_ku VARCHAR(255) NOT NULL,
+      content_en TEXT NOT NULL,
+      content_ar TEXT NOT NULL,
+      content_ku TEXT NOT NULL,
+      property_type ENUM('about', 'stats', 'contact', 'social') NOT NULL DEFAULT 'about',
+      display_order INT DEFAULT 0,
+      is_active BOOLEAN DEFAULT TRUE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    )
+  `);
+
+  // Insert footer properties with company information
+  const footerProperties = [
+    {
+      property_key: "company_about",
+      title_en: "About Value Architects",
+      title_ar: "حول شركة فاليو للمعمار",
+      title_ku: "دەربارەی ڤالیو ئارکیتێکتس",
+      content_en:
+        "Established in 2020, our engineering office in Sulaymaniyah, Kurdistan Region of Iraq, is registered with the Kurdistan Engineering Union (KEU) under number 308. Our firm specializes in designing, implementing, and supervising a wide range of engineering projects.",
+      content_ar:
+        "تأسس مكتبنا الهندسي في السليمانية، إقليم كردستان العراق عام 2020، ومسجل لدى نقابة المهندسين الكردستانية تحت الرقم 308. تختص شركتنا في تصميم وتنفيذ والإشراف على مجموعة واسعة من المشاريع الهندسية.",
+      content_ku:
+        "نووسینگەی ئەندازیاریمان لە ساڵی ٢٠٢٠ لە سلێمانی، هەرێمی کوردستانی عێراق دامەزراوە و لە ژێر ژمارە ٣٠٨ لە یەکێتیی ئەندازیارانی کوردستان تۆمارکراوە. کۆمپانیاکەمان پسپۆڕە لە دیزاین و جێبەجێکردن و سەرپەرشتیکردنی کۆمەڵێک پڕۆژەی ئەندازیاری.",
+      property_type: "about",
+      display_order: 1,
+    },
+    {
+      property_key: "company_mission",
+      title_en: "Our Mission",
+      title_ar: "مهمتنا",
+      title_ku: "ئامانجەکانمان",
+      content_en:
+        "With a dedicated team comprising architects, civil, mechanical, and electrical engineers, we are committed to delivering innovative and effective solutions tailored to our clients needs.",
+      content_ar:
+        "مع فريق متخصص يضم مهندسين معماريين ومدنيين وميكانيكيين وكهربائيين، نحن ملتزمون بتقديم حلول مبتكرة وفعالة مصممة خصيصاً لاحتياجات عملائنا.",
+      content_ku:
+        "لەگەڵ تیمێکی تایبەت کە پێکهاتووە لە ئەندازیارانی بیناسازی، مەدەنی، مەکانیکی و کارەبایی، ئێمە پابەندین بە پێشکەشکردنی چارەسەری داهێنەرانە و کاریگەر کە بە پێی پێداویستیەکانی کڕیارەکانمان دیزاین کراون.",
+      property_type: "about",
+      display_order: 2,
+    },
+  ];
+
+  for (const property of footerProperties) {
+    await connection.execute(
+      `INSERT INTO footer_properties (property_key, title_en, title_ar, title_ku, content_en, content_ar, content_ku, property_type, display_order, is_active) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) 
+       ON DUPLICATE KEY UPDATE 
+       title_en=VALUES(title_en), title_ar=VALUES(title_ar), title_ku=VALUES(title_ku),
+       content_en=VALUES(content_en), content_ar=VALUES(content_ar), content_ku=VALUES(content_ku),
+       property_type=VALUES(property_type), display_order=VALUES(display_order)`,
+      [
+        property.property_key,
+        property.title_en,
+        property.title_ar,
+        property.title_ku,
+        property.content_en,
+        property.content_ar,
+        property.content_ku,
+        property.property_type,
+        property.display_order,
+        true,
+      ]
+    );
+  }
+}
+
 export async function GET() {
   let connection;
 
@@ -331,6 +406,7 @@ export async function GET() {
     await seedRevenue(connection);
     await seedSpecialProjects(connection);
     await seedBanners(connection);
+    await seedFooterProperties(connection);
 
     return Response.json({ message: "Database seeded successfully" });
   } catch (error) {

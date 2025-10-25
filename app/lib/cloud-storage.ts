@@ -84,15 +84,27 @@ export async function uploadFileToCloud(
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
 
+      // Handle rate limiting gracefully
+      if (
+        response.status === 429 ||
+        errorData.message?.includes("Too many requests")
+      ) {
+        console.warn("⚠️  Cloud storage rate limit reached during upload");
+        throw new Error(
+          "Too many requests from this IP, please try again later."
+        );
+      }
+
       // Handle duplicate file error gracefully
       if (
         errorData.message?.includes("already exists") ||
         errorData.message?.includes("duplicate")
       ) {
-        console.warn("Duplicate file detected, will try to find existing file");
+        console.warn(
+          "⚠️  Duplicate file detected, will try to find existing file"
+        );
 
         // For duplicate content errors, just continue - let the user know via UI
-        console.log("⚠️  Duplicate content detected by cloud storage");
         console.log(
           "   This means the exact same file content already exists."
         );
@@ -104,7 +116,7 @@ export async function uploadFileToCloud(
         // and we use unique filenames, so search by filename won't work
       }
 
-      console.error("Cloud storage upload error:", errorData);
+      console.warn("⚠️  Cloud storage upload warning:", errorData);
       throw new Error(
         errorData.message || `Upload failed with status ${response.status}`
       );
@@ -113,7 +125,7 @@ export async function uploadFileToCloud(
     const result = await response.json();
     return result.data;
   } catch (error) {
-    console.error("Error uploading to cloud storage:", error);
+    console.warn("⚠️  Warning uploading to cloud storage:", error);
     throw new Error(
       error instanceof Error ? error.message : "Failed to upload file"
     );

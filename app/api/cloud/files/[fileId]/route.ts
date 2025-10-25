@@ -27,7 +27,28 @@ export async function GET(
       if (response.status === 404) {
         return NextResponse.json({ error: "File not found" }, { status: 404 });
       }
-      throw new Error(`Cloud storage returned ${response.status}`);
+      if (response.status === 429) {
+        console.warn(
+          `⚠️  Cloud storage rate limit reached for file ${fileId}. Falling back to default image.`
+        );
+        return NextResponse.json(
+          {
+            warning: "Rate limit reached",
+            message: "Too many requests, please try again later",
+          },
+          { status: 429 }
+        );
+      }
+      console.warn(
+        `⚠️  Cloud storage returned ${response.status} for file ${fileId}`
+      );
+      return NextResponse.json(
+        {
+          warning: "Cloud storage unavailable",
+          message: `Service returned ${response.status}`,
+        },
+        { status: response.status }
+      );
     }
 
     // Get the file data
@@ -53,13 +74,13 @@ export async function GET(
       headers,
     });
   } catch (error) {
-    console.error("Error proxying file:", error);
+    console.warn("⚠️  Warning proxying file:", error);
     return NextResponse.json(
       {
-        error: "Failed to retrieve file",
+        warning: "Failed to retrieve file",
         message: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 503 } // Service Unavailable instead of Internal Server Error
     );
   }
 }
