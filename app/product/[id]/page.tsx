@@ -128,23 +128,35 @@ export default function ProductDetailPage({ params }: PageProps) {
     setIsFullscreen(!isFullscreen);
   };
 
-  // Keyboard navigation
+  // Keyboard navigation and fullscreen controls
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (isFullscreen) {
-        if (e.key === "Escape") {
-          setIsFullscreen(false);
-        } else if (e.key === "ArrowLeft") {
-          prevSlide();
-        } else if (e.key === "ArrowRight") {
-          nextSlide();
-        }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsFullscreen(false);
+      } else if (e.key === "ArrowLeft" && galleries.length > 1) {
+        e.preventDefault();
+        setCurrentSlide(
+          (prev) => (prev - 1 + galleries.length) % galleries.length
+        );
+      } else if (e.key === "ArrowRight" && galleries.length > 1) {
+        e.preventDefault();
+        setCurrentSlide((prev) => (prev + 1) % galleries.length);
       }
     };
 
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isFullscreen]);
+    document.addEventListener("keydown", handleKeyDown);
+
+    if (isFullscreen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [isFullscreen, galleries.length]);
 
   if (loading) {
     return (
@@ -184,7 +196,7 @@ export default function ProductDetailPage({ params }: PageProps) {
     <>
       <ShowcaseLayout>
         <div className="min-h-screen w-full">
-          <div className="w-full pt-20">
+          <div className="w-full md:pt-60 pt-40">
             {/* Breadcrumbs */}
             <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
               <Breadcrumbs
@@ -347,27 +359,6 @@ export default function ProductDetailPage({ params }: PageProps) {
                         {getLocalizedField(product, "description")}
                       </p>
                     </div>
-
-                    {/* Back Button - Mobile */}
-                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-                      <Link
-                        href="/products"
-                        className={`inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-lg ${
-                          isRTL ? "flex-row-reverse" : ""
-                        }`}
-                      >
-                        <ArrowLeftIcon
-                          className={`h-6 w-6 ${
-                            isRTL ? "ml-3 rotate-180" : "mr-3"
-                          }`}
-                        />
-                        {t("back_to_products", {
-                          en: "Back to Products",
-                          ar: "العودة إلى المنتجات",
-                          ku: "گەڕانەوە بۆ بەرهەمەکان",
-                        })}
-                      </Link>
-                    </div>
                   </div>
                 </div>
 
@@ -415,27 +406,6 @@ export default function ProductDetailPage({ params }: PageProps) {
                             {getLocalizedField(product, "description")}
                           </p>
                         </div>
-
-                        {/* Back Button */}
-                        <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
-                          <Link
-                            href="/products"
-                            className={`inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium text-lg ${
-                              isRTL ? "flex-row-reverse" : ""
-                            }`}
-                          >
-                            <ArrowLeftIcon
-                              className={`h-6 w-6 ${
-                                isRTL ? "ml-3 rotate-180" : "mr-3"
-                              }`}
-                            />
-                            {t("back_to_products", {
-                              en: "Back to Products",
-                              ar: "العودة إلى المنتجات",
-                              ku: "گەڕانەوە بۆ بەرهەمەکان",
-                            })}
-                          </Link>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -448,13 +418,15 @@ export default function ProductDetailPage({ params }: PageProps) {
 
       {/* Fullscreen Modal */}
       {isFullscreen && (
-        <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black z-[9999] flex items-center justify-center">
+          {/* Close button with better positioning and touch target */}
           <button
             onClick={toggleFullscreen}
-            className="absolute top-4 right-4 text-white hover:text-gray-300 z-60"
+            className="absolute top-4 right-4 z-[10000] text-white hover:text-gray-300 bg-black/50 hover:bg-black/70 p-3 rounded-full transition-all duration-200 touch-manipulation"
+            style={{ minHeight: "48px", minWidth: "48px" }}
           >
             <svg
-              className="w-8 h-8"
+              className="w-6 h-6"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -462,7 +434,7 @@ export default function ProductDetailPage({ params }: PageProps) {
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth="2"
+                strokeWidth={2}
                 d="M6 18L18 6M6 6l12 12"
               />
             </svg>
@@ -481,33 +453,39 @@ export default function ProductDetailPage({ params }: PageProps) {
               <>
                 <button
                   onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-60"
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 sm:p-4 rounded-full transition-all duration-200 z-[9998] touch-manipulation"
+                  style={{ minHeight: "48px", minWidth: "48px" }}
                 >
-                  <ChevronLeftIcon className="h-6 w-6" />
+                  <ChevronLeftIcon className="h-6 w-6 sm:h-8 sm:w-8" />
                 </button>
                 <button
                   onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 rounded-full transition-all duration-200 z-60"
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-3 sm:p-4 rounded-full transition-all duration-200 z-[9998] touch-manipulation"
+                  style={{ minHeight: "48px", minWidth: "48px" }}
                 >
-                  <ChevronRightIcon className="h-6 w-6" />
+                  <ChevronRightIcon className="h-6 w-6 sm:h-8 sm:w-8" />
                 </button>
               </>
             )}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 max-w-48 overflow-hidden">
-              <div className="flex gap-2 justify-center">
-                {galleries.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={`w-3 h-3 rounded-full transition-all duration-200 flex-shrink-0 ${
-                      index === currentSlide
-                        ? "bg-white scale-125"
-                        : "bg-white/50 hover:bg-white/75"
-                    }`}
-                  />
-                ))}
+            {/* Fullscreen Indicators */}
+            {galleries.length > 1 && (
+              <div className="absolute bottom-4 sm:bottom-8 left-1/2 -translate-x-1/2 max-w-xs sm:max-w-48 overflow-hidden z-[9998]">
+                <div className="flex gap-2 sm:gap-3 justify-center bg-black/30 rounded-full px-4 py-2">
+                  {galleries.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full transition-all duration-200 flex-shrink-0 touch-manipulation ${
+                        index === currentSlide
+                          ? "bg-white scale-125"
+                          : "bg-white/50 hover:bg-white/75"
+                      }`}
+                      style={{ minHeight: "24px", minWidth: "24px" }}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}

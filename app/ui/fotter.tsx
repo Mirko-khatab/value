@@ -251,13 +251,6 @@ export const Fotter = () => {
                           : "ltr"
                       }
                     >
-                      <div className="font-medium text-gray-700 dark:text-gray-300">
-                        {language === "ar"
-                          ? "دروازة بشو ريست وكافيه"
-                          : language === "ku"
-                          ? "دەروازە پشو ڕێست و کافێ"
-                          : "Darwaza pshw rest & cafe"}
-                      </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {language === "ar"
                           ? "مدينة دروازة ٣، السليمانية"

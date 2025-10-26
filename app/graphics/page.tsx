@@ -24,11 +24,7 @@ export default async function GraphicsPage() {
 
   return (
     <ShowcaseLayout>
-      <div className="container mx-auto px-4 py-8 mt-40">
-        <h1 className="text-4xl font-bold text-center mb-8 text-gray-900 dark:text-white">
-          Graphics Showcase
-        </h1>
-
+      <div className="container mx-auto px-4 py-8 md:mt-60 mt-40">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 auto-rows-[200px] gap-4">
           {graphics?.map((graphic, index) => (
             <div

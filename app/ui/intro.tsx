@@ -24,6 +24,12 @@ export default function Intro({ onComplete }: IntroProps) {
   const [showUnmuteHint, setShowUnmuteHint] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const hasUnmutedRef = useRef(false);
+  const introRef = useRef<HTMLDivElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const sourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const animationTriggerRef = useRef<HTMLDivElement | null>(null);
 
   const languages: Language[] = [
     { text: "We value your work", dir: "ltr", name: "English" },
@@ -38,6 +44,331 @@ export default function Intro({ onComplete }: IntroProps) {
 
   // Fetch and play audio immediately and more aggressively
   useEffect(() => {
+    // Web Audio API - bypasses autoplay restrictions
+    const playWithWebAudio = async (audioUrl: string) => {
+      try {
+        console.log("🎵 Attempting Web Audio API playback...");
+
+        // Create AudioContext (this often works without user interaction)
+        audioContextRef.current = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
+
+        // Fetch audio data
+        const response = await fetch(audioUrl);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioContextRef.current.decodeAudioData(
+          arrayBuffer
+        );
+
+        // Create source node
+        sourceRef.current = audioContextRef.current.createBufferSource();
+        sourceRef.current.buffer = audioBuffer;
+        sourceRef.current.loop = true;
+
+        // Create gain node for volume control
+        const gainNode = audioContextRef.current.createGain();
+        gainNode.gain.setValueAtTime(0.7, audioContextRef.current.currentTime);
+
+        // Connect nodes
+        sourceRef.current.connect(gainNode);
+        gainNode.connect(audioContextRef.current.destination);
+
+        // Start playback
+        sourceRef.current.start(0);
+
+        console.log("✅ Web Audio API playback started successfully!");
+        return true;
+      } catch (error) {
+        console.log(
+          "❌ Web Audio API failed:",
+          error instanceof Error ? error.message : String(error)
+        );
+        return false;
+      }
+    };
+
+    // Iframe-based autoplay - sometimes bypasses restrictions
+    const playWithIframe = async (audioUrl: string): Promise<boolean> => {
+      return new Promise((resolve) => {
+        console.log("🎵 Attempting iframe-based playback...");
+
+        if (!iframeRef.current) {
+          console.log("❌ Iframe not available");
+          resolve(false);
+          return;
+        }
+
+        // Set up message listener for iframe responses
+        const messageHandler = (event: MessageEvent) => {
+          if (event.data.type === "AUDIO_STARTED") {
+            console.log("✅ Iframe audio started successfully!");
+            window.removeEventListener("message", messageHandler);
+            resolve(true);
+          } else if (event.data.type === "AUDIO_BLOCKED") {
+            console.log("❌ Iframe audio blocked:", event.data.error);
+            window.removeEventListener("message", messageHandler);
+            resolve(false);
+          }
+        };
+
+        window.addEventListener("message", messageHandler);
+
+        // Send commands to iframe
+        iframeRef.current.contentWindow?.postMessage(
+          {
+            action: "LOAD_AUDIO",
+            audioUrl: audioUrl,
+            volume: 0.7,
+          },
+          "*"
+        );
+
+        setTimeout(() => {
+          iframeRef.current?.contentWindow?.postMessage(
+            {
+              action: "PLAY_AUDIO",
+            },
+            "*"
+          );
+        }, 500);
+
+        // Timeout after 3 seconds
+        setTimeout(() => {
+          window.removeEventListener("message", messageHandler);
+          resolve(false);
+        }, 3000);
+      });
+    };
+
+    // Programmatic interaction simulation - creates synthetic events
+    const simulateUserInteraction = async (
+      audioUrl: string
+    ): Promise<boolean> => {
+      return new Promise((resolve) => {
+        console.log("🎵 Attempting programmatic interaction simulation...");
+
+        try {
+          // Create synthetic events to "trick" the browser
+          const events = [
+            new MouseEvent("click", { bubbles: true, cancelable: true }),
+            new TouchEvent("touchstart", { bubbles: true, cancelable: true }),
+            new KeyboardEvent("keydown", {
+              bubbles: true,
+              cancelable: true,
+              key: "Space",
+            }),
+            new Event("focus", { bubbles: true }),
+            new Event("mousedown", { bubbles: true }),
+            new Event("pointerdown", { bubbles: true }),
+          ];
+
+          // Dispatch multiple synthetic events
+          events.forEach((event) => {
+            try {
+              document.dispatchEvent(event);
+              document.body.dispatchEvent(event);
+            } catch (e) {
+              // Some events might fail, that's okay
+            }
+          });
+
+          // Try to play audio after synthetic interaction
+          setTimeout(async () => {
+            if (audioRef.current) {
+              try {
+                audioRef.current.src = audioUrl;
+                audioRef.current.volume = 0.7;
+                audioRef.current.muted = false;
+
+                await audioRef.current.play();
+                console.log("✅ Audio playing after synthetic interaction!");
+                resolve(true);
+              } catch (error) {
+                console.log(
+                  "❌ Synthetic interaction failed:",
+                  error instanceof Error ? error.message : String(error)
+                );
+                resolve(false);
+              }
+            } else {
+              resolve(false);
+            }
+          }, 100);
+        } catch (error) {
+          console.log(
+            "❌ Synthetic event creation failed:",
+            error instanceof Error ? error.message : String(error)
+          );
+          resolve(false);
+        }
+      });
+    };
+
+    // Video-based autoplay - browsers allow video autoplay more easily
+    const playWithSilentVideo = async (audioUrl: string): Promise<boolean> => {
+      return new Promise(async (resolve) => {
+        console.log("🎵 Attempting silent video with audio track...");
+
+        if (!videoRef.current) {
+          console.log("❌ Video element not available");
+          resolve(false);
+          return;
+        }
+
+        try {
+          // Create a silent video with audio track
+          const canvas = document.createElement("canvas");
+          canvas.width = 1;
+          canvas.height = 1;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, 1, 1);
+          }
+
+          // Convert canvas to video stream
+          const stream = canvas.captureStream(1); // 1 FPS
+
+          // Add audio track to the stream
+          const audioResponse = await fetch(audioUrl);
+          const audioBlob = await audioResponse.blob();
+          const audioObjectUrl = URL.createObjectURL(audioBlob);
+
+          // Create audio element to get audio stream
+          const tempAudio = document.createElement("audio");
+          tempAudio.src = audioObjectUrl;
+          tempAudio.crossOrigin = "anonymous";
+
+          // Wait for audio to load
+          await new Promise((audioResolve) => {
+            tempAudio.addEventListener("loadeddata", () => audioResolve(true));
+            tempAudio.load();
+          });
+
+          // Try to get audio stream (this might not work due to CORS)
+          try {
+            const audioContext = new (window.AudioContext ||
+              (window as any).webkitAudioContext)();
+            const source = audioContext.createMediaElementSource(tempAudio);
+            const destination = audioContext.createMediaStreamDestination();
+            source.connect(destination);
+
+            // Add audio track to video stream
+            destination.stream.getAudioTracks().forEach((track) => {
+              stream.addTrack(track);
+            });
+          } catch (audioStreamError) {
+            console.log(
+              "⚠️ Could not add audio stream to video, trying direct approach"
+            );
+          }
+
+          // Set video source
+          videoRef.current.srcObject = stream;
+          videoRef.current.muted = false; // Try unmuted first
+          videoRef.current.loop = true;
+
+          // Try to play video (browsers are more lenient with video autoplay)
+          await videoRef.current.play();
+
+          console.log(
+            "✅ Silent video playing! Now starting audio separately..."
+          );
+
+          // Start audio separately
+          if (audioRef.current) {
+            audioRef.current.src = audioUrl;
+            audioRef.current.loop = true;
+            audioRef.current.volume = 0.7;
+            await audioRef.current.play();
+            console.log("✅ Audio playing alongside silent video!");
+          }
+
+          resolve(true);
+        } catch (error) {
+          console.log(
+            "❌ Silent video approach failed:",
+            error instanceof Error ? error.message : String(error)
+          );
+          resolve(false);
+        }
+      });
+    };
+
+    // CSS Animation triggered audio - uses animation events to trigger playback
+    const playWithCSSAnimation = async (audioUrl: string): Promise<boolean> => {
+      return new Promise((resolve) => {
+        console.log("🎵 Attempting CSS animation triggered audio...");
+
+        if (!animationTriggerRef.current || !audioRef.current) {
+          console.log("❌ Animation trigger or audio element not available");
+          resolve(false);
+          return;
+        }
+
+        try {
+          // Set up audio
+          audioRef.current.src = audioUrl;
+          audioRef.current.loop = true;
+          audioRef.current.volume = 0.7;
+          audioRef.current.muted = false;
+
+          // Create animation event listener
+          const animationHandler = async (event: AnimationEvent) => {
+            if (event.animationName === "audioTrigger") {
+              console.log(
+                "🎵 CSS animation triggered - attempting audio play..."
+              );
+
+              try {
+                if (audioRef.current) {
+                  await audioRef.current.play();
+                  console.log("✅ Audio playing via CSS animation trigger!");
+                  resolve(true);
+                }
+              } catch (error) {
+                console.log(
+                  "❌ CSS animation audio failed:",
+                  error instanceof Error ? error.message : String(error)
+                );
+                resolve(false);
+              }
+
+              // Clean up
+              animationTriggerRef.current?.removeEventListener(
+                "animationstart",
+                animationHandler
+              );
+            }
+          };
+
+          // Add animation listener
+          animationTriggerRef.current.addEventListener(
+            "animationstart",
+            animationHandler
+          );
+
+          // Trigger animation by adding class
+          animationTriggerRef.current.classList.add("trigger-audio-animation");
+
+          // Timeout after 2 seconds
+          setTimeout(() => {
+            animationTriggerRef.current?.removeEventListener(
+              "animationstart",
+              animationHandler
+            );
+            resolve(false);
+          }, 2000);
+        } catch (error) {
+          console.log(
+            "❌ CSS animation setup failed:",
+            error instanceof Error ? error.message : String(error)
+          );
+          resolve(false);
+        }
+      });
+    };
+
     const fetchAndPlayAudio = async () => {
       try {
         console.log("🎵 Fetching intro audio...");
@@ -48,89 +379,336 @@ export default function Intro({ onComplete }: IntroProps) {
           console.log("📦 Audio data:", data);
 
           if (data && data.length > 0 && data[0].audio_url) {
-            setAudioUrl(data[0].audio_url);
+            const audioUrl = data[0].audio_url;
+            setAudioUrl(audioUrl);
+            console.log("🎵 Setting audio URL:", audioUrl);
 
-            // Very short delay
-            await new Promise((resolve) => setTimeout(resolve, 50));
+            // ✅ Clean, standards-compliant autoplay approach
+            console.log("🎵 Setting up smart autoplay audio...");
 
             if (audioRef.current) {
-              audioRef.current.src = data[0].audio_url;
+              audioRef.current.src = audioUrl;
               audioRef.current.loop = true;
               audioRef.current.preload = "auto";
-              audioRef.current.load();
 
-              // Try to play immediately AND when ready
-              const attemptPlay = async () => {
-                if (!audioRef.current) return;
+              // ✅ Start muted with volume 0 (browsers allow this)
+              audioRef.current.muted = true;
+              audioRef.current.volume = 0;
 
-                console.log("🎵 Attempting to play intro audio...");
+              console.log("🎵 Attempting muted autoplay...");
 
+              const tryAutoplay = async () => {
+                // Strategy 1: Try muted autoplay first
                 try {
-                  // Try playing with sound first
-                  await audioRef.current.play();
-                  console.log("✅ Intro audio playing with sound!");
-                } catch (error) {
-                  console.log("❌ Intro audio blocked, trying muted...", error);
+                  await audioRef.current!.play();
+                  console.log("✅ Muted autoplay successful");
 
-                  // If blocked, try muted
+                  // Now try to unmute automatically after a short delay
+                  setTimeout(async () => {
+                    if (audioRef.current) {
+                      console.log("🎵 Attempting automatic unmute...");
+                      audioRef.current.muted = false;
+                      audioRef.current.volume = 0.7;
+                      setIsMuted(false);
+                      console.log("✅ Audio automatically unmuted!");
+                    }
+                  }, 1000);
+                } catch (error) {
+                  console.log(
+                    "❌ Muted autoplay blocked, trying alternatives..."
+                  );
+
+                  // Strategy 2: Try with very low volume instead of muted
                   try {
-                    audioRef.current.muted = true;
-                    setIsMuted(true);
-                    await audioRef.current.play();
-                    console.log(
-                      "✅ Intro audio playing muted - click to unmute"
-                    );
+                    audioRef.current!.muted = false;
+                    audioRef.current!.volume = 0.01; // Very low but not muted
+                    await audioRef.current!.play();
+
+                    // Gradually increase volume
+                    const increaseVolume = () => {
+                      if (audioRef.current && audioRef.current.volume < 0.7) {
+                        audioRef.current.volume = Math.min(
+                          audioRef.current.volume + 0.05,
+                          0.7
+                        );
+                        setTimeout(increaseVolume, 200);
+                      }
+                    };
+                    setTimeout(increaseVolume, 500);
+
+                    console.log("✅ Low volume autoplay successful!");
+                    setIsMuted(false);
+                  } catch (lowVolumeError) {
+                    console.log("❌ Low volume autoplay also blocked");
                     setShowUnmuteHint(true);
-                    setTimeout(() => setShowUnmuteHint(false), 5000);
-                  } catch (mutedError) {
-                    console.log("❌ Even muted playback blocked:", mutedError);
                   }
                 }
               };
 
-              // Try multiple times to maximize chances
-              attemptPlay(); // Try immediately
+              // Try autoplay when audio is ready
+              audioRef.current.addEventListener("canplay", tryAutoplay, {
+                once: true,
+              });
+              audioRef.current.load();
 
-              audioRef.current.addEventListener("loadeddata", attemptPlay, {
+              // Additional automatic attempts
+              setTimeout(() => {
+                console.log("🎵 Trying immediate autoplay...");
+                if (audioRef.current) {
+                  // Try direct play with sound
+                  audioRef.current.muted = false;
+                  audioRef.current.volume = 0.7;
+                  audioRef.current
+                    .play()
+                    .then(() => {
+                      console.log("✅ Immediate autoplay with sound worked!");
+                      setIsMuted(false);
+                      setShowUnmuteHint(false);
+                    })
+                    .catch(() => {
+                      console.log("❌ Immediate autoplay blocked");
+                    });
+                }
+              }, 100);
+
+              // Try again after page fully loads
+              setTimeout(() => {
+                console.log("🎵 Trying delayed autoplay...");
+                if (audioRef.current && audioRef.current.paused) {
+                  audioRef.current.muted = false;
+                  audioRef.current.volume = 0.7;
+                  audioRef.current
+                    .play()
+                    .then(() => {
+                      console.log("✅ Delayed autoplay worked!");
+                      setIsMuted(false);
+                      setShowUnmuteHint(false);
+                    })
+                    .catch(() => {
+                      console.log("❌ Delayed autoplay blocked");
+                    });
+                }
+              }, 2000);
+
+              // Try programmatic focus trick
+              setTimeout(() => {
+                console.log("🎵 Trying focus trick...");
+
+                // Create invisible element and focus it
+                const hiddenInput = document.createElement("input");
+                hiddenInput.style.position = "absolute";
+                hiddenInput.style.left = "-9999px";
+                hiddenInput.style.opacity = "0";
+                hiddenInput.style.pointerEvents = "none";
+
+                document.body.appendChild(hiddenInput);
+                hiddenInput.focus();
+
+                // Try to play after focus
+                setTimeout(() => {
+                  if (audioRef.current && audioRef.current.paused) {
+                    audioRef.current.muted = false;
+                    audioRef.current.volume = 0.7;
+                    audioRef.current
+                      .play()
+                      .then(() => {
+                        console.log("✅ Focus trick autoplay worked!");
+                        setIsMuted(false);
+                        setShowUnmuteHint(false);
+                      })
+                      .catch(() => {
+                        console.log("❌ Focus trick autoplay blocked");
+                      });
+                  }
+
+                  // Clean up
+                  document.body.removeChild(hiddenInput);
+                }, 100);
+              }, 3000);
+
+              // ✅ Clean user interaction handler
+              const unmuteAndPlay = async () => {
+                if (audioRef.current) {
+                  console.log("🎵 User interaction - unmuting audio...");
+
+                  // Unmute and set volume with smooth fade-in
+                  audioRef.current.muted = false;
+                  audioRef.current.volume = 0;
+                  setIsMuted(false);
+                  setShowUnmuteHint(false);
+
+                  try {
+                    await audioRef.current.play();
+
+                    // Smooth volume fade-in
+                    const fadeIn = () => {
+                      if (audioRef.current && audioRef.current.volume < 0.7) {
+                        audioRef.current.volume = Math.min(
+                          audioRef.current.volume + 0.05,
+                          0.7
+                        );
+                        setTimeout(fadeIn, 50);
+                      }
+                    };
+                    fadeIn();
+
+                    console.log("✅ Audio unmuted and playing with fade-in!");
+                  } catch (error) {
+                    console.log("❌ Audio play failed:", error);
+                  }
+                }
+              };
+
+              // Listen for user interactions
+              document.addEventListener("click", unmuteAndPlay, { once: true });
+              document.addEventListener("keydown", unmuteAndPlay, {
                 once: true,
               });
-              audioRef.current.addEventListener("canplay", attemptPlay, {
-                once: true,
-              });
-              audioRef.current.addEventListener("canplaythrough", attemptPlay, {
+              document.addEventListener("touchstart", unmuteAndPlay, {
                 once: true,
               });
             }
           } else {
-            console.log("⚠️ No audio found in database");
+            console.log("⚠️ No audio found in database, trying fallback...");
+            // Try fallback local file
+            tryFallbackAudio();
           }
         } else {
-          console.log("⚠️ API error");
+          console.log("⚠️ API error, trying fallback...");
+          tryFallbackAudio();
         }
       } catch (error) {
         console.error("❌ Failed to fetch intro audio:", error);
+        tryFallbackAudio();
+      }
+    };
+
+    const tryFallbackAudio = () => {
+      console.log("🎵 Trying fallback audio file...");
+      const fallbackUrl = "/audio/intro-music.mp3";
+      setAudioUrl(fallbackUrl);
+
+      if (audioRef.current) {
+        audioRef.current.src = fallbackUrl;
+        audioRef.current.loop = true;
+        audioRef.current.preload = "auto";
+        audioRef.current.volume = 0.7;
+        audioRef.current.load();
+
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.play().catch((error) => {
+              console.log("❌ Fallback audio also failed:", error);
+            });
+          }
+        }, 500);
       }
     };
 
     fetchAndPlayAudio();
+
+    // Set up intersection observer for better autoplay timing
+    if (introRef.current) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && audioRef.current) {
+              console.log("🎯 Intro is visible - attempting audio play...");
+              // Try to play audio when intro becomes visible
+              if (audioRef.current.paused) {
+                // Try muted first for better success rate
+                audioRef.current.muted = true;
+                setIsMuted(true);
+                audioRef.current
+                  .play()
+                  .then(() => {
+                    console.log("✅ Audio started on visibility (muted)");
+                    setShowUnmuteHint(true);
+                    setTimeout(() => setShowUnmuteHint(false), 10000);
+                  })
+                  .catch((error) => {
+                    console.log(
+                      "❌ Visibility-triggered play failed:",
+                      error.message
+                    );
+                  });
+              }
+            }
+          });
+        },
+        { threshold: 0.5 } // Trigger when 50% of intro is visible
+      );
+
+      observer.observe(introRef.current);
+
+      // Cleanup
+      return () => {
+        observer.disconnect();
+      };
+    }
   }, []);
 
   const toggleMute = () => {
     if (audioRef.current) {
-      audioRef.current.muted = !isMuted;
-      setIsMuted(!isMuted);
-      setShowUnmuteHint(false);
+      if (isMuted) {
+        // Unmuting - use smooth fade-in
+        audioRef.current.muted = false;
+        audioRef.current.volume = 0;
+        setIsMuted(false);
+        setShowUnmuteHint(false);
+
+        // Smooth volume fade-in
+        const fadeIn = () => {
+          if (audioRef.current && audioRef.current.volume < 0.7) {
+            audioRef.current.volume = Math.min(
+              audioRef.current.volume + 0.05,
+              0.7
+            );
+            setTimeout(fadeIn, 50); // Fade in over ~0.7 seconds
+          }
+        };
+        fadeIn();
+        console.log("🔊 Audio unmuted with fade-in");
+      } else {
+        // Muting - instant
+        audioRef.current.muted = true;
+        setIsMuted(true);
+        console.log("🔇 Audio muted");
+      }
     }
   };
 
-  // Handle click anywhere to unmute audio
-  const handleIntroClick = () => {
-    if (isMuted && audioRef.current && !hasUnmutedRef.current) {
+  // Handle click anywhere to start/unmute audio
+  const handleIntroClick = async () => {
+    if (audioRef.current) {
+      console.log("🎵 Intro clicked - unmuting audio...");
+
+      // Unmute and set volume with smooth fade-in
       audioRef.current.muted = false;
+      audioRef.current.volume = 0;
       setIsMuted(false);
       setShowUnmuteHint(false);
       hasUnmutedRef.current = true;
-      console.log("Audio unmuted on user interaction");
+
+      try {
+        await audioRef.current.play();
+
+        // Smooth volume fade-in
+        const fadeIn = () => {
+          if (audioRef.current && audioRef.current.volume < 0.7) {
+            audioRef.current.volume = Math.min(
+              audioRef.current.volume + 0.05,
+              0.7
+            );
+            setTimeout(fadeIn, 50);
+          }
+        };
+        fadeIn();
+
+        console.log("✅ Audio unmuted and playing with fade-in!");
+      } catch (error) {
+        console.log("❌ Audio play failed:", error);
+      }
     }
   };
 
@@ -179,18 +757,63 @@ export default function Intro({ onComplete }: IntroProps) {
         ref={audioRef}
         preload="auto"
         playsInline
+        autoPlay
+        loop
         style={{ display: "none" }}
+      />
+
+      {/* Hidden video element for autoplay bypass */}
+      <video
+        ref={videoRef}
+        muted={false}
+        playsInline
+        autoPlay
+        loop
+        style={{
+          display: "none",
+          width: "1px",
+          height: "1px",
+          position: "absolute",
+          left: "-9999px",
+        }}
+      />
+
+      {/* Hidden iframe for autoplay bypass */}
+      <iframe
+        ref={iframeRef}
+        src="/audio-player-iframe.html"
+        style={{
+          display: "none",
+          width: "1px",
+          height: "1px",
+          border: "none",
+          position: "absolute",
+          left: "-9999px",
+        }}
+        title="Audio Player Iframe"
+      />
+
+      {/* Hidden CSS animation trigger */}
+      <div
+        ref={animationTriggerRef}
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          width: "1px",
+          height: "1px",
+          opacity: 0,
+        }}
       />
 
       {/* Show intro immediately */}
       <>
-        {/* Unmute hint - shows when audio is muted */}
+        {/* Unmute hint - shows when audio is ready but blocked */}
         {showUnmuteHint && (
           <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[60] animate-bounce">
-            <div className="bg-blue-500 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2">
-              <SpeakerWaveIcon className="w-5 h-5" />
-              <span className="text-sm font-medium">
-                Click anywhere for sound
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-3 border-2 border-white/20">
+              <SpeakerWaveIcon className="w-6 h-6 animate-pulse" />
+              <span className="text-base font-semibold">
+                🎵 Click anywhere to start music
               </span>
             </div>
           </div>
@@ -212,6 +835,7 @@ export default function Intro({ onComplete }: IntroProps) {
         )}
 
         <div
+          ref={introRef}
           onClick={handleIntroClick}
           className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-[1200ms] ${
             fadeOut
@@ -435,6 +1059,19 @@ export default function Intro({ onComplete }: IntroProps) {
 
             .font-arabic {
               letter-spacing: 0.05em;
+            }
+
+            @keyframes audioTrigger {
+              0% {
+                transform: translateX(0);
+              }
+              100% {
+                transform: translateX(1px);
+              }
+            }
+
+            .trigger-audio-animation {
+              animation: audioTrigger 0.1s ease-in-out;
             }
           `}</style>
         </div>

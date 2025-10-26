@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/app/lib/theme-context";
 import { LoadingProvider } from "@/app/lib/loading-context";
 import { LanguageProvider } from "@/app/lib/language-context";
 import PageLoadAnimation from "@/app/ui/page-load-animation";
+import GlobalAudioPlayer from "@/app/ui/global-audio-player";
 
 export default function RootLayout({
   children,
@@ -19,7 +20,10 @@ export default function RootLayout({
         <LoadingProvider>
           <PageLoadAnimation />
           <LanguageProvider>
-            <ThemeProvider>{children}</ThemeProvider>
+            <ThemeProvider>
+              {children}
+              <GlobalAudioPlayer />
+            </ThemeProvider>
           </LanguageProvider>
         </LoadingProvider>
       </body>

@@ -45,7 +45,7 @@ export default async function Page(props: {
 
   return (
     <ShowcaseLayout>
-      <Space className="flex flex-col gap-8 page-entrance">
+      <Space className="flex flex-col gap-8 page-entrance ">
         <div>
           {/* Search form - server-side rendered */}
           <form method="GET" className="w-full sm:w-1/2">

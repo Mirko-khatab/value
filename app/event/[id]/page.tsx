@@ -225,7 +225,7 @@ export default function EventDetailPage({ params }: PageProps) {
 
   return (
     <ShowcaseLayout>
-      <div className="min-h-screen bg-gray-50 mt-40 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50 md:mt-60 mt-40 dark:bg-gray-900">
         {/* Fullscreen Gallery Modal */}
         {isFullscreen && galleries.length > 0 && (
           <div className="fixed inset-0 bg-black z-[9999] flex items-center justify-center">

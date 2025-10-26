@@ -7,7 +7,7 @@ import { useTheme } from "@/app/lib/theme-context";
 import { useLoading } from "@/app/lib/loading-context";
 import { useLanguage } from "@/app/lib/language-context";
 import ThemeToggle from "./theme-toggle";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Bars3Icon,
   XMarkIcon,
@@ -18,19 +18,62 @@ export default function Navigation() {
   const pathname = usePathname();
   const { theme, toggleTheme } = useTheme();
   const { showLoading } = useLoading();
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLanguageDropdownOpen, setIsLanguageDropdownOpen] = useState(false);
   const [clickPosition, setClickPosition] = useState({ x: 0, y: 0 });
   const languageDropdownRef = useRef<HTMLDivElement>(null);
 
-  const navItems = [
-    { name: "Home", href: "/", key: 1 },
-    { name: "About", href: "/about", key: 2 },
-    { name: "Projects", href: "/projects", key: 3 },
-    { name: "event", href: "/event", key: 4 },
-    { name: "Products", href: "/products", key: 5 },
-  ];
+  const navItems = useMemo(
+    () => [
+      {
+        name: t("nav_home", {
+          en: "Home",
+          ar: "الرئيسية",
+          ku: "سەرەکی",
+        }),
+        href: "/",
+        key: 1,
+      },
+      {
+        name: t("nav_about", {
+          en: "About",
+          ar: "معلومات عنا",
+          ku: "دەربارەی ئێمە",
+        }),
+        href: "/about",
+        key: 2,
+      },
+      {
+        name: t("nav_projects", {
+          en: "Projects",
+          ar: "المشاريع",
+          ku: "پڕۆژەکان",
+        }),
+        href: "/projects",
+        key: 3,
+      },
+      {
+        name: t("nav_event", {
+          en: "Events",
+          ar: "الأحداث",
+          ku: "کاروچالاکی",
+        }),
+        href: "/event",
+        key: 4,
+      },
+      {
+        name: t("nav_products", {
+          en: "Products",
+          ar: "المنتجات",
+          ku: "بەرهەمەکان",
+        }),
+        href: "/products",
+        key: 5,
+      },
+    ],
+    [language, t]
+  );
 
   const handleNavigation = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -129,14 +172,22 @@ export default function Navigation() {
               <div>
                 <Link
                   href="/"
-                  className="font-bold w-10 h-10"
+                  className="font-bold md:w-20 md:h-20 w-10 h-10"
                   onClick={(e) => handleNavigation(e, "/")}
                 >
                   <Image
                     src="/image/value.png"
                     alt="logo"
+                    width={200}
+                    height={200}
+                    className="md:block hidden"
+                  />
+                  <Image
+                    src="/image/value.png"
+                    alt="logo"
                     width={100}
                     height={100}
+                    className="md:hidden block"
                   />
                 </Link>
               </div>
@@ -171,7 +222,7 @@ export default function Navigation() {
                         {[
                           { code: "en" as const, name: "English", flag: "🇬🇧" },
                           { code: "ar" as const, name: "العربية", flag: "🇸🇦" },
-                          { code: "ku" as const, name: "کوردی", flag: "🇮🇶" },
+                          { code: "ku" as const, name: "کوردی", flag: "🇹🇯" },
                         ].map((lang) => (
                           <button
                             key={lang.code}

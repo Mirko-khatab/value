@@ -17,7 +17,6 @@ import { Slide } from "./ui/home/slide";
 import Intro from "@/app/ui/intro";
 import QuoteGallery from "./ui/home/quote-gallery";
 import { QouteData } from "./ui/home/qoute-data";
-import AudioPlayer from "@/app/ui/audio-player";
 import VideoLoading from "@/app/ui/video-loading";
 
 export default function Page() {
@@ -139,9 +138,6 @@ export default function Page() {
 
       {/* Start intro only after user clicks */}
       {showIntro && userClicked && <Intro onComplete={handleIntroComplete} />}
-
-      {/* Audio player - shows after intro completes */}
-      {!showIntro && <AudioPlayer useFor="landing" />}
 
       <div
         className={`transition-all duration-1000 ease-out ${

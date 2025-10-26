@@ -105,7 +105,7 @@ export default function AboutPage() {
 
   return (
     <ShowcaseLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-black pt-20">
+      <div className="min-h-screen bg-gray-50 dark:bg-black md:pt-60 pt-40">
         {/* Hero Section */}
         <div className="w-full px-4 sm:px-6 lg:px-8 py-12">
           <div className="max-w-7xl mx-auto">
@@ -349,13 +349,7 @@ export default function AboutPage() {
                             ku: "ناونیشان",
                           })}
                         </h4>
-                        <p className="text-gray-600 dark:text-gray-300 font-medium">
-                          {t("business_name", {
-                            en: "Darwaza pshw rest & cafe",
-                            ar: "دروازة بشو ريست وكافيه",
-                            ku: "دەروازە پشو ڕێست و کافێ",
-                          })}
-                        </p>
+
                         <p className="text-gray-600 dark:text-gray-300 mt-1">
                           {t("detailed_address", {
                             en: "Darwaza city 3 Sulaymaniyah",

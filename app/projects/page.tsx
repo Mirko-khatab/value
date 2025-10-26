@@ -140,7 +140,7 @@ export default function ProjectsPage() {
         dir={isRTL ? "rtl" : "ltr"}
       >
         {/* Header Section - Full Screen Width */}
-        <div className="w-full bg-white dark:bg-black shadow-sm border-b border-gray-200 dark:border-gray-700 pt-40">
+        <div className="w-full bg-white dark:bg-black shadow-sm border-b border-gray-200 dark:border-gray-700 md:pt-60 pt-40">
           {/* Title */}
           {/* <div className="w-full px-4 sm:px-6 lg:px-8 py-6">
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white text-center">

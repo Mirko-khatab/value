@@ -203,7 +203,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
     <>
       <ShowcaseLayout>
         <div className="min-h-screen w-full">
-          <div className="w-full pt-20">
+          <div className="w-full md:pt-60 pt-40">
             {/* Breadcrumbs */}
             <div className="w-full px-4 sm:px-6 lg:px-8 py-4">
               <Breadcrumbs
