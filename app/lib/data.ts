@@ -15,6 +15,8 @@ import {
   ProjectCategory,
   Graphic,
   FooterProperty,
+  Country,
+  Location,
 } from "./definitions";
 import { getConnection } from "./serverutils";
 import { Project } from "./definitions";
@@ -1503,4 +1505,72 @@ export async function fetchAboutStats() {
   } finally {
     if (connection) await connection.end();
   }
+}
+
+// Country functions
+export async function fetchCountries(): Promise<Country[]> {
+  return withDatabaseConnection(async (connection) => {
+    const [rows] = await connection.execute(`
+        SELECT id, name_ku, name_ar, name_en, code, created_at, updated_at
+        FROM countries
+        ORDER BY name_en ASC
+      `);
+    return rows as Country[];
+  }, []);
+}
+
+export async function fetchCountryById(id: string): Promise<Country | null> {
+  return withDatabaseConnection(async (connection) => {
+    const [rows] = await connection.execute(
+      `SELECT id, name_ku, name_ar, name_en, code, created_at, updated_at
+         FROM countries
+         WHERE id = ?`,
+      [id]
+    );
+    const result = rows as Country[];
+    return result[0] || null;
+  }, null);
+}
+
+// Location functions
+export async function fetchLocations(): Promise<Location[]> {
+  return withDatabaseConnection(async (connection) => {
+    const [rows] = await connection.execute(`
+        SELECT l.id, l.country_id, l.city_ku, l.city_ar, l.city_en, 
+               l.created_at, l.updated_at,
+               c.name_en as country_name_en, c.name_ku as country_name_ku, c.name_ar as country_name_ar
+        FROM locations l
+        LEFT JOIN countries c ON l.country_id = c.id
+        ORDER BY c.name_en ASC, l.city_en ASC
+      `);
+    return rows as Location[];
+  }, []);
+}
+
+export async function fetchLocationsByCountry(
+  countryId: string
+): Promise<Location[]> {
+  return withDatabaseConnection(async (connection) => {
+    const [rows] = await connection.execute(
+      `SELECT id, country_id, city_ku, city_ar, city_en, created_at, updated_at
+         FROM locations
+         WHERE country_id = ?
+         ORDER BY city_en ASC`,
+      [countryId]
+    );
+    return rows as Location[];
+  }, []);
+}
+
+export async function fetchLocationById(id: string): Promise<Location | null> {
+  return withDatabaseConnection(async (connection) => {
+    const [rows] = await connection.execute(
+      `SELECT id, country_id, city_ku, city_ar, city_en, created_at, updated_at
+         FROM locations
+         WHERE id = ?`,
+      [id]
+    );
+    const result = rows as Location[];
+    return result[0] || null;
+  }, null);
 }

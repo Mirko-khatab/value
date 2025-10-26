@@ -7,16 +7,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const [locationResult, countries] = await Promise.all([
+  const [location, countries] = await Promise.all([
     fetchLocationById(id),
     fetchCountries(),
   ]);
 
-  if (!locationResult || locationResult.length === 0) {
+  if (!location) {
     notFound();
   }
-
-  const location = locationResult[0];
 
   return (
     <main>
@@ -34,6 +32,3 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     </main>
   );
 }
-
-
-

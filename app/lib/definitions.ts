@@ -258,3 +258,27 @@ export type FooterProperty = {
   created_at: string;
   updated_at: string;
 };
+
+export type Country = {
+  id: string;
+  name_ku: string;
+  name_ar: string;
+  name_en: string;
+  code?: string;
+  created_at?: string;
+  updated_at?: string;
+};
+
+export type Location = {
+  id: string;
+  country_id: string;
+  city_ku: string;
+  city_ar: string;
+  city_en: string;
+  created_at?: string;
+  updated_at?: string;
+  // Fields from JOIN with countries table
+  country_name_en?: string;
+  country_name_ku?: string;
+  country_name_ar?: string;
+};

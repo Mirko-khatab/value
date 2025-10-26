@@ -7,13 +7,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const countryResult = await fetchCountryById(id);
+  const country = await fetchCountryById(id);
 
-  if (!countryResult || countryResult.length === 0) {
+  if (!country) {
     notFound();
   }
-
-  const country = countryResult[0];
 
   return (
     <main>
@@ -31,6 +29,3 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
     </main>
   );
 }
-
-
-

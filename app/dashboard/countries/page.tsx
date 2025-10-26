@@ -1,4 +1,5 @@
 import { fetchCountries } from "@/app/lib/data";
+import { Country } from "@/app/lib/definitions";
 import { PlusIcon, PencilIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import DeleteCountryButton from "@/app/ui/country/delete-button";
@@ -102,6 +103,3 @@ export default async function Page() {
     </div>
   );
 }
-
-
-

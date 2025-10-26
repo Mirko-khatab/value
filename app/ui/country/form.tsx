@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createCountry, updateCountry } from "@/app/lib/actions";
+import { createCountry, updateCountry, CountryState } from "@/app/lib/actions";
 import { Country } from "@/app/lib/definitions";
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
@@ -13,7 +13,7 @@ interface CountryFormProps {
 
 export default function CountryForm({ mode, country }: CountryFormProps) {
   const isEditMode = mode === "edit";
-  const initialState = { message: null, errors: {} };
+  const initialState: CountryState = { message: null, errors: {} };
 
   const action = isEditMode
     ? updateCountry.bind(null, country!.id)
