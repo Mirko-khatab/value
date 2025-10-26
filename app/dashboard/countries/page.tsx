@@ -1,8 +1,12 @@
 import { fetchCountries } from "@/app/lib/data";
-import { Country } from "@/app/lib/definitions";
 import { PlusIcon, PencilIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import DeleteCountryButton from "@/app/ui/country/delete-button";
+
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 export default async function Page() {
   const countries = await fetchCountries();

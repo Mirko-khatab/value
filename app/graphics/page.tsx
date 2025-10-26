@@ -2,6 +2,12 @@ import ShowcaseLayout from "@/app/ui/showcase-layout";
 import { fetchGraphics } from "@/app/lib/data";
 import Image from "next/image";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+export const runtime = "nodejs";
+
 // Random size configurations for masonry layout
 const sizeClasses = [
   "col-span-1 row-span-1", // Small
@@ -20,7 +26,23 @@ function getRandomSize(index: number): string {
 }
 
 export default async function GraphicsPage() {
-  const graphics = await fetchGraphics();
+  let graphics: any[] = [];
+
+  // Check if we're in build time and return empty array
+  if (
+    process.env.npm_lifecycle_event === "build" ||
+    process.env.NEXT_PHASE === "phase-production-build" ||
+    process.env.NEXT_BUILD
+  ) {
+    graphics = [];
+  } else {
+    try {
+      graphics = await fetchGraphics();
+    } catch (error) {
+      console.error("Failed to fetch graphics:", error);
+      graphics = [];
+    }
+  }
 
   return (
     <ShowcaseLayout>

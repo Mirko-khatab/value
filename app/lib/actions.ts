@@ -2524,12 +2524,9 @@ export async function deleteProjectCategory(id: string) {
     ]);
     await connection.end();
     revalidatePath("/dashboard/project-category");
-    return { message: "Project Category Deleted Successfully." };
   } catch (error) {
     console.error("Database Error:", error);
-    return {
-      message: "Database Error: Failed to Delete Project Category.",
-    };
+    throw new Error("Database Error: Failed to Delete Project Category.");
   }
 }
 
@@ -2657,12 +2654,9 @@ export async function deleteGraphic(id: string, formData?: FormData) {
     await connection.execute("DELETE FROM graphics WHERE id = ?", [id]);
     await connection.end();
     revalidatePath("/dashboard/graphics");
-    return { message: "Graphic Deleted Successfully." };
   } catch (error) {
     console.error("Database Error:", error);
-    return {
-      message: "Database Error: Failed to Delete Graphic.",
-    };
+    throw new Error("Database Error: Failed to Delete Graphic.");
   }
 }
 
@@ -2894,60 +2888,27 @@ export async function deleteFooterProperty(id: string) {
   }
 }
 
-// Country Actions
-const CountrySchema = z.object({
-  id: z.string(),
-  name_ku: z.string().min(1, { message: "Kurdish name is required." }),
-  name_ar: z.string().min(1, { message: "Arabic name is required." }),
-  name_en: z.string().min(1, { message: "English name is required." }),
-  code: z.string().optional(),
-});
-
-const CreateCountry = CountrySchema.omit({ id: true });
-const UpdateCountry = CountrySchema.omit({ id: true });
-
-export type CountryState = {
-  errors?: {
-    name_ku?: string[];
-    name_ar?: string[];
-    name_en?: string[];
-    code?: string[];
-  };
-  message?: string | null;
-};
-
+// COUNTRY ACTIONS
 export async function createCountry(
-  prevState: CountryState,
+  prevState: any,
   formData: FormData
-) {
-  const validatedFields = CreateCountry.safeParse({
-    name_ku: formData.get("name_ku"),
-    name_ar: formData.get("name_ar"),
-    name_en: formData.get("name_en"),
-    code: formData.get("code") || undefined,
-  });
+): Promise<{ message: string; errors?: any }> {
+  const { name_ku, name_ar, name_en, code } = Object.fromEntries(
+    formData.entries()
+  );
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Create Country.",
-    };
-  }
-
-  const { name_ku, name_ar, name_en, code } = validatedFields.data;
   let connection;
-
   try {
     connection = await getConnection();
     await connection.execute(
-      `INSERT INTO countries (name_ku, name_ar, name_en, code)
-       VALUES (?, ?, ?, ?)`,
-      [name_ku, name_ar, name_en, code || null]
+      "INSERT INTO countries (id, name_ku, name_ar, name_en, code) VALUES (UUID(), ?, ?, ?, ?)",
+      [name_ku, name_ar, name_en, code]
     );
   } catch (error) {
     console.error("Database Error:", error);
     return {
       message: "Database Error: Failed to Create Country.",
+      errors: {},
     };
   } finally {
     if (connection) await connection.end();
@@ -2959,38 +2920,25 @@ export async function createCountry(
 
 export async function updateCountry(
   id: string,
-  prevState: CountryState,
+  prevState: any,
   formData: FormData
-) {
-  const validatedFields = UpdateCountry.safeParse({
-    name_ku: formData.get("name_ku"),
-    name_ar: formData.get("name_ar"),
-    name_en: formData.get("name_en"),
-    code: formData.get("code") || undefined,
-  });
+): Promise<{ message: string; errors?: any }> {
+  const { name_ku, name_ar, name_en, code } = Object.fromEntries(
+    formData.entries()
+  );
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Update Country.",
-    };
-  }
-
-  const { name_ku, name_ar, name_en, code } = validatedFields.data;
   let connection;
-
   try {
     connection = await getConnection();
     await connection.execute(
-      `UPDATE countries
-       SET name_ku = ?, name_ar = ?, name_en = ?, code = ?, updated_at = NOW()
-       WHERE id = ?`,
-      [name_ku, name_ar, name_en, code || null, id]
+      "UPDATE countries SET name_ku = ?, name_ar = ?, name_en = ?, code = ? WHERE id = ?",
+      [name_ku, name_ar, name_en, code, id]
     );
   } catch (error) {
     console.error("Database Error:", error);
     return {
       message: "Database Error: Failed to Update Country.",
+      errors: {},
     };
   } finally {
     if (connection) await connection.end();
@@ -3002,7 +2950,6 @@ export async function updateCountry(
 
 export async function deleteCountry(id: string) {
   let connection;
-
   try {
     connection = await getConnection();
     await connection.execute("DELETE FROM countries WHERE id = ?", [id]);
@@ -3018,60 +2965,27 @@ export async function deleteCountry(id: string) {
   }
 }
 
-// Location Actions
-const LocationSchema = z.object({
-  id: z.string(),
-  country_id: z.string().min(1, { message: "Country is required." }),
-  city_ku: z.string().min(1, { message: "Kurdish city name is required." }),
-  city_ar: z.string().min(1, { message: "Arabic city name is required." }),
-  city_en: z.string().min(1, { message: "English city name is required." }),
-});
-
-const CreateLocation = LocationSchema.omit({ id: true });
-const UpdateLocation = LocationSchema.omit({ id: true });
-
-export type LocationState = {
-  errors?: {
-    country_id?: string[];
-    city_ku?: string[];
-    city_ar?: string[];
-    city_en?: string[];
-  };
-  message?: string | null;
-};
-
+// LOCATION ACTIONS
 export async function createLocation(
-  prevState: LocationState,
+  prevState: any,
   formData: FormData
-) {
-  const validatedFields = CreateLocation.safeParse({
-    country_id: formData.get("country_id"),
-    city_ku: formData.get("city_ku"),
-    city_ar: formData.get("city_ar"),
-    city_en: formData.get("city_en"),
-  });
+): Promise<{ message: string; errors?: any }> {
+  const { country_id, city_ku, city_ar, city_en } = Object.fromEntries(
+    formData.entries()
+  );
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Create Location.",
-    };
-  }
-
-  const { country_id, city_ku, city_ar, city_en } = validatedFields.data;
   let connection;
-
   try {
     connection = await getConnection();
     await connection.execute(
-      `INSERT INTO locations (country_id, city_ku, city_ar, city_en)
-       VALUES (?, ?, ?, ?)`,
+      "INSERT INTO locations (id, country_id, city_ku, city_ar, city_en) VALUES (UUID(), ?, ?, ?, ?)",
       [country_id, city_ku, city_ar, city_en]
     );
   } catch (error) {
     console.error("Database Error:", error);
     return {
       message: "Database Error: Failed to Create Location.",
+      errors: {},
     };
   } finally {
     if (connection) await connection.end();
@@ -3083,38 +2997,25 @@ export async function createLocation(
 
 export async function updateLocation(
   id: string,
-  prevState: LocationState,
+  prevState: any,
   formData: FormData
-) {
-  const validatedFields = UpdateLocation.safeParse({
-    country_id: formData.get("country_id"),
-    city_ku: formData.get("city_ku"),
-    city_ar: formData.get("city_ar"),
-    city_en: formData.get("city_en"),
-  });
+): Promise<{ message: string; errors?: any }> {
+  const { country_id, city_ku, city_ar, city_en } = Object.fromEntries(
+    formData.entries()
+  );
 
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Missing Fields. Failed to Update Location.",
-    };
-  }
-
-  const { country_id, city_ku, city_ar, city_en } = validatedFields.data;
   let connection;
-
   try {
     connection = await getConnection();
     await connection.execute(
-      `UPDATE locations
-       SET country_id = ?, city_ku = ?, city_ar = ?, city_en = ?, updated_at = NOW()
-       WHERE id = ?`,
+      "UPDATE locations SET country_id = ?, city_ku = ?, city_ar = ?, city_en = ? WHERE id = ?",
       [country_id, city_ku, city_ar, city_en, id]
     );
   } catch (error) {
     console.error("Database Error:", error);
     return {
       message: "Database Error: Failed to Update Location.",
+      errors: {},
     };
   } finally {
     if (connection) await connection.end();
@@ -3126,7 +3027,6 @@ export async function updateLocation(
 
 export async function deleteLocation(id: string) {
   let connection;
-
   try {
     connection = await getConnection();
     await connection.execute("DELETE FROM locations WHERE id = ?", [id]);

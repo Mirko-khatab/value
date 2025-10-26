@@ -1,10 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  eslint: {
-    // Disable ESLint during builds
-    ignoreDuringBuilds: true,
-  },
+  output: "standalone",
+  trailingSlash: false,
   images: {
     remotePatterns: [
       // Legacy CloudFront domain (can be removed after full migration)

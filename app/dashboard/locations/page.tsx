@@ -3,6 +3,11 @@ import { PlusIcon, PencilIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import DeleteLocationButton from "@/app/ui/location/delete-button";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export default async function Page() {
   const locations = await fetchLocations();
 
@@ -67,7 +72,7 @@ export default async function Page() {
                         {location.city_ar}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                        {location.country_name_en}
+                        {location.country_name || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-3">

@@ -2,6 +2,11 @@ import { fetchGraphics } from "@/app/lib/data";
 import { CreateGraphic, DeleteGraphic } from "@/app/ui/graphics/buttons";
 import Image from "next/image";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export default async function Page() {
   const graphics = await fetchGraphics();
 

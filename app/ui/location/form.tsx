@@ -1,11 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import {
-  createLocation,
-  updateLocation,
-  LocationState,
-} from "@/app/lib/actions";
+import { createLocation, updateLocation } from "@/app/lib/actions";
 import { Country, Location } from "@/app/lib/definitions";
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
@@ -22,7 +18,10 @@ export default function LocationForm({
   countries,
 }: LocationFormProps) {
   const isEditMode = mode === "edit";
-  const initialState: LocationState = { message: null, errors: {} };
+  const initialState: { message: string; errors: any } = {
+    message: "",
+    errors: {},
+  };
 
   const action = isEditMode
     ? updateLocation.bind(null, location!.id)

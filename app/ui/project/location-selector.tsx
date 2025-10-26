@@ -25,8 +25,10 @@ export default function LocationSelector({
   // Convert locations to searchable options
   const options = locations.map((loc) => ({
     value: loc.id,
-    label: `${loc.city_en}, ${loc.country_name_en}`,
-    searchText: `${loc.city_en} ${loc.city_ku} ${loc.city_ar} ${loc.country_name_en} ${loc.country_name_ku} ${loc.country_name_ar}`,
+    label: `${loc.city_en}, ${loc.country_name || ""}`,
+    searchText: `${loc.city_en} ${loc.city_ku} ${loc.city_ar} ${
+      loc.country_name || ""
+    }`,
   }));
 
   const handleAddNew = () => {
