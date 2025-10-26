@@ -7,6 +7,11 @@ import { Suspense } from "react";
 import { fetchTotalBlogsPages } from "@/app/lib/data";
 import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export default async function Page(props: {
   searchParams?: Promise<{
     query?: string;

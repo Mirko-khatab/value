@@ -6,6 +6,11 @@ import {
   DeleteProjectCategory,
 } from "@/app/ui/project-category/buttons";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export default async function Page() {
   const categories = await fetchProjectCategories();
 
