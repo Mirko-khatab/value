@@ -11,11 +11,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const property = await fetchPropertyById(id);
 
-  if (!property || property.length === 0) {
+  if (!property) {
     notFound();
   }
 
-  const propertyData = property[0];
+  const propertyData = property;
 
   async function handleSubmit(formData: FormData) {
     "use server";

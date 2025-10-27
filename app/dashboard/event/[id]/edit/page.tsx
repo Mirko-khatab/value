@@ -1,22 +1,22 @@
 import Form from "@/app/ui/event/form";
 import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
-import { fetchBlogById, fetchBlogGalleries } from "@/app/lib/data";
+import { fetchEventById, fetchEventGalleries } from "@/app/lib/data";
 import { notFound } from "next/navigation";
 
 export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const [blog, galleries] = await Promise.all([
-    fetchBlogById(id),
-    fetchBlogGalleries(id),
+  const [event, galleries] = await Promise.all([
+    fetchEventById(id),
+    fetchEventGalleries(id),
   ]);
 
-  if (!blog || blog.length === 0) {
+  if (!event || event.length === 0) {
     notFound();
   }
 
-  const blogData = blog[0];
+  const eventData = event[0];
 
   // Convert galleries to the format expected by the form
   const initialGalleryImages = galleries.map((gallery) => ({
@@ -43,7 +43,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         </h1>
         <Form
           mode="edit"
-          blog={blogData}
+          event={eventData}
           initialGalleryImages={initialGalleryImages}
         />
       </div>

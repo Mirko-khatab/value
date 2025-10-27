@@ -1,6 +1,6 @@
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { deleteBlog } from "@/app/lib/actions";
+import { deleteEvent } from "@/app/lib/actions";
 
 export function CreateEvent() {
   return (
@@ -26,10 +26,8 @@ export function UpdateEvent({ id }: { id: string }) {
 }
 
 export function DeleteEvent({ id }: { id: string }) {
-  const deleteBlogWithId = deleteBlog.bind(null, id);
-
   return (
-    <form action={deleteBlogWithId}>
+    <form action={deleteEvent.bind(null, id)}>
       <button className="rounded-md border p-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white">
         <span className="sr-only">Delete</span>
         <TrashIcon className="w-5 text-red-500 dark:text-red-400" />

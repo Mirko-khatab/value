@@ -80,7 +80,7 @@ export type MachineGroup = {
   title_ku: string;
 };
 
-export type Blog = {
+export type Event = {
   id: string;
   title_ku: string;
   title_ar: string;
@@ -158,10 +158,10 @@ export type Graphic = {
   created_at?: string;
 };
 
-//0=project 1=blog 2=product	 parent_type
+//0=project 1=event 2=product	 parent_type
 export enum ParentType {
   Project = 0,
-  Blog = 1,
+  Event = 1,
   Product = 2,
 }
 

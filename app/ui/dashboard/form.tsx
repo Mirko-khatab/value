@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, ReactNode } from "react";
+import { useState, useEffect, useCallback, useRef, ReactNode } from "react";
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
 
@@ -30,6 +30,7 @@ export interface FormField {
   gridCol?: "full" | "half"; // Layout: full width or half width
   helpText?: string;
   validation?: (value: any) => string | undefined; // Custom validation
+  accept?: string; // For file inputs (e.g., "image/*", "audio/*", ".mp3,.wav")
 }
 
 interface DashboardFormProps<T> {
@@ -58,6 +59,7 @@ export default function DashboardForm<T>({
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const initializedRef = useRef(false);
 
   // Initialize form data from fields
   const [formData, setFormData] = useState<Record<string, any>>(() => {
@@ -69,17 +71,19 @@ export default function DashboardForm<T>({
     return data;
   });
 
-  // Update form data when initialData changes (for edit mode)
+  // Update form data when initialData changes (for edit mode) - only once
   useEffect(() => {
-    if (isEditMode && initialData) {
+    if (isEditMode && initialData && !initializedRef.current) {
       const data: Record<string, any> = {};
       fields.forEach((field) => {
         data[field.name] =
           initialData[field.name as keyof T] ?? field.defaultValue ?? "";
       });
       setFormData(data);
+      initializedRef.current = true;
     }
-  }, [isEditMode, initialData, fields]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEditMode, initialData]);
 
   const handleInputChange = useCallback(
     (fieldName: string, value: any) => {
@@ -270,7 +274,7 @@ export default function DashboardForm<T>({
             <input
               type="file"
               id={field.name}
-              accept="image/*"
+              accept={field.accept || "*/*"}
               onChange={async (e) => {
                 const file = e.target.files?.[0];
                 if (file) {
@@ -285,7 +289,7 @@ export default function DashboardForm<T>({
                     handleInputChange(field.name, result.publicUrl);
                   } catch (error) {
                     console.error("File upload error:", error);
-                    setError("Failed to upload image. Please try again.");
+                    setError("Failed to upload file. Please try again.");
                   }
                 }
               }}
@@ -295,7 +299,12 @@ export default function DashboardForm<T>({
             <input type="hidden" name={field.name} value={value || ""} />
             {value && (
               <div className="text-sm text-green-600 dark:text-green-400">
-                ✓ Image uploaded successfully
+                ✓ File uploaded successfully
+                {value && (
+                  <div className="mt-1 text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {value}
+                  </div>
+                )}
               </div>
             )}
           </div>

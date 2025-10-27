@@ -15,9 +15,11 @@ import {
   SocialMedia,
   SocialMediaType,
   Banner,
+  Event,
 } from "./definitions";
 
 const FormSchema = z.object({
+  // INVOICES
   id: z.string(),
   customerId: z.string({
     invalid_type_error: "Please select a teams.",
@@ -126,6 +128,7 @@ export async function authenticate(
 }
 
 const CreateTeam = z.object({
+  // TEAMS
   name_ku: z.string().min(1, "Name is required"),
   name_ar: z.string().min(1, "Name is required"),
   name_en: z.string().min(1, "Name is required"),
@@ -264,6 +267,7 @@ export async function deleteTeam(id: string) {
 
 // PROJECT SCHEMA AND ACTIONS
 const CreateProject = z.object({
+  // PROJECTS
   title_ku: z.string().min(1, "Kurdish title is required"),
   title_ar: z.string().min(1, "Arabic title is required"),
   title_en: z.string().min(1, "English title is required"),
@@ -587,7 +591,8 @@ export async function deleteProject(id: string) {
 
 //create event
 
-const CreateBlog = z.object({
+const CreateEvent = z.object({
+  // EVENTS
   title_ku: z.string().min(1, "Title is required"),
   title_ar: z.string().min(1, "Title is required"),
   title_en: z.string().min(1, "Title is required"),
@@ -596,8 +601,8 @@ const CreateBlog = z.object({
   description_en: z.string().min(1, "Description is required"),
 });
 
-export async function createBlog(prevState: BlogState, formData: FormData) {
-  const validatedFields = CreateBlog.safeParse({
+export async function createEvent(prevState: EventState, formData: FormData) {
+  const validatedFields = CreateEvent.safeParse({
     title_ku: formData.get("title_ku"),
     title_ar: formData.get("title_ar"),
     title_en: formData.get("title_en"),
@@ -644,7 +649,7 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
       ]
     );
 
-    const blogId = (result as any).insertId;
+    const eventId = (result as any).insertId;
 
     // Collect gallery images (similar to project logic)
     const galleryImages: {
@@ -697,7 +702,7 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
     // Get the maximum order_index for this specific parent
     const [maxOrderResult] = (await connection.execute(
       "SELECT MAX(CAST(order_index AS UNSIGNED)) as max_order FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [blogId, ParentType.Blog.toString()]
+      [eventId, ParentType.Event.toString()]
     )) as any[];
     let nextOrderIndex = (maxOrderResult[0]?.max_order || 0) + 1;
 
@@ -706,8 +711,8 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
       await connection.execute(
         "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
         [
-          blogId,
-          ParentType.Blog.toString(),
+          eventId,
+          ParentType.Event.toString(),
           image.url,
           image.altText,
           nextOrderIndex.toString(),
@@ -727,7 +732,7 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
   redirect("/dashboard/event");
 }
 
-export type BlogState = {
+export type EventState = {
   errors?: {
     title_ku?: string[];
     title_ar?: string[];
@@ -739,8 +744,8 @@ export type BlogState = {
   message?: string | null;
 };
 
-export async function updateBlog(id: string, formData: FormData) {
-  const validatedFields = CreateBlog.safeParse({
+export async function updateEvent(id: string, formData: FormData) {
+  const validatedFields = CreateEvent.safeParse({
     title_ku: formData.get("title_ku"),
     title_ar: formData.get("title_ar"),
     title_en: formData.get("title_en"),
@@ -791,7 +796,7 @@ export async function updateBlog(id: string, formData: FormData) {
     // Clear existing gallery entries for this event
     await connection.execute(
       "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [id, ParentType.Blog.toString()]
+      [id, ParentType.Event.toString()]
     );
 
     // Collect gallery images (similar to project logic)
@@ -845,7 +850,7 @@ export async function updateBlog(id: string, formData: FormData) {
     // Get the maximum order_index for this specific parent
     const [maxOrderResult] = (await connection.execute(
       "SELECT MAX(CAST(order_index AS UNSIGNED)) as max_order FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [id, ParentType.Blog.toString()]
+      [id, ParentType.Event.toString()]
     )) as any[];
     let nextOrderIndex = (maxOrderResult[0]?.max_order || 0) + 1;
 
@@ -855,7 +860,7 @@ export async function updateBlog(id: string, formData: FormData) {
         "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
         [
           id,
-          ParentType.Blog.toString(),
+          ParentType.Event.toString(),
           image.url,
           image.altText,
           nextOrderIndex.toString(),
@@ -873,7 +878,7 @@ export async function updateBlog(id: string, formData: FormData) {
   // Remove redirect since this is called from client component
 }
 
-export async function deleteBlog(id: string) {
+export async function deleteEvent(id: string) {
   try {
     const connection = await getConnection();
     await connection.beginTransaction();
@@ -881,7 +886,7 @@ export async function deleteBlog(id: string) {
     // First, get all gallery images for this event to delete from cloud storage
     const [galleries] = (await connection.execute(
       "SELECT image_url FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [id, ParentType.Blog.toString()]
+      [id, ParentType.Event.toString()]
     )) as any[];
 
     // Delete images from cloud storage
@@ -901,7 +906,7 @@ export async function deleteBlog(id: string) {
     // Delete gallery entries from database
     await connection.execute(
       "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [id, ParentType.Blog.toString()]
+      [id, ParentType.Event.toString()]
     );
 
     // Delete the event record
@@ -2050,6 +2055,15 @@ const CreateAudio = z.object({
   use_for: z.enum(["landing", "intro", "both"]),
 });
 
+const UpdateAudio = z.object({
+  title_ku: z.string().min(1, "Kurdish title is required"),
+  title_en: z.string().min(1, "English title is required"),
+  title_ar: z.string().min(1, "Arabic title is required"),
+  audio_url: z.string().optional(), // Optional during update
+  is_active: z.boolean().default(true),
+  use_for: z.enum(["landing", "intro", "both"]),
+});
+
 export type AudioState = {
   errors?: {
     title_ku?: string[];
@@ -2108,7 +2122,7 @@ export async function updateAudio(
   prevState: AudioState,
   formData: FormData
 ) {
-  const validatedFields = CreateAudio.safeParse({
+  const validatedFields = UpdateAudio.safeParse({
     title_ku: formData.get("title_ku"),
     title_en: formData.get("title_en"),
     title_ar: formData.get("title_ar"),
@@ -2131,11 +2145,20 @@ export async function updateAudio(
   try {
     await connection.beginTransaction();
 
-    // Update audio record
-    await connection.execute(
-      "UPDATE audios SET title_ku = ?, title_en = ?, title_ar = ?, audio_url = ?, is_active = ?, use_for = ? WHERE id = ?",
-      [title_ku, title_en, title_ar, audio_url, is_active, use_for, id]
-    );
+    // Build the update query dynamically based on what's provided
+    if (audio_url && audio_url.trim() !== "") {
+      // Update with new audio URL
+      await connection.execute(
+        "UPDATE audios SET title_ku = ?, title_en = ?, title_ar = ?, audio_url = ?, is_active = ?, use_for = ? WHERE id = ?",
+        [title_ku, title_en, title_ar, audio_url, is_active, use_for, id]
+      );
+    } else {
+      // Update without changing audio URL (keep existing one)
+      await connection.execute(
+        "UPDATE audios SET title_ku = ?, title_en = ?, title_ar = ?, is_active = ?, use_for = ? WHERE id = ?",
+        [title_ku, title_en, title_ar, is_active, use_for, id]
+      );
+    }
 
     await connection.commit();
   } catch (error) {

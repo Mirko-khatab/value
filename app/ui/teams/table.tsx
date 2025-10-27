@@ -1,5 +1,5 @@
 import { fetchCustomers } from "@/app/lib/data";
-import { TeamField } from "@/app/lib/definitions";
+import { Customer, TeamField } from "@/app/lib/definitions";
 import Image from "next/image";
 import { DeleteTeam, UpdateTeam } from "./button";
 
@@ -54,13 +54,13 @@ export default async function TeamsTable({
                   {item === "image_url" ? (
                     <Image
                       src={team.image_url}
-                      alt={`${team.name_ku}'s profile picture`}
+                      alt={`${team.name}'s profile picture`}
                       width={32}
                       height={32}
                       className="w-10 h-10"
                     />
                   ) : (
-                    team[item as keyof TeamField]
+                    <span>{team[item as keyof Customer]}</span>
                   )}
                 </td>
               ))}

@@ -1,4 +1,4 @@
-import { fetchBlogById, fetchBlogGalleries } from "@/app/lib/data";
+import { fetchEventById, fetchEventGalleries } from "@/app/lib/data";
 import { ParentType } from "@/app/lib/definitions";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
@@ -12,15 +12,15 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const id = params.id;
 
   const [event, galleries] = await Promise.all([
-    fetchBlogById(id),
-    fetchBlogGalleries(id),
+    fetchEventById(id),
+    fetchEventGalleries(id),
   ]);
 
   if (!event || event.length === 0) {
     notFound();
   }
 
-  const blogData = event[0];
+  const eventData = event[0];
   const mainImage = galleries.length > 0 ? galleries[0] : null;
 
   return (
@@ -29,7 +29,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
         breadcrumbs={[
           { label: "event", href: "/dashboard/event" },
           {
-            label: blogData.title_en,
+            label: eventData.title_en,
             href: `/dashboard/event/${id}`,
             active: true,
           },
@@ -39,7 +39,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
       <div className="mt-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-gray-900">
-            {blogData.title_en}
+            {eventData.title_en}
           </h1>
           <div className="flex gap-2">
             <UpdateEvent id={id} />
@@ -61,15 +61,15 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                   <div className="mt-2 space-y-2">
                     <p>
                       <span className="font-medium">Kurdish:</span>{" "}
-                      {blogData.title_ku}
+                      {eventData.title_ku}
                     </p>
                     <p>
                       <span className="font-medium">Arabic:</span>{" "}
-                      {blogData.title_ar}
+                      {eventData.title_ar}
                     </p>
                     <p>
                       <span className="font-medium">English:</span>{" "}
-                      {blogData.title_en}
+                      {eventData.title_en}
                     </p>
                   </div>
                 </div>
@@ -81,15 +81,15 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
                   <div className="mt-2 space-y-2">
                     <p>
                       <span className="font-medium">Kurdish:</span>{" "}
-                      {blogData.description_ku}
+                      {eventData.description_ku}
                     </p>
                     <p>
                       <span className="font-medium">Arabic:</span>{" "}
-                      {blogData.description_ar}
+                      {eventData.description_ar}
                     </p>
                     <p>
                       <span className="font-medium">English:</span>{" "}
-                      {blogData.description_en}
+                      {eventData.description_en}
                     </p>
                   </div>
                 </div>
@@ -128,7 +128,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           <GalleryList
             galleries={galleries}
             parentId={id}
-            parentType={ParentType.Blog}
+            parentType={ParentType.Event}
           />
         </div>
       </div>

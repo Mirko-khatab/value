@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
         e.description_ar,
         e.description_en,
         e.created_at,
-        (SELECT image_url FROM galleries WHERE parent_id = e.id AND parent_type = '${ParentType.Blog}' ORDER BY CAST(order_index AS UNSIGNED) ASC LIMIT 1) as gallery_image_url
+        (SELECT image_url FROM galleries WHERE parent_id = e.id AND parent_type = '${ParentType.Event}' ORDER BY CAST(order_index AS UNSIGNED) ASC LIMIT 1) as gallery_image_url
       FROM event e
       ORDER BY e.created_at DESC
     `;

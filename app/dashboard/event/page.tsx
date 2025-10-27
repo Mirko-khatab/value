@@ -4,7 +4,7 @@ import Table from "@/app/ui/event/table";
 import { CreateEvent } from "@/app/ui/event/buttons";
 import { InvoicesTableSkeleton } from "@/app/ui/skeletons";
 import { Suspense } from "react";
-import { fetchTotalBlogsPages } from "@/app/lib/data";
+import { fetchTotalEventsPages } from "@/app/lib/data";
 import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
 
 // Force dynamic rendering to avoid database connection during build
@@ -21,7 +21,7 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || "";
   const currentPage = Number(searchParams?.page) || 1;
-  const totalPages = await fetchTotalBlogsPages(query);
+  const totalPages = await fetchTotalEventsPages(query);
 
   return (
     <div className="w-full">

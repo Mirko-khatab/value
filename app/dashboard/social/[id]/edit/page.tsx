@@ -11,11 +11,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const quote = await fetchQuoteById(id);
 
-  if (!quote || quote.length === 0) {
+  if (!quote) {
     notFound();
   }
 
-  const quoteData = quote[0];
+  const quoteData = quote;
 
   async function handleSubmit(formData: FormData) {
     "use server";

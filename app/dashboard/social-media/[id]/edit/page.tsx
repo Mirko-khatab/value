@@ -11,11 +11,11 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const socialMedia = await fetchSocialMediaById(id);
 
-  if (!socialMedia || socialMedia.length === 0) {
+  if (!socialMedia) {
     notFound();
   }
 
-  const socialMediaData = socialMedia[0];
+  const socialMediaData = socialMedia;
 
   async function handleSubmit(formData: FormData) {
     "use server";

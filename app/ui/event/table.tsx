@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { UpdateEvent, DeleteEvent } from "@/app/ui/event/buttons";
-import { fetchFilteredBlogs } from "@/app/lib/data";
+import { fetchFilteredEvents } from "@/app/lib/data";
 
 export default async function EventsTable({
   query,
@@ -10,7 +10,7 @@ export default async function EventsTable({
   query: string;
   currentPage: number;
 }) {
-  const event = await fetchFilteredBlogs(query, currentPage);
+  const event = await fetchFilteredEvents(query, currentPage);
 
   return (
     <div className="mt-6 flow-root">
@@ -59,7 +59,7 @@ export default async function EventsTable({
             <thead className="rounded-lg text-left text-sm font-normal dark:text-white">
               <tr>
                 <th scope="col" className="px-4 py-5 font-medium sm:pl-6">
-                  Blog
+                  Event
                 </th>
                 <th scope="col" className="px-3 py-5 font-medium">
                   Kurdish Title

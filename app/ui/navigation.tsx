@@ -68,7 +68,7 @@ export default function Navigation() {
           ar: "المنتجات",
           ku: "بەرهەمەکان",
         }),
-        href: "/products",
+        href: "/product",
         key: 5,
       },
     ],

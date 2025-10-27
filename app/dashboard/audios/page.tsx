@@ -1,9 +1,9 @@
-import Pagination from "@/app/ui/banner/pagination";
-import Search from "@/app/ui/banner/search";
+import Search from "@/app/ui/search";
 import AudiosTable from "@/app/ui/audio/table";
 import { CreateAudio } from "@/app/ui/audio/buttons";
 import { Suspense } from "react";
 import { fetchFilteredAudios, fetchTotalAudiosPages } from "@/app/lib/data";
+import Pagination from "@/app/ui/blogs/pagination";
 
 // Force dynamic rendering to avoid database connection during build
 export const dynamic = "force-dynamic";

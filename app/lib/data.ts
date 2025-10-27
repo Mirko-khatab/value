@@ -3,7 +3,7 @@ import {
   CustomersTableType,
   InvoiceForm,
   Revenue,
-  Blog,
+  Event,
   Machine,
   Product,
   Quote,
@@ -20,6 +20,7 @@ import {
   Project,
   ParentType,
   Gallery,
+  Customer,
 } from "./definitions";
 import { getConnection } from "./serverutils";
 
@@ -509,6 +510,77 @@ export async function fetchTotalProductsPages(searchQuery: string) {
   }
 }
 
+//team
+
+export async function fetchTotalTeamsPages(searchQuery: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      "SELECT COUNT(*) as total FROM teams WHERE name_en LIKE ? OR name_ku LIKE ? OR name_ar LIKE ?",
+      [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`]
+    );
+    const count = (result as any[])[0].total;
+    return Math.ceil(count / ITEMS_PER_PAGE);
+  } catch (error) {
+    console.error("Database Error:", error);
+    return 1; // Return 1 page as fallback
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+//fetchCustomers
+export async function fetchCustomers() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [customers] = await connection.execute(
+      "SELECT * FROM teams ORDER BY id DESC"
+    );
+    return customers as Customer[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch teams.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+//fetchTeams
+export async function fetchTeams() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [teams] = await connection.execute(
+      "SELECT * FROM teams ORDER BY id DESC"
+    );
+    return teams as TeamField[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch teams.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+//fetchTeamById
+export async function fetchTeamById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [teams] = await connection.execute(
+      "SELECT * FROM teams WHERE id = ?",
+      [id]
+    );
+    return teams as TeamField[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch team.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
 // PRODUCT GALLERIES DATA FETCHING
 export async function fetchProductGalleries(productId: string) {
   let connection;
@@ -522,6 +594,122 @@ export async function fetchProductGalleries(productId: string) {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch product galleries.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// BLOG/EVENT DATA FETCHING
+export async function fetchEventById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [events] = await connection.execute(
+      "SELECT * FROM event WHERE id = ?",
+      [id]
+    );
+    const eventArray = events as Event[];
+    return eventArray;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch event.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// BLOG/EVENT GALLERIES DATA FETCHING
+export async function fetchEventGalleries(eventId: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [galleries] = await connection.execute(
+      "SELECT * FROM galleries WHERE CAST(parent_id AS CHAR) = CAST(? AS CHAR) AND CAST(parent_type AS CHAR) = CAST(? AS CHAR) ORDER BY CAST(order_index AS UNSIGNED) ASC",
+      [eventId, ParentType.Event.toString()]
+    );
+    return galleries as Gallery[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch blog/event galleries.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchFilteredEvents(query: string, currentPage: number) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const searchTerm = `%${query}%`;
+
+  let connection;
+  try {
+    connection = await getConnection();
+    const [events] = await connection.execute(
+      `SELECT 
+        e.*,
+        g.image_url as gallery_image_url,
+        g.alt_text as gallery_alt_text,
+        g.order_index as gallery_order_index
+      FROM event e
+      LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(e.id AS CHAR) 
+        AND CAST(g.parent_type AS CHAR) = CAST(? AS CHAR)
+        AND g.order_index = (
+          SELECT MIN(CAST(g2.order_index AS UNSIGNED))
+          FROM galleries g2
+          WHERE CAST(g2.parent_id AS CHAR) = CAST(e.id AS CHAR)
+            AND CAST(g2.parent_type AS CHAR) = CAST(? AS CHAR)
+        )
+      WHERE 
+        e.title_en LIKE ? OR 
+        e.title_ku LIKE ? OR 
+        e.title_ar LIKE ? OR
+        e.description_en LIKE ? OR
+        e.description_ku LIKE ? OR
+        e.description_ar LIKE ?
+        ORDER BY e.id DESC
+      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
+      [
+        ParentType.Event.toString(),
+        ParentType.Event.toString(),
+        searchTerm,
+        searchTerm,
+        searchTerm,
+        searchTerm,
+        searchTerm,
+        searchTerm,
+      ]
+    );
+    return events as Event[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch filtered events.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// Count total pages for blogs/events with search
+export async function fetchTotalEventsPages(searchQuery: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      `SELECT COUNT(*) as total FROM event e 
+       WHERE e.title_en LIKE ? OR e.title_ku LIKE ? OR e.title_ar LIKE ?
+          OR e.description_en LIKE ? OR e.description_ku LIKE ? OR e.description_ar LIKE ?`,
+      [
+        `%${searchQuery}%`,
+        `%${searchQuery}%`,
+        `%${searchQuery}%`,
+        `%${searchQuery}%`,
+        `%${searchQuery}%`,
+        `%${searchQuery}%`,
+      ]
+    );
+    const count = (result as any[])[0].total;
+    return Math.ceil(count / ITEMS_PER_PAGE);
+  } catch (error) {
+    console.error("Database Error:", error);
+    return 1; // Return 1 page as fallback
   } finally {
     if (connection) await connection.end();
   }
@@ -573,6 +761,255 @@ export async function fetchAboutStats() {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch about stats.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// id
+// title_ku
+// title_en
+// title_ar
+// audio_url
+// is_active
+// use_for
+// created_at
+// updated_at
+
+// fetchFilteredAudios,
+export async function fetchFilteredAudios(query: string, currentPage: number) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const searchTerm = `%${query}%`;
+  let connection;
+  try {
+    connection = await getConnection();
+    const [audios] = await connection.execute(
+      `SELECT * FROM audios WHERE title_en LIKE ? OR title_ku LIKE ? OR title_ar LIKE ? ORDER BY id DESC LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
+      [searchTerm, searchTerm, searchTerm]
+    );
+    return audios as Audio[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch filtered audios.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// fetchTotalAudiosPages
+export async function fetchTotalAudiosPages(searchQuery: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      `SELECT COUNT(*) as total FROM audios WHERE title_en LIKE ? OR title_ku LIKE ? OR title_ar LIKE ?`,
+      [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`]
+    );
+    const count = (result as any[])[0].total;
+    return Math.ceil(count / ITEMS_PER_PAGE);
+  } catch (error) {
+    console.error("Database Error:", error);
+    return 1; // Return 1 page as fallback
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+//fetchAudioById
+export async function fetchAudioById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [audio] = await connection.execute(
+      `SELECT * FROM audios WHERE id = ?`,
+      [id]
+    );
+
+    const audioArray = audio as Audio[];
+    return audioArray[0];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch audio by id from database.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+//fetchFilteredProperties
+export async function fetchFilteredProperties(
+  query: string,
+  currentPage: number
+) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const searchTerm = `%${query}%`;
+  let connection;
+  try {
+    connection = await getConnection();
+    const [properties] = await connection.execute(
+      `SELECT * FROM properties WHERE \`key\` LIKE ? ORDER BY id DESC LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
+      [searchTerm]
+    );
+    return properties as Property[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch filtered properties from database.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+//fetchTotalPropertiesPages
+export async function fetchTotalPropertiesPages(searchQuery: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      `SELECT COUNT(*) as total FROM properties WHERE \`key\` LIKE ?`,
+      [`%${searchQuery}%`]
+    );
+    const count = (result as any[])[0].total;
+    return Math.ceil(count / ITEMS_PER_PAGE);
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch total properties pages.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+//fetchPropertyById
+export async function fetchPropertyById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [property] = await connection.execute(
+      `SELECT * FROM properties WHERE id = ?`,
+      [id]
+    );
+    const propertyArray = property as Property[];
+    return propertyArray[0];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch property by id from database.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// fetchTotalSocialMediaPages
+export async function fetchTotalSocialMediaPages(searchQuery: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      `SELECT COUNT(*) as total FROM social_media WHERE type LIKE ? OR url LIKE ?`,
+      [`%${searchQuery}%`, `%${searchQuery}%`]
+    );
+    const count = (result as any[])[0].total;
+    return Math.ceil(count / ITEMS_PER_PAGE);
+  } catch (error) {
+    console.error("Database Error:", error);
+    return 1; // Return 1 page as fallback
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// fetchSocialMediaById
+export async function fetchSocialMediaById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [socialMedia] = await connection.execute(
+      `SELECT * FROM social_media WHERE id = ?`,
+      [id]
+    );
+    const socialMediaArray = socialMedia as SocialMedia[];
+    return socialMediaArray[0];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch social media by id from database.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// fetchFilteredSocialMedia
+export async function fetchFilteredSocialMedia(
+  query: string,
+  currentPage: number
+) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const searchTerm = `%${query}%`;
+  let connection;
+  try {
+    connection = await getConnection();
+    const [socialMedia] = await connection.execute(
+      `SELECT * FROM social_media WHERE type LIKE ? OR url LIKE ? ORDER BY id DESC LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
+      [searchTerm, searchTerm]
+    );
+    const socialMediaArray = socialMedia as SocialMedia[];
+    return socialMediaArray;
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch filtered social media.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// fetchFilteredQuotes
+export async function fetchFilteredQuotes(query: string, currentPage: number) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const searchTerm = `%${query}%`;
+  let connection;
+  try {
+    connection = await getConnection();
+    const [quotes] = await connection.execute(
+      `SELECT * FROM quotes WHERE title_en LIKE ? OR title_ku LIKE ? OR title_ar LIKE ? ORDER BY id DESC LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
+      [searchTerm, searchTerm, searchTerm]
+    );
+    return quotes as Quote[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch filtered quotes.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+//fetchTotalQuotesPages
+export async function fetchTotalQuotesPages(searchQuery: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      `SELECT COUNT(*) as total FROM quotes WHERE title_en LIKE ? OR title_ku LIKE ? OR title_ar LIKE ?`,
+      [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`]
+    );
+    const count = (result as any[])[0].total;
+    return Math.ceil(count / ITEMS_PER_PAGE);
+  } catch (error) {
+    console.error("Database Error:", error);
+    return 1; // Return 1 page as fallback
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// fetchQuoteById
+export async function fetchQuoteById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [quote] = await connection.execute(
+      `SELECT * FROM quotes WHERE id = ?`,
+      [id]
+    );
+    const quoteArray = quote as Quote[];
+    return quoteArray[0];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch quote by id from database.");
   } finally {
     if (connection) await connection.end();
   }

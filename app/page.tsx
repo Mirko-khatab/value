@@ -10,7 +10,6 @@ import ShowcaseLayout from "@/app/ui/showcase-layout";
 import Text from "@/app/ui/text";
 import CustomCard from "./ui/home/custom-card";
 import Quote from "./ui/home/quote";
-import BannerPage from "./ui/banner/banner-page";
 import { Space } from "./ui/utils/space";
 import { Card } from "./ui/home/card";
 import { Slide } from "./ui/home/slide";

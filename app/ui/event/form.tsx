@@ -2,22 +2,22 @@
 
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
-import { createBlog, updateBlog, BlogState } from "@/app/lib/actions";
-import { Blog } from "@/app/lib/definitions";
+import { createEvent, updateEvent, EventState } from "@/app/lib/actions";
+import { Event } from "@/app/lib/definitions";
 import { useState, useCallback, useEffect } from "react";
 import MultipleImageUpload from "@/app/ui/project/multiple-image-upload";
 
-interface BlogFormProps {
+interface EventFormProps {
   mode: "create" | "edit";
-  blog?: Blog;
+  event?: Event;
   initialGalleryImages?: { url: string; altText: string; orderIndex: number }[];
 }
 
 export default function Form({
   mode,
-  blog,
+  event,
   initialGalleryImages = [],
-}: BlogFormProps) {
+}: EventFormProps) {
   const isEditMode = mode === "edit";
 
   const [galleryImages, setGalleryImages] =
@@ -82,16 +82,16 @@ export default function Form({
       }
 
       try {
-        if (isEditMode && blog) {
-          // Update existing blog
-          await updateBlog(blog.id, formData);
+        if (isEditMode && event) {
+          // Update existing event
+          await updateEvent(event.id, formData);
           setSuccess(true);
           setTimeout(() => {
             window.location.href = "/dashboard/event";
           }, 1500);
         } else {
-          // Create new blog
-          const result = await createBlog(
+          // Create new event
+          const result = await createEvent(
             { errors: {}, message: null },
             formData
           );
@@ -112,14 +112,14 @@ export default function Form({
         console.error("Form submission error:", err);
         setError(
           isEditMode
-            ? "Failed to update blog. Please try again."
-            : "Failed to create blog. Please try again."
+            ? "Failed to update event. Please try again."
+            : "Failed to create event. Please try again."
         );
       } finally {
         setIsSubmitting(false);
       }
     },
-    [isSubmitting, isEditMode, blog, galleryImages, mode]
+    [isSubmitting, isEditMode, event, galleryImages, mode]
   );
 
   return (
@@ -135,7 +135,7 @@ export default function Form({
         {/* Success Message */}
         {success && (
           <div className="mb-4 p-4 text-sm text-green-700 dark:text-green-400 bg-green-100 border border-green-400 rounded">
-            Blog {isEditMode ? "updated" : "created"} successfully!
+            Event {isEditMode ? "updated" : "created"} successfully!
             Redirecting...
           </div>
         )}
@@ -150,7 +150,7 @@ export default function Form({
             name="title_ku"
             type="text"
             required
-            defaultValue={isEditMode ? blog?.title_ku : ""}
+            defaultValue={isEditMode ? event?.title_ku : ""}
             className="peer block w-full rounded-md border border-gray-200 text-gray-900 dark:text-white dark:border-gray-700 bg-white dark:bg-gray-700 py-2 px-3 text-sm outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400 "
           />
         </div>
@@ -165,7 +165,7 @@ export default function Form({
             name="title_ar"
             type="text"
             required
-            defaultValue={isEditMode ? blog?.title_ar : ""}
+            defaultValue={isEditMode ? event?.title_ar : ""}
             className="peer block w-full rounded-md border border-gray-200 text-gray-900 dark:text-white dark:border-gray-700 bg-white dark:bg-gray-700 py-2 px-3 text-sm outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400 "
           />
         </div>
@@ -180,7 +180,7 @@ export default function Form({
             name="title_en"
             type="text"
             required
-            defaultValue={isEditMode ? blog?.title_en : ""}
+            defaultValue={isEditMode ? event?.title_en : ""}
             className="peer block w-full rounded-md border border-gray-200 text-gray-900 dark:text-white dark:border-gray-700 bg-white dark:bg-gray-700 py-2 px-3 text-sm outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400 "
           />
         </div>
@@ -198,7 +198,7 @@ export default function Form({
             name="description_ku"
             required
             rows={4}
-            defaultValue={isEditMode ? blog?.description_ku : ""}
+            defaultValue={isEditMode ? event?.description_ku : ""}
             className="peer block w-full rounded-md border border-gray-200 text-gray-900 dark:text-white dark:border-gray-700 bg-white dark:bg-gray-700 py-2 px-3 text-sm outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400 "
           />
         </div>
@@ -216,7 +216,7 @@ export default function Form({
             name="description_ar"
             required
             rows={4}
-            defaultValue={isEditMode ? blog?.description_ar : ""}
+            defaultValue={isEditMode ? event?.description_ar : ""}
             className="peer block w-full rounded-md border border-gray-200 text-gray-900 dark:text-white dark:border-gray-700 bg-white dark:bg-gray-700 py-2 px-3 text-sm outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400 "
           />
         </div>
@@ -234,7 +234,7 @@ export default function Form({
             name="description_en"
             required
             rows={4}
-            defaultValue={isEditMode ? blog?.description_en : ""}
+            defaultValue={isEditMode ? event?.description_en : ""}
             className="peer block w-full rounded-md border border-gray-200 text-gray-900 dark:text-white dark:border-gray-700 bg-white dark:bg-gray-700 py-2 px-3 text-sm outline-2 placeholder:text-gray-500 dark:placeholder:text-gray-400 "
           />
         </div>
@@ -247,7 +247,7 @@ export default function Form({
           <MultipleImageUpload
             onImagesChange={handleImagesChange}
             initialImages={isEditMode ? initialGalleryImages : []}
-            title="Blog Images"
+            title="Event Images"
           />
         </div>
       </div>
@@ -265,8 +265,8 @@ export default function Form({
               ? "Updating..."
               : "Creating..."
             : isEditMode
-            ? "Update Blog"
-            : "Create Blog"}
+            ? "Update Event"
+            : "Create Event"}
         </Button>
       </div>
     </form>

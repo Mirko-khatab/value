@@ -11,7 +11,8 @@ import {
   deleteTeam,
   deleteBanner,
   deleteAudio,
-  deleteBlog,
+  deleteEvent,
+  updateEvent,
   deleteQuote,
   deleteSpecialProject,
   deleteSocialMedia,
@@ -28,8 +29,7 @@ import {
   updateBanner,
   createAudio,
   updateAudio,
-  createBlog,
-  updateBlog,
+  createEvent,
   createQuote,
   updateQuote,
   createSpecialProject,
@@ -47,7 +47,7 @@ import {
   TeamField,
   Banner,
   Audio,
-  Blog,
+  Event,
   Quote,
   SpecialProjects,
   SocialMedia,
@@ -260,28 +260,28 @@ export const eventTableConfig = {
     {
       header: "Order",
       key: "gallery_order_index",
-      render: (b: Blog) => b.gallery_order_index || "N/A",
+      render: (e: Event) => e.gallery_order_index || "N/A",
     },
-  ] as Column<Blog>[],
-  actions: (blog: Blog): ActionButton[] => [
+  ] as Column<Event>[],
+  actions: (event: Event): ActionButton[] => [
     {
       label: "Edit",
-      href: `/dashboard/event/${blog.id}/edit`,
+      href: `/dashboard/event/${event.id}/edit`,
       icon: <PencilIcon className="w-5 text-blue-500 dark:text-blue-400" />,
     },
     {
       label: "Delete",
       form: true,
       onClick: async (id: string) => {
-        await deleteBlog(id);
+        await deleteEvent(id);
       },
       icon: <TrashIcon className="w-5 text-red-500 dark:text-red-400" />,
     },
   ],
   viewPath: "/dashboard/event",
-  imageField: "gallery_image_url" as keyof Blog,
-  titleField: "title_en" as keyof Blog,
-  altTextField: "gallery_alt_text" as keyof Blog,
+  imageField: "gallery_image_url" as keyof Event,
+  titleField: "title_en" as keyof Event,
+  altTextField: "gallery_alt_text" as keyof Event,
 };
 
 // ============================================================================
@@ -477,6 +477,16 @@ export const audiosFormFields: FormField[] = [
     type: "text",
     required: true,
     gridCol: "half",
+  },
+  {
+    name: "audio_url",
+    label: "Audio File",
+    type: "file",
+    required: false,
+    accept: "audio/*,.mp3,.wav,.ogg,.m4a",
+    helpText:
+      "Upload an audio file (MP3, WAV, OGG, or M4A format). Required for new audio, optional when editing.",
+    gridCol: "full",
   },
   {
     name: "use_for",
@@ -685,9 +695,9 @@ export const eventFormHandler = async (
   formData: FormData
 ) => {
   if (mode === "edit" && id) {
-    await updateBlog(id, formData);
+    await updateEvent(id, formData);
   } else {
-    await createBlog({ message: null, errors: {} }, formData);
+    await createEvent({ message: null, errors: {} }, formData);
   }
 };
 
@@ -722,7 +732,7 @@ export const socialFormHandler = async (
   formData: FormData
 ) => {
   if (mode === "edit" && id) {
-    await updateQuote(id, formData); // Social uses same schema as quotes
+    await updateQuote(id, formData);
   } else {
     await createQuote({ message: null, errors: {} }, formData);
   }

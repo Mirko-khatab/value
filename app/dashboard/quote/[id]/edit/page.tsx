@@ -10,11 +10,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 
   const quote = await fetchQuoteById(id);
 
-  if (!quote || quote.length === 0) {
+  if (!quote) {
     notFound();
   }
-
-  const quoteData = quote[0];
 
   async function handleSubmit(formData: FormData, data: Record<string, any>) {
     "use server";
@@ -48,7 +46,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           cancelPath="/dashboard/quote"
           entityName="Quote"
           mode="edit"
-          initialData={quoteData}
+          initialData={quote}
         />
       </div>
     </main>
