@@ -11,9 +11,13 @@ const nextConfig: NextConfig = {
         hostname: "d27wu6gy6te9ow.cloudfront.net",
         pathname: "/**",
       },
+      // Cloud storage domain - direct URLs (recommended)
+      {
+        protocol: "https",
+        hostname: "cloud.mirkokawa.dev",
+        pathname: "/api/public/**",
+      },
     ],
-    // Note: Cloud storage files are accessed through /api/cloud/files/ proxy
-    // so they don't need to be listed in remotePatterns
     unoptimized: false,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
