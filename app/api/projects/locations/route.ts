@@ -6,9 +6,9 @@ export async function GET() {
     const locations = await fetchLocations();
     return NextResponse.json(locations);
   } catch (error) {
-    console.error("Error fetching project locations:", error);
+    console.error("Failed to fetch locations:", error);
     return NextResponse.json(
-      { error: "Failed to fetch project locations" },
+      { error: "Failed to fetch locations" },
       { status: 500 }
     );
   }

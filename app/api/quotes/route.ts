@@ -1,22 +1,15 @@
 import { NextResponse } from "next/server";
-import { getConnection } from "@/app/lib/serverutils";
+import { fetchQuotes } from "@/app/lib/data";
 
 export async function GET() {
-  let connection;
   try {
-    connection = await getConnection();
-    const [rows] = await connection.execute(
-      "SELECT id, title_ku, title_en, title_ar, image_url FROM quotes ORDER BY id DESC"
-    );
-
-    return NextResponse.json(rows);
+    const quotes = await fetchQuotes();
+    return NextResponse.json(quotes);
   } catch (error) {
-    console.error("Database Error:", error);
+    console.error("Failed to fetch quotes:", error);
     return NextResponse.json(
       { error: "Failed to fetch quotes" },
       { status: 500 }
     );
-  } finally {
-    if (connection) await connection.end();
   }
 }

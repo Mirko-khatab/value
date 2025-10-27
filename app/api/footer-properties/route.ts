@@ -6,7 +6,7 @@ export async function GET() {
     const properties = await fetchFooterProperties();
     return NextResponse.json(properties);
   } catch (error) {
-    console.error("Error fetching footer properties:", error);
+    console.error("Failed to fetch footer properties:", error);
     return NextResponse.json(
       { error: "Failed to fetch footer properties" },
       { status: 500 }

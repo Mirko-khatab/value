@@ -6,7 +6,7 @@ export async function GET() {
     const categories = await fetchProjectCategories();
     return NextResponse.json(categories);
   } catch (error) {
-    console.error("Error fetching project categories:", error);
+    console.error("Failed to fetch project categories:", error);
     return NextResponse.json(
       { error: "Failed to fetch project categories" },
       { status: 500 }

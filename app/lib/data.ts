@@ -996,6 +996,23 @@ export async function fetchTotalQuotesPages(searchQuery: string) {
   }
 }
 
+// fetchQuotes
+export async function fetchQuotes() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [quotes] = await connection.execute(
+      `SELECT * FROM quotes ORDER BY id DESC`
+    );
+    return quotes as Quote[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch quotes.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
 // fetchQuoteById
 export async function fetchQuoteById(id: string) {
   let connection;

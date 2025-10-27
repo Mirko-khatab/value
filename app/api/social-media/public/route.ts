@@ -6,7 +6,7 @@ export async function GET() {
     const socialMedia = await fetchSocialMedia();
     return NextResponse.json(socialMedia);
   } catch (error) {
-    console.error("Error fetching social media:", error);
+    console.error("Failed to fetch social media:", error);
     return NextResponse.json(
       { error: "Failed to fetch social media" },
       { status: 500 }
