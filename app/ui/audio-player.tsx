@@ -60,19 +60,14 @@ export default function AudioPlayer({
         try {
           await audioRef.current.play();
           setIsPlaying(true);
-          console.log("✅ Landing page audio playing!");
         } catch (error) {
-          console.log("❌ Landing page auto-play blocked, trying muted...");
-
           // Try muted autoplay
           try {
             audioRef.current.muted = true;
             setIsMuted(true);
             await audioRef.current.play();
             setIsPlaying(true);
-            console.log("✅ Landing page audio playing muted");
           } catch (mutedError) {
-            console.log("❌ Even muted playback blocked on landing page");
             setIsPlaying(false);
           }
         }

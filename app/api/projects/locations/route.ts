@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { fetchProjectLocations } from "@/app/lib/data";
+import { fetchLocations } from "@/app/lib/data";
 
 export async function GET() {
   try {
-    const locations = await fetchProjectLocations();
+    const locations = await fetchLocations();
     return NextResponse.json(locations);
   } catch (error) {
     console.error("Error fetching project locations:", error);

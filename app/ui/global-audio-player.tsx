@@ -124,9 +124,7 @@ export default function GlobalAudioPlayer({
       try {
         await audioRef.current.play();
         setIsPlaying(true);
-        console.log("✅ Global audio playing!");
       } catch (error) {
-        console.log("❌ Global auto-play blocked, trying muted...");
 
         // Try muted autoplay
         try {
@@ -134,9 +132,7 @@ export default function GlobalAudioPlayer({
           setIsMuted(true);
           await audioRef.current.play();
           setIsPlaying(true);
-          console.log("✅ Global audio playing muted");
         } catch (mutedError) {
-          console.log("❌ Even muted playback blocked on global player");
           setIsPlaying(false);
         }
       }

@@ -87,9 +87,9 @@ export default function ProjectsPage() {
       // Location filter
       if (selectedLocation) {
         const matchesLocation =
-          project.location_en?.includes(selectedLocation) ||
-          project.location_ku?.includes(selectedLocation) ||
-          project.location_ar?.includes(selectedLocation);
+          project.location_city_en?.includes(selectedLocation) ||
+          project.location_city_ku?.includes(selectedLocation) ||
+          project.location_city_ar?.includes(selectedLocation);
 
         if (!matchesLocation) return false;
       }

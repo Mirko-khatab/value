@@ -4,7 +4,7 @@ import Table from "@/app/ui/project/table";
 import { CreateProject } from "@/app/ui/project/buttons";
 import { InvoicesTableSkeleton } from "@/app/ui/skeletons";
 import { Suspense } from "react";
-import { fetchTotalProjectsPages } from "@/app/lib/data";
+import { countProjectPages } from "@/app/lib/data";
 
 // Force dynamic rendering to avoid database connection during build
 export const dynamic = "force-dynamic";
@@ -20,7 +20,7 @@ export default async function Page(props: {
   const searchParams = await props.searchParams;
   const query = searchParams?.query || "";
   const currentPage = Number(searchParams?.page) || 1;
-  const totalPages = await fetchTotalProjectsPages(query);
+  const totalPages = await countProjectPages(query);
 
   return (
     <div className="w-full">

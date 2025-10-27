@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/app/lib/language-context";
-import { Project, Gallery } from "@/app/lib/definitions";
+import { Project, Gallery, ProjectWithLocation } from "@/app/lib/definitions";
 import Image from "next/image";
 import Link from "next/link";
 import ShowcaseLayout from "@/app/ui/showcase-layout";
@@ -24,7 +24,7 @@ interface PageProps {
 
 export default function ProjectDetailPage({ params }: PageProps) {
   const { language, t } = useLanguage();
-  const [project, setProject] = useState<Project | null>(null);
+  const [project, setProject] = useState<ProjectWithLocation | null>(null);
   const [galleries, setGalleries] = useState<Gallery[]>([]);
   const [loading, setLoading] = useState(true);
   const [id, setId] = useState<string>("");
@@ -422,9 +422,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                         </div>
                       )}
 
-                      {(project.location_en ||
-                        project.location_ku ||
-                        project.location_ar) && (
+                      {project.location_id && (
                         <div
                           className={`flex items-center gap-4 text-gray-700 dark:text-gray-300 ${
                             isRTL ? "flex-row-reverse" : ""
@@ -432,7 +430,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                         >
                           <MapPinIcon className="h-6 w-6 text-red-600 dark:text-red-400 flex-shrink-0" />
                           <span className="font-medium text-lg">
-                            {getLocalizedField(project, "location")}
+                            {getLocalizedField(project, "location_city")}
                           </span>
                         </div>
                       )}
@@ -573,9 +571,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                             </div>
                           )}
 
-                          {(project.location_en ||
-                            project.location_ku ||
-                            project.location_ar) && (
+                          {project.location_id && (
                             <div
                               className={`flex items-center gap-4 text-gray-700 dark:text-gray-300 ${
                                 isRTL ? "flex-row-reverse" : ""
@@ -583,7 +579,7 @@ export default function ProjectDetailPage({ params }: PageProps) {
                             >
                               <MapPinIcon className="h-6 w-6 text-red-600 dark:text-red-400 flex-shrink-0" />
                               <span className="font-medium text-lg">
-                                {getLocalizedField(project, "location")}
+                                {getLocalizedField(project, "location_city")}
                               </span>
                             </div>
                           )}

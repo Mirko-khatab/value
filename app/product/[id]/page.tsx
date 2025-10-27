@@ -203,11 +203,11 @@ export default function ProductDetailPage({ params }: PageProps) {
                 items={[
                   {
                     label: t("products", {
-                      en: "Products",
+                      en: "Product",
                       ar: "المنتجات",
                       ku: "بەرهەمەکان",
                     }),
-                    href: "/products",
+                    href: "/product",
                   },
                   {
                     label:

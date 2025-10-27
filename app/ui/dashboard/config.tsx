@@ -116,8 +116,8 @@ export const projectsTableConfig = {
     },
     {
       header: "Location",
-      key: "location_en",
-      render: (p: Project) => p.location_en || "N/A",
+      key: "location_city_en",
+      render: (p: Project) => p.location_city_en || "N/A",
     },
   ] as Column<Project>[],
   actions: (project: Project): ActionButton[] => [
@@ -346,114 +346,6 @@ export const productsFormHandler = async (
     await updateProduct(id, formData);
   } else {
     await createProduct({ message: null, errors: {} }, formData);
-  }
-};
-
-// PROJECTS FORM
-export const projectsFormFields: FormField[] = [
-  {
-    name: "title_en",
-    label: "Title (English)",
-    type: "text",
-    required: true,
-    gridCol: "half",
-  },
-  {
-    name: "title_ku",
-    label: "Title (Kurdish)",
-    type: "text",
-    required: true,
-    gridCol: "half",
-  },
-  {
-    name: "title_ar",
-    label: "Title (Arabic)",
-    type: "text",
-    required: true,
-    gridCol: "half",
-  },
-  {
-    name: "date",
-    label: "Date",
-    type: "date",
-    required: true,
-    gridCol: "half",
-  },
-  {
-    name: "project_category",
-    label: "Project Category",
-    type: "select",
-    required: true,
-    options: [], // Will be populated dynamically in the pages
-    gridCol: "half",
-  },
-  {
-    name: "project_status",
-    label: "Project Status",
-    type: "select",
-    required: true,
-    options: [
-      { value: "0", label: "InProgress" },
-      { value: "1", label: "Finish" },
-    ],
-    gridCol: "half",
-  },
-  {
-    name: "location_en",
-    label: "Location (English)",
-    type: "text",
-    required: true,
-    gridCol: "half",
-  },
-  {
-    name: "location_ku",
-    label: "Location (Kurdish)",
-    type: "text",
-    required: true,
-    gridCol: "half",
-  },
-  {
-    name: "location_ar",
-    label: "Location (Arabic)",
-    type: "text",
-    required: true,
-    gridCol: "half",
-  },
-  {
-    name: "description_en",
-    label: "Description (English)",
-    type: "textarea",
-    required: true,
-    rows: 4,
-    gridCol: "full",
-  },
-  {
-    name: "description_ku",
-    label: "Description (Kurdish)",
-    type: "textarea",
-    required: true,
-    rows: 4,
-    gridCol: "full",
-  },
-  {
-    name: "description_ar",
-    label: "Description (Arabic)",
-    type: "textarea",
-    required: true,
-    rows: 4,
-    gridCol: "full",
-  },
-];
-
-export const projectsFormHandler = async (
-  mode: "create" | "edit",
-  id: string | undefined,
-  formData: FormData
-) => {
-  if (mode === "edit" && id) {
-    await updateProject(id, formData);
-  } else {
-    await createProject({ message: null, errors: {} }, formData);
   }
 };
 
@@ -942,5 +834,85 @@ export const projectCategoryFormFields: FormField[] = [
     type: "text",
     required: true,
     gridCol: "half",
+  },
+];
+
+// PROJECTS FORM
+export const projectsFormFields: FormField[] = [
+  {
+    name: "title_en",
+    label: "Title (English)",
+    type: "text",
+    required: true,
+    gridCol: "half",
+  },
+  {
+    name: "title_ku",
+    label: "Title (Kurdish)",
+    type: "text",
+    required: true,
+    gridCol: "half",
+  },
+  {
+    name: "title_ar",
+    label: "Title (Arabic)",
+    type: "text",
+    required: true,
+    gridCol: "half",
+  },
+  {
+    name: "description_en",
+    label: "Description (English)",
+    type: "textarea",
+    required: true,
+    gridCol: "full",
+  },
+  {
+    name: "description_ku",
+    label: "Description (Kurdish)",
+    type: "textarea",
+    required: true,
+    gridCol: "full",
+  },
+  {
+    name: "description_ar",
+    label: "Description (Arabic)",
+    type: "textarea",
+    required: true,
+    gridCol: "full",
+  },
+  {
+    name: "date",
+    label: "Project Date",
+    type: "date",
+    required: true,
+    gridCol: "half",
+  },
+  {
+    name: "project_category",
+    label: "Category",
+    type: "select",
+    required: true,
+    gridCol: "half",
+    options: [], // Will be populated dynamically
+  },
+  {
+    name: "location_id",
+    label: "Location",
+    type: "select",
+    required: true,
+    gridCol: "half",
+    options: [], // Will be populated dynamically
+  },
+  {
+    name: "project_status",
+    label: "Status",
+    type: "select",
+    required: true,
+    gridCol: "half",
+    options: [
+      { value: "0", label: "Inactive" },
+      { value: "1", label: "Active" },
+    ],
   },
 ];

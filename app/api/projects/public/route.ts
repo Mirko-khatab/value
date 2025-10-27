@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchPublicProjects } from "@/app/lib/data";
+import { fetchProjects } from "@/app/lib/data";
 
 export async function GET(request: Request) {
   try {
@@ -10,12 +10,7 @@ export async function GET(request: Request) {
     const status = searchParams.get("status") || undefined;
     const limit = searchParams.get("limit");
 
-    const projects = await fetchPublicProjects({
-      search,
-      location,
-      category,
-      status,
-    });
+    const projects = await fetchProjects();
 
     // Apply limit if specified
     const result = limit ? projects.slice(0, parseInt(limit)) : projects;

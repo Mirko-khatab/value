@@ -28,23 +28,19 @@ export default function Page() {
   useEffect(() => {
     // Check if user has seen intro before (stored permanently)
     const hasSeenIntro = localStorage.getItem("hasSeenIntro");
-    console.log("📦 hasSeenIntro from localStorage:", hasSeenIntro);
 
     if (
       !hasSeenIntro ||
       hasSeenIntro === "null" ||
       hasSeenIntro === "undefined"
     ) {
-      console.log("✅ First time visitor - showing intro");
       setShowLoading(true);
       setShowIntro(true);
     } else {
-      console.log("❌ Returning visitor - skipping intro");
     }
   }, []);
 
   const handleLoadingComplete = () => {
-    console.log("✅ Loading video finished!");
     // Try to start intro automatically
     setUserClicked(true); // Pretend user clicked
     setShowLoading(false);
@@ -52,7 +48,6 @@ export default function Page() {
   };
 
   const forceReset = () => {
-    console.log("🔄 Force resetting intro...");
     localStorage.removeItem("hasSeenIntro");
     setShowIntro(true);
     setShowLoading(true);
@@ -62,7 +57,6 @@ export default function Page() {
 
   const handleTouchClick = () => {
     // User clicked, now we can start audio with sound!
-    console.log("🖱️ Touch animation clicked!");
     setUserClicked(true);
     setLoadingComplete(false);
   };
@@ -71,14 +65,6 @@ export default function Page() {
     setShowIntro(false);
     localStorage.setItem("hasSeenIntro", "true");
   };
-
-  // Debug logging
-  console.log("🎬 Render state:", {
-    showIntro,
-    showLoading,
-    loadingComplete,
-    userClicked,
-  });
 
   return (
     <>

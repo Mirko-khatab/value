@@ -111,6 +111,10 @@ export type Product = {
 // Legacy alias for backward compatibility - keeping for existing code
 export type Machine = Product;
 
+export type ProjectWithLocation = Project & {
+  location: Location;
+};
+
 export type Project = {
   id: string;
   title_ku: string;
@@ -122,9 +126,7 @@ export type Project = {
   date: string | Date;
   project_category: number;
   project_status: number; // 0 or 1
-  location_ku: string;
-  location_en: string;
-  location_ar: string;
+  location_id: string;
   // Gallery fields (from JOIN queries)
   gallery_image_url?: string;
   gallery_alt_text?: string;
@@ -134,6 +136,13 @@ export type Project = {
   category_name_en?: string;
   category_name_ku?: string;
   category_name_ar?: string;
+  // Location fields from JOIN queries
+  location_city_ku?: string;
+  location_city_ar?: string;
+  location_city_en?: string;
+  location_country_name_ku?: string;
+  location_country_name_ar?: string;
+  location_country_name_en?: string;
 };
 
 export type ProjectCategory = {

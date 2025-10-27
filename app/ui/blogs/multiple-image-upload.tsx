@@ -79,10 +79,6 @@ export default function MultipleImageUpload({
       // Try to delete the image from cloud storage if it has a URL (was uploaded)
       if (imageToDelete?.file) {
         try {
-          console.log(
-            "Deleting uploaded image from cloud storage:",
-            imageToDelete.file.name
-          );
           const response = await fetch("/api/delete-image", {
             method: "POST",
             headers: {
@@ -100,9 +96,6 @@ export default function MultipleImageUpload({
             // Continue with removal from UI even if cloud storage deletion fails for uploaded images
             // since they're not saved to the project yet
           } else {
-            console.log(
-              "Successfully deleted uploaded image from cloud storage"
-            );
           }
         } catch (error) {
           console.error(
@@ -140,7 +133,6 @@ export default function MultipleImageUpload({
       // First, try to delete the image from cloud storage
       if (imageToDelete?.url) {
         try {
-          console.log("Deleting image from cloud storage:", imageToDelete.url);
           const response = await fetch("/api/delete-image", {
             method: "POST",
             headers: {
@@ -155,7 +147,6 @@ export default function MultipleImageUpload({
             showMessage("error", "Failed to delete image from storage");
             return; // Don't remove from UI if cloud storage deletion failed
           }
-          console.log("Successfully deleted image from cloud storage");
         } catch (error) {
           console.error("Error deleting image from cloud storage:", error);
           showMessage("error", "Network error while deleting image");
@@ -241,11 +232,6 @@ export default function MultipleImageUpload({
 
       // Sort by order index
       allImages.sort((a, b) => a.orderIndex - b.orderIndex);
-
-      console.log("=== IMAGE UPLOAD COMPLETE ===");
-      console.log("Uploaded images:", uploadedImages);
-      console.log("All images (existing + uploaded):", allImages);
-      console.log("Calling onImagesChange with:", allImages);
 
       onImagesChange(allImages);
       setImages([]);

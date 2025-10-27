@@ -147,10 +147,6 @@ export async function createTeam(prevState: TeamState, formData: FormData) {
   });
 
   if (!validatedFields.success) {
-    console.log(
-      "Validation failed:",
-      validatedFields.error.flatten().fieldErrors
-    );
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Create Team.",
@@ -266,29 +262,18 @@ export async function deleteTeam(id: string) {
   revalidatePath("/dashboard/teams");
 }
 
+// PROJECT SCHEMA AND ACTIONS
 const CreateProject = z.object({
-  title_ku: z.string().min(1, "Title is required"),
-  title_ar: z.string().min(1, "Title is required"),
-  title_en: z.string().min(1, "Title is required"),
-  description_ku: z.string().min(1, "Description is required"),
-  description_ar: z.string().min(1, "Description is required"),
-  description_en: z.string().min(1, "Description is required"),
-  date: z.string(),
-  project_category: z.coerce
-    .number()
-    .int()
-    .min(1, "Project category is required"),
-  project_status: z.coerce
-    .number()
-    .int()
-    .min(0)
-    .max(1, "Project status must be 0 (InProgress) or 1 (Finish)"),
-  location_ku: z.string().min(1, "Location (Kurdish) is required"),
-  location_en: z.string().min(1, "Location (English) is required"),
-  location_ar: z.string().min(1, "Location (Arabic) is required"),
-  image_url: z.string().nullish(),
-  alt_text: z.string().nullish(),
-  order_index: z.string().nullish(),
+  title_ku: z.string().min(1, "Kurdish title is required"),
+  title_ar: z.string().min(1, "Arabic title is required"),
+  title_en: z.string().min(1, "English title is required"),
+  description_ku: z.string().min(1, "Kurdish description is required"),
+  description_ar: z.string().min(1, "Arabic description is required"),
+  description_en: z.string().min(1, "English description is required"),
+  date: z.string().min(1, "Date is required"),
+  project_category: z.string().min(1, "Project category is required"),
+  project_status: z.string().min(1, "Project status is required"),
+  location_id: z.string().min(1, "Location is required"),
 });
 
 export type ProjectState = {
@@ -302,26 +287,15 @@ export type ProjectState = {
     date?: string[];
     project_category?: string[];
     project_status?: string[];
-    location_ku?: string[];
-    location_en?: string[];
-    location_ar?: string[];
-    image_url?: string[];
-    alt_text?: string[];
-    order_index?: string[];
+    location_id?: string[];
   };
   message?: string | null;
 };
+
 export async function createProject(
   prevState: ProjectState,
   formData: FormData
 ) {
-  // Debug logging for development
-  console.log("Creating project with form data");
-  console.log(
-    "Gallery images count:",
-    formData.getAll("gallery_url_0").length > 0 ? "Yes" : "No"
-  );
-
   const validatedFields = CreateProject.safeParse({
     title_ku: formData.get("title_ku"),
     title_ar: formData.get("title_ar"),
@@ -332,19 +306,10 @@ export async function createProject(
     date: formData.get("date"),
     project_category: formData.get("project_category"),
     project_status: formData.get("project_status"),
-    location_ku: formData.get("location_ku"),
-    location_en: formData.get("location_en"),
-    location_ar: formData.get("location_ar"),
-    image_url: formData.get("image_url"),
-    alt_text: formData.get("alt_text"),
-    order_index: formData.get("order_index"),
+    location_id: formData.get("location_id"),
   });
 
   if (!validatedFields.success) {
-    console.log(
-      "Validation failed:",
-      validatedFields.error.flatten().fieldErrors
-    );
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Create Project.",
@@ -361,20 +326,21 @@ export async function createProject(
     date,
     project_category,
     project_status,
-    location_ku,
-    location_en,
-    location_ar,
-    image_url,
-    alt_text,
-    order_index,
+    location_id,
   } = validatedFields.data;
 
+  let connection;
   try {
-    const connection = await getConnection();
+    connection = await getConnection();
+    await connection.beginTransaction();
 
-    // Insert only the basic project fields into projects table
+    // Insert project (let database auto-increment the id)
     const [result] = await connection.execute(
-      "INSERT INTO projects (title_ku, title_ar, title_en, description_ku, description_ar, description_en, date, project_category, project_status, location_ku, location_en, location_ar) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      `INSERT INTO projects (
+        title_ku, title_ar, title_en, 
+        description_ku, description_ar, description_en,
+        date, project_category, project_status, location_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         title_ku,
         title_ar,
@@ -385,61 +351,39 @@ export async function createProject(
         date,
         project_category,
         project_status,
-        location_ku,
-        location_en,
-        location_ar,
+        location_id,
       ]
     );
 
-    // Type assertion for the result to access insertId
-    const insertResult = result as any;
-    const projectId = insertResult.insertId;
+    // Get the auto-generated project ID
+    const projectId = (result as any).insertId;
 
-    // Collect all gallery images to insert
+    // Collect gallery images
     const galleryImages: {
       url: string;
       altText: string;
       orderIndex: string;
     }[] = [];
 
-    console.log("Processing gallery images...");
+    // Collect additional gallery images
+    let index = 0;
+    while (true) {
+      const image_url = formData.get(`image_url_${index}`);
+      const alt_text = formData.get(`alt_text_${index}`);
+      const order_index = formData.get(`order_index_${index}`);
 
-    // Add main image if it exists
-    if (image_url && alt_text && order_index) {
+      if (!image_url || !alt_text || !order_index) {
+        break;
+      }
+
       galleryImages.push({
         url: image_url.toString(),
         altText: alt_text.toString(),
         orderIndex: order_index.toString(),
       });
-    }
-
-    // Collect additional gallery images
-    let index = 0;
-    while (true) {
-      const galleryUrl = formData.get(`gallery_url_${index}`);
-      const galleryAlt = formData.get(`gallery_alt_${index}`);
-      const galleryOrder = formData.get(`gallery_order_${index}`);
-
-      if (!galleryUrl || !galleryAlt || !galleryOrder) {
-        break;
-      }
-
-      // Skip if this is the main image (already added above)
-      if (galleryUrl === image_url) {
-        index++;
-        continue;
-      }
-
-      galleryImages.push({
-        url: galleryUrl.toString(),
-        altText: galleryAlt.toString(),
-        orderIndex: galleryOrder.toString(),
-      });
 
       index++;
     }
-
-    console.log("Collected gallery images:", galleryImages.length);
 
     // Remove duplicates based on URL
     const uniqueImages = galleryImages.filter(
@@ -447,74 +391,37 @@ export async function createProject(
         index === self.findIndex((img) => img.url === image.url)
     );
 
-    console.log("Unique gallery images after deduplication:", uniqueImages);
-
-    // Get the maximum order_index for this specific parent
-    const [maxOrderResult] = (await connection.execute(
-      "SELECT MAX(CAST(order_index AS UNSIGNED)) as max_order FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [projectId, ParentType.Project.toString()]
-    )) as any[];
-    let nextOrderIndex = (maxOrderResult[0]?.max_order || 0) + 1;
-
     // Insert all unique gallery images
     for (const image of uniqueImages) {
-      console.log(
-        "Inserting gallery image:",
-        image,
-        "with order_index:",
-        nextOrderIndex
-      );
       await connection.execute(
         "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
         [
-          projectId,
+          projectId.toString(),
           ParentType.Project.toString(),
           image.url,
           image.altText,
-          nextOrderIndex.toString(),
+          image.orderIndex,
         ]
       );
-      nextOrderIndex++;
     }
-
-    console.log(`Successfully inserted ${uniqueImages.length} gallery images`);
 
     await connection.commit();
   } catch (error) {
-    console.error("Database Error: Failed to Create Project.", error);
+    console.error("Database Error:", error);
+    if (connection) await connection.rollback();
     return {
-      errors: {},
-      message: "Database Error: Failed to create project.",
+      message: "Database Error: Failed to Create Project.",
     };
+  } finally {
+    if (connection) await connection.end();
   }
+
   revalidatePath("/dashboard/projects");
-  // Remove redirect since this is called from client component
-  // redirect("/dashboard/projects");
+  redirect("/dashboard/projects");
 }
 
 export async function updateProject(id: string, formData: FormData) {
-  console.log("updateProject called with id:", id);
-
   try {
-    // Log all form data for debugging
-    console.log("Form data received:", {
-      title_ku: formData.get("title_ku"),
-      title_ar: formData.get("title_ar"),
-      title_en: formData.get("title_en"),
-      description_ku: formData.get("description_ku"),
-      description_ar: formData.get("description_ar"),
-      description_en: formData.get("description_en"),
-      date: formData.get("date"),
-      project_category: formData.get("project_category"),
-      project_status: formData.get("project_status"),
-      location_ku: formData.get("location_ku"),
-      location_en: formData.get("location_en"),
-      location_ar: formData.get("location_ar"),
-      image_url: formData.get("image_url"),
-      alt_text: formData.get("alt_text"),
-      order_index: formData.get("order_index"),
-    });
-
     let validatedData;
     try {
       validatedData = CreateProject.parse({
@@ -527,12 +434,7 @@ export async function updateProject(id: string, formData: FormData) {
         date: formData.get("date"),
         project_category: formData.get("project_category"),
         project_status: formData.get("project_status"),
-        location_ku: formData.get("location_ku"),
-        location_en: formData.get("location_en"),
-        location_ar: formData.get("location_ar"),
-        image_url: formData.get("image_url"),
-        alt_text: formData.get("alt_text"),
-        order_index: formData.get("order_index"),
+        location_id: formData.get("location_id"),
       });
     } catch (validationError) {
       console.error("Schema validation failed:", validationError);
@@ -549,26 +451,14 @@ export async function updateProject(id: string, formData: FormData) {
       date,
       project_category,
       project_status,
-      location_ku,
-      location_en,
-      location_ar,
-      image_url,
-      alt_text,
-      order_index,
+      location_id,
     } = validatedData;
-
-    console.log("Parsed project data:", {
-      title_en,
-      image_url,
-      alt_text,
-      order_index,
-    });
 
     const connection = await getConnection();
 
     // Update the project with new data
     await connection.execute(
-      "UPDATE projects SET title_ku = ?, title_ar = ?, title_en = ?, description_ku = ?, description_ar = ?, description_en = ?, date = ?, project_category = ?, project_status = ?, location_ku = ?, location_en = ?, location_ar = ? WHERE id = ?",
+      "UPDATE projects SET title_ku = ?, title_ar = ?, title_en = ?, description_ku = ?, description_ar = ?, description_en = ?, date = ?, project_category = ?, project_status = ?, location_id = ? WHERE id = ?",
       [
         title_ku,
         title_ar,
@@ -579,22 +469,16 @@ export async function updateProject(id: string, formData: FormData) {
         date,
         project_category,
         project_status,
-        location_ku,
-        location_en,
-        location_ar,
+        location_id,
         id,
       ]
     );
 
-    console.log("Project updated successfully");
-
     // Clear existing gallery entries for this project
     await connection.execute(
-      "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
+      "DELETE FROM galleries WHERE CAST(parent_id AS CHAR) = CAST(? AS CHAR) AND CAST(parent_type AS CHAR) = CAST(? AS CHAR)",
       [id, ParentType.Project.toString()]
     );
-
-    console.log("Existing gallery entries cleared");
 
     // Collect all gallery images to insert
     const galleryImages: {
@@ -603,42 +487,25 @@ export async function updateProject(id: string, formData: FormData) {
       orderIndex: string;
     }[] = [];
 
-    // Add main image if it exists
-    if (image_url && alt_text && order_index) {
+    // Collect additional gallery images
+    let index = 0;
+    while (true) {
+      const image_url = formData.get(`image_url_${index}`);
+      const alt_text = formData.get(`alt_text_${index}`);
+      const order_index = formData.get(`order_index_${index}`);
+
+      if (!image_url || !alt_text || !order_index) {
+        break;
+      }
+
       galleryImages.push({
         url: image_url.toString(),
         altText: alt_text.toString(),
         orderIndex: order_index.toString(),
       });
-    }
-
-    // Collect additional gallery images
-    let index = 0;
-    while (true) {
-      const galleryUrl = formData.get(`gallery_url_${index}`);
-      const galleryAlt = formData.get(`gallery_alt_${index}`);
-      const galleryOrder = formData.get(`gallery_order_${index}`);
-
-      if (!galleryUrl || !galleryAlt || !galleryOrder) {
-        break;
-      }
-
-      // Skip if this is the main image (already added above)
-      if (galleryUrl === image_url) {
-        index++;
-        continue;
-      }
-
-      galleryImages.push({
-        url: galleryUrl.toString(),
-        altText: galleryAlt.toString(),
-        orderIndex: galleryOrder.toString(),
-      });
 
       index++;
     }
-
-    console.log("Gallery images to insert:", galleryImages);
 
     // Remove duplicates based on URL
     const uniqueImages = galleryImages.filter(
@@ -646,23 +513,15 @@ export async function updateProject(id: string, formData: FormData) {
         index === self.findIndex((img) => img.url === image.url)
     );
 
-    console.log("Unique gallery images after deduplication:", uniqueImages);
-
     // Get the maximum order_index for this specific parent
     const [maxOrderResult] = (await connection.execute(
-      "SELECT MAX(CAST(order_index AS UNSIGNED)) as max_order FROM galleries WHERE parent_id = ? AND parent_type = ?",
+      "SELECT MAX(CAST(order_index AS UNSIGNED)) as max_order FROM galleries WHERE CAST(parent_id AS CHAR) = CAST(? AS CHAR) AND CAST(parent_type AS CHAR) = CAST(? AS CHAR)",
       [id, ParentType.Project.toString()]
     )) as any[];
     let nextOrderIndex = (maxOrderResult[0]?.max_order || 0) + 1;
 
     // Insert all unique gallery images
     for (const image of uniqueImages) {
-      console.log(
-        "Inserting gallery image:",
-        image,
-        "with order_index:",
-        nextOrderIndex
-      );
       await connection.execute(
         "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
         [
@@ -676,10 +535,7 @@ export async function updateProject(id: string, formData: FormData) {
       nextOrderIndex++;
     }
 
-    console.log("Gallery images inserted successfully");
-
     await connection.commit();
-    console.log("Project update completed successfully");
   } catch (error) {
     console.error("Database Error: Failed to Update Project.", error);
     throw new Error("Failed to update project");
@@ -741,18 +597,6 @@ const CreateBlog = z.object({
 });
 
 export async function createBlog(prevState: BlogState, formData: FormData) {
-  // Debug logging for development
-  console.log("Creating event with form data");
-  console.log("DEBUG: ParentType.Blog value is:", ParentType.Blog);
-  console.log(
-    "DEBUG: ParentType.Blog.toString() is:",
-    ParentType.Blog.toString()
-  );
-  console.log(
-    "Gallery images count:",
-    formData.getAll("gallery_url_0").length > 0 ? "Yes" : "No"
-  );
-
   const validatedFields = CreateBlog.safeParse({
     title_ku: formData.get("title_ku"),
     title_ar: formData.get("title_ar"),
@@ -763,10 +607,6 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
   });
 
   if (!validatedFields.success) {
-    console.log(
-      "Validation failed:",
-      validatedFields.error.flatten().fieldErrors
-    );
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Create event.",
@@ -805,7 +645,6 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
     );
 
     const blogId = (result as any).insertId;
-    console.log("event created with ID:", blogId);
 
     // Collect gallery images (similar to project logic)
     const galleryImages: {
@@ -813,8 +652,6 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
       altText: string;
       orderIndex: string;
     }[] = [];
-
-    console.log("Processing gallery images...");
 
     // Add main image if it exists
     if (image_url && alt_text && order_index) {
@@ -851,15 +688,11 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
       index++;
     }
 
-    console.log("Collected gallery images:", galleryImages.length);
-
     // Remove duplicates based on URL
     const uniqueImages = galleryImages.filter(
       (image, index, self) =>
         index === self.findIndex((img) => img.url === image.url)
     );
-
-    console.log("Unique gallery images after deduplication:", uniqueImages);
 
     // Get the maximum order_index for this specific parent
     const [maxOrderResult] = (await connection.execute(
@@ -870,18 +703,6 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
 
     // Insert all unique gallery images
     for (const image of uniqueImages) {
-      console.log(
-        "Inserting gallery image:",
-        image,
-        "with order_index:",
-        nextOrderIndex
-      );
-      console.log(
-        "DEBUG: Inserting gallery with parent_type:",
-        ParentType.Blog.toString(),
-        "which equals:",
-        ParentType.Blog
-      );
       await connection.execute(
         "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
         [
@@ -895,11 +716,8 @@ export async function createBlog(prevState: BlogState, formData: FormData) {
       nextOrderIndex++;
     }
 
-    console.log(`Successfully inserted ${uniqueImages.length} gallery images`);
-
     await connection.commit();
   } catch (error) {
-    console.error("Database Error: Failed to Create event.", error);
     return {
       errors: {},
       message: "Database Error: Failed to create event.",
@@ -922,8 +740,6 @@ export type BlogState = {
 };
 
 export async function updateBlog(id: string, formData: FormData) {
-  console.log("updateBlog called with id:", id);
-
   const validatedFields = CreateBlog.safeParse({
     title_ku: formData.get("title_ku"),
     title_ar: formData.get("title_ar"),
@@ -934,10 +750,6 @@ export async function updateBlog(id: string, formData: FormData) {
   });
 
   if (!validatedFields.success) {
-    console.log(
-      "Validation failed:",
-      validatedFields.error.flatten().fieldErrors
-    );
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Update event.",
@@ -976,15 +788,11 @@ export async function updateBlog(id: string, formData: FormData) {
       ]
     );
 
-    console.log("event updated successfully");
-
     // Clear existing gallery entries for this event
     await connection.execute(
       "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
       [id, ParentType.Blog.toString()]
     );
-
-    console.log("Existing gallery entries cleared");
 
     // Collect gallery images (similar to project logic)
     const galleryImages: {
@@ -1028,15 +836,11 @@ export async function updateBlog(id: string, formData: FormData) {
       index++;
     }
 
-    console.log("Gallery images to insert:", galleryImages);
-
     // Remove duplicates based on URL
     const uniqueImages = galleryImages.filter(
       (image, index, self) =>
         index === self.findIndex((img) => img.url === image.url)
     );
-
-    console.log("Unique gallery images after deduplication:", uniqueImages);
 
     // Get the maximum order_index for this specific parent
     const [maxOrderResult] = (await connection.execute(
@@ -1047,18 +851,6 @@ export async function updateBlog(id: string, formData: FormData) {
 
     // Insert all unique gallery images
     for (const image of uniqueImages) {
-      console.log(
-        "Inserting gallery image:",
-        image,
-        "with order_index:",
-        nextOrderIndex
-      );
-      console.log(
-        "DEBUG: Updating gallery with parent_type:",
-        ParentType.Blog.toString(),
-        "which equals:",
-        ParentType.Blog
-      );
       await connection.execute(
         "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
         [
@@ -1072,10 +864,7 @@ export async function updateBlog(id: string, formData: FormData) {
       nextOrderIndex++;
     }
 
-    console.log("Gallery images inserted successfully");
-
     await connection.commit();
-    console.log("event update completed successfully");
   } catch (error) {
     console.error("Database Error: Failed to Update event.", error);
     throw new Error("Failed to update event");
@@ -1089,8 +878,6 @@ export async function deleteBlog(id: string) {
     const connection = await getConnection();
     await connection.beginTransaction();
 
-    console.log("Deleting event and associated gallery images for ID:", id);
-
     // First, get all gallery images for this event to delete from cloud storage
     const [galleries] = (await connection.execute(
       "SELECT image_url FROM galleries WHERE parent_id = ? AND parent_type = ?",
@@ -1101,7 +888,6 @@ export async function deleteBlog(id: string) {
     for (const gallery of galleries) {
       try {
         await deleteCloudFile(gallery.image_url);
-        console.log("Deleted cloud storage image:", gallery.image_url);
       } catch (error) {
         console.error(
           "Failed to delete cloud storage image:",
@@ -1122,7 +908,6 @@ export async function deleteBlog(id: string) {
     await connection.execute("DELETE FROM event WHERE id = ?", [id]);
 
     await connection.commit();
-    console.log("event and gallery images deleted successfully");
   } catch (error) {
     console.error("Database Error: Failed to Delete event.", error);
     throw new Error("Failed to delete event");
@@ -1144,13 +929,6 @@ export async function createProduct(
   prevState: ProductState,
   formData: FormData
 ) {
-  // Debug logging for development
-  console.log("Creating product with form data");
-  console.log(
-    "Form data entries:",
-    Array.from(formData.entries()).map(([key, value]) => [key, value])
-  );
-
   const validatedFields = CreateProduct.safeParse({
     title_ku: formData.get("title_ku"),
     title_ar: formData.get("title_ar"),
@@ -1236,13 +1014,18 @@ export async function createProduct(
       for (const image of galleryImages) {
         await connection.execute(
           "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
-          [productId, ParentType.Product, image.url, image.alt, image.order]
+          [
+            productId,
+            ParentType.Product.toString(),
+            image.url,
+            image.alt,
+            image.order,
+          ]
         );
       }
     }
 
     await connection.commit();
-    console.log("Product created successfully with ID:", productId);
   } catch (error) {
     await connection.rollback();
     console.error("Database Error: Failed to Create Product.", error);
@@ -1267,8 +1050,6 @@ export type ProductState = {
 };
 
 export async function updateProduct(id: string, formData: FormData) {
-  console.log("updateProduct called with id:", id);
-
   const validatedFields = CreateProduct.safeParse({
     title_ku: formData.get("title_ku"),
     title_ar: formData.get("title_ar"),
@@ -1316,7 +1097,7 @@ export async function updateProduct(id: string, formData: FormData) {
     // Handle gallery images - delete existing ones first
     await connection.execute(
       "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [id, ParentType.Product]
+      [id, ParentType.Product.toString()]
     );
 
     // Handle new gallery images
@@ -1359,13 +1140,12 @@ export async function updateProduct(id: string, formData: FormData) {
       for (const image of galleryImages) {
         await connection.execute(
           "INSERT INTO galleries (parent_id, parent_type, image_url, alt_text, order_index) VALUES (?, ?, ?, ?, ?)",
-          [id, ParentType.Product, image.url, image.alt, image.order]
+          [id, ParentType.Product.toString(), image.url, image.alt, image.order]
         );
       }
     }
 
     await connection.commit();
-    console.log("Product updated successfully");
   } catch (error) {
     await connection.rollback();
     console.error("Database Error: Failed to Update Product.", error);
@@ -1385,14 +1165,13 @@ export async function deleteProduct(id: string) {
     // Delete gallery images first
     await connection.execute(
       "DELETE FROM galleries WHERE parent_id = ? AND parent_type = ?",
-      [id, ParentType.Product]
+      [id, ParentType.Product.toString()]
     );
 
     // Delete product
     await connection.execute("DELETE FROM products WHERE id = ?", [id]);
 
     await connection.commit();
-    console.log("Product deleted successfully");
   } catch (error) {
     await connection.rollback();
     console.error("Database Error: Failed to Delete Product.", error);
@@ -1447,7 +1226,6 @@ export async function createQuote(prevState: QuoteState, formData: FormData) {
   }
 
   const { title_ku, title_en, title_ar, image_url } = validatedFields.data;
-  console.log("Quote image URL:", image_url);
   const connection = await getConnection();
   try {
     await connection.beginTransaction();
@@ -1493,14 +1271,11 @@ export async function deleteQuote(id: string) {
   try {
     await connection.beginTransaction();
 
-    console.log("Deleting quote for ID:", id);
-
     // Delete the quote record
     await connection.execute("DELETE FROM quotes WHERE id = ?", [id]);
 
     await connection.commit();
     await connection.end();
-    console.log("Quote deleted successfully");
   } catch (error) {
     await connection.end();
     console.error("Database Error: Failed to Delete Quote.", error);
@@ -1574,7 +1349,6 @@ export async function updateQuote(id: string, formData: FormData) {
       "UPDATE quotes SET title_ku = ?, title_en = ?, title_ar = ?, image_url = ? WHERE id = ?",
       [title_ku, title_en, title_ar, image_url, id]
     );
-    console.log("Quote updated successfully");
     await connection.commit();
     await connection.end();
   } catch (error) {
@@ -1663,7 +1437,6 @@ export async function deleteSocialMedia(id: string) {
     await connection.execute("DELETE FROM social_media WHERE id = ?", [id]);
 
     await connection.commit();
-    console.log("Social media deleted successfully");
   } catch (error) {
     console.error("Database Error: Failed to Delete Social Media.", error);
     throw new Error("Failed to delete social media");
@@ -1673,19 +1446,12 @@ export async function deleteSocialMedia(id: string) {
 }
 
 export async function updateSocialMedia(id: string, formData: FormData) {
-  console.log("updateSocialMedia called with id:", id);
-  console.log("FormData contents:", {
-    type: formData.get("type"),
-    url: formData.get("url"),
-  });
-
   const validatedFields = CreateSocialMedia.safeParse({
     type: parseInt(formData.get("type") as string),
     url: formData.get("url"),
   });
 
   if (!validatedFields.success) {
-    console.log("Validation failed:", validatedFields.error);
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Update Social Media.",
@@ -1693,7 +1459,6 @@ export async function updateSocialMedia(id: string, formData: FormData) {
   }
 
   const { type, url } = validatedFields.data;
-  console.log("Validated data:", { type, url });
 
   const connection = await getConnection();
   try {
@@ -1706,7 +1471,6 @@ export async function updateSocialMedia(id: string, formData: FormData) {
     )) as any[];
 
     if (existingSocialMedia.length > 0) {
-      console.log("URL already exists:", url);
       return {
         errors: {
           url: ["Social media with this URL already exists"],
@@ -1716,14 +1480,12 @@ export async function updateSocialMedia(id: string, formData: FormData) {
     }
 
     // Update social media record
-    console.log("Updating social media with:", { type, url, id });
     await connection.execute(
       "UPDATE social_media SET type = ?, url = ? WHERE id = ?",
       [type, url, id]
     );
 
     await connection.commit();
-    console.log("Social media updated successfully");
   } catch (error) {
     console.error("Database Error: Failed to Update Social Media.", error);
     throw new Error("Failed to update social media");
@@ -1878,9 +1640,7 @@ export async function deleteProperty(id: string) {
     await connection.execute("DELETE FROM properties WHERE id = ?", [id]);
 
     await connection.commit();
-    console.log("Property deleted successfully");
   } catch (error) {
-    console.error("Database Error: Failed to Delete Property.", error);
     return {
       errors: {},
       message: "Database Error: Failed to delete property.",
@@ -2168,7 +1928,6 @@ export async function createBanner(prevState: BannerState, formData: FormData) {
     );
 
     await connection.commit();
-    console.log("Banner created successfully");
   } catch (error) {
     await connection.rollback();
     console.error("Database Error: Failed to Create Banner.", error);
@@ -2231,7 +1990,6 @@ export async function updateBanner(id: string, formData: FormData) {
     );
 
     await connection.commit();
-    console.log("Banner updated successfully");
   } catch (error) {
     await connection.rollback();
     console.error("Database Error: Failed to Update Banner.", error);
@@ -2272,7 +2030,6 @@ export async function deleteBanner(id: string) {
     await connection.execute("DELETE FROM banners WHERE id = ?", [id]);
 
     await connection.commit();
-    console.log("Banner deleted successfully");
   } catch (error) {
     await connection.rollback();
     console.error("Database Error: Failed to Delete Banner.", error);
@@ -2335,7 +2092,6 @@ export async function createAudio(prevState: AudioState, formData: FormData) {
     );
 
     await connection.commit();
-    console.log("Audio created successfully");
   } catch (error) {
     await connection.rollback();
     console.error("Database Error: Failed to Create Audio.", error);
@@ -2382,7 +2138,6 @@ export async function updateAudio(
     );
 
     await connection.commit();
-    console.log("Audio updated successfully");
   } catch (error) {
     await connection.rollback();
     console.error("Database Error: Failed to Update Audio.", error);
@@ -2418,7 +2173,6 @@ export async function deleteAudio(id: string) {
     await connection.execute("DELETE FROM audios WHERE id = ?", [id]);
 
     await connection.commit();
-    console.log("Audio deleted successfully");
   } catch (error) {
     await connection.rollback();
     console.error("Database Error: Failed to Delete Audio.", error);
@@ -2546,18 +2300,11 @@ export async function createGraphic(
   prevState: GraphicState,
   formData: FormData
 ) {
-  console.log("=== CREATE GRAPHIC START ===");
-  console.log("Form data image_url:", formData.get("image_url"));
-
   const validatedFields = CreateGraphic.safeParse({
     image_url: formData.get("image_url"),
   });
 
   if (!validatedFields.success) {
-    console.log(
-      "Validation failed:",
-      validatedFields.error.flatten().fieldErrors
-    );
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Create Graphic.",
@@ -2565,7 +2312,6 @@ export async function createGraphic(
   }
 
   const { image_url } = validatedFields.data;
-  console.log("Validated image_url:", image_url);
 
   try {
     const connection = await getConnection();
@@ -2573,11 +2319,8 @@ export async function createGraphic(
       "INSERT INTO graphics (image_url) VALUES (?)",
       [image_url]
     );
-    console.log("Insert result:", result);
     await connection.end();
-    console.log("=== CREATE GRAPHIC SUCCESS ===");
   } catch (error) {
-    console.error("Database Error:", error);
     return {
       message: "Database Error: Failed to Create Graphic.",
     };
@@ -2592,19 +2335,11 @@ export async function updateGraphic(
   prevState: GraphicState,
   formData: FormData
 ) {
-  console.log("=== UPDATE GRAPHIC START ===");
-  console.log("ID:", id);
-  console.log("Form data image_url:", formData.get("image_url"));
-
   const validatedFields = CreateGraphic.safeParse({
     image_url: formData.get("image_url"),
   });
 
   if (!validatedFields.success) {
-    console.log(
-      "Validation failed:",
-      validatedFields.error.flatten().fieldErrors
-    );
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Missing Fields. Failed to Update Graphic.",
@@ -2612,7 +2347,6 @@ export async function updateGraphic(
   }
 
   const { image_url } = validatedFields.data;
-  console.log("Validated image_url:", image_url);
 
   try {
     const connection = await getConnection();
@@ -2620,11 +2354,8 @@ export async function updateGraphic(
       "UPDATE graphics SET image_url = ? WHERE id = ?",
       [image_url, id]
     );
-    console.log("Update result:", result);
     await connection.end();
-    console.log("=== UPDATE GRAPHIC SUCCESS ===");
   } catch (error) {
-    console.error("Database Error:", error);
     return {
       message: "Database Error: Failed to Update Graphic.",
     };
@@ -2901,7 +2632,7 @@ export async function createCountry(
   try {
     connection = await getConnection();
     await connection.execute(
-      "INSERT INTO countries (id, name_ku, name_ar, name_en, code) VALUES (UUID(), ?, ?, ?, ?)",
+      "INSERT INTO countries (name_ku, name_ar, name_en, code) VALUES (?, ?, ?, ?)",
       [name_ku, name_ar, name_en, code]
     );
   } catch (error) {
@@ -2978,7 +2709,7 @@ export async function createLocation(
   try {
     connection = await getConnection();
     await connection.execute(
-      "INSERT INTO locations (id, country_id, city_ku, city_ar, city_en) VALUES (UUID(), ?, ?, ?, ?)",
+      "INSERT INTO locations (country_id, city_ku, city_ar, city_en) VALUES (?, ?, ?, ?)",
       [country_id, city_ku, city_ar, city_en]
     );
   } catch (error) {

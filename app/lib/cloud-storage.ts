@@ -104,14 +104,6 @@ export async function uploadFileToCloud(
           "⚠️  Duplicate file detected, will try to find existing file"
         );
 
-        // For duplicate content errors, just continue - let the user know via UI
-        console.log(
-          "   This means the exact same file content already exists."
-        );
-        console.log(
-          "   Continuing with error to show user-friendly message..."
-        );
-
         // Don't try to search - the cloud storage is doing content-based detection,
         // and we use unique filenames, so search by filename won't work
       }

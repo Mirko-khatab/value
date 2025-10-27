@@ -1,4 +1,4 @@
-import { fetchProjectById, fetchProjectGalleries } from "@/app/lib/data";
+import { fetchProjectById, fetchProjectGalleriesData } from "@/app/lib/data";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/app/ui/dashboard/breadcrumbs";
 import { UpdateProject, DeleteProject } from "@/app/ui/project/buttons";
@@ -9,16 +9,16 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const [project, galleries] = await Promise.all([
+  const [projectResult, galleries] = await Promise.all([
     fetchProjectById(id),
-    fetchProjectGalleries(id),
+    fetchProjectGalleriesData(id),
   ]);
 
-  if (!project || project.length === 0) {
+  if (!projectResult || projectResult.length === 0) {
     notFound();
   }
 
-  const projectData = project[0];
+  const projectData = projectResult[0];
   const mainImage = galleries.length > 0 ? galleries[0] : null;
 
   return (

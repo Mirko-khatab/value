@@ -33,7 +33,6 @@ export default function Form({
 
   const handleImagesChange = useCallback(
     (images: { url: string; altText: string; orderIndex: number }[]) => {
-      console.log("Gallery images updated:", images.length, "images");
       setGalleryImages(images);
     },
     []
@@ -48,14 +47,6 @@ export default function Form({
       setIsSubmitting(true);
       setSuccess(false);
       setError(null);
-
-      console.log(
-        "Submitting product form:",
-        mode,
-        "mode with",
-        galleryImages.length,
-        "images"
-      );
 
       // Clear any existing gallery data from form (for edit mode)
       if (isEditMode) {
