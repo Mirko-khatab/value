@@ -15,12 +15,14 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://valuearch.com'),
+  metadataBase: new URL("https://valuearch.com"),
   title: {
-    default: "Value Architecture - Professional Architecture & Engineering Services in Sulaymaniyah",
-    template: "%s | Value Architecture"
+    default:
+      "Value Architecture - Professional Architecture & Engineering Services in Sulaymaniyah",
+    template: "%s | Value Architecture",
   },
-  description: "Value Architecture is a leading engineering and architecture firm in Sulaymaniyah, Kurdistan Region of Iraq. Registered with KEU #308. We provide innovative architectural design, engineering solutions, and construction services.",
+  description:
+    "Value Architecture is a leading engineering and architecture firm in Sulaymaniyah, Kurdistan Region of Iraq. Registered with KEU #308. We provide innovative architectural design, engineering solutions, and construction services.",
   keywords: [
     "architecture",
     "engineering",
@@ -34,7 +36,7 @@ export const metadata: Metadata = {
     "KEU",
     "building design",
     "interior design",
-    "project management"
+    "project management",
   ],
   authors: [{ name: "Value Architecture", url: "https://valuearch.com" }],
   creator: "Value Architecture",
@@ -50,8 +52,10 @@ export const metadata: Metadata = {
     alternateLocale: ["ar_AR", "ku_IQ"],
     url: "https://valuearch.com",
     siteName: "Value Architecture",
-    title: "Value Architecture - Professional Architecture & Engineering Services",
-    description: "Leading engineering and architecture firm in Sulaymaniyah, Kurdistan Region of Iraq. KEU Registered #308.",
+    title:
+      "Value Architecture - Professional Architecture & Engineering Services",
+    description:
+      "Leading engineering and architecture firm in Sulaymaniyah, Kurdistan Region of Iraq. KEU Registered #308.",
     images: [
       {
         url: "/opengraph-image.png",
@@ -63,8 +67,10 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Value Architecture - Professional Architecture & Engineering Services",
-    description: "Leading engineering and architecture firm in Sulaymaniyah, Kurdistan Region of Iraq.",
+    title:
+      "Value Architecture - Professional Architecture & Engineering Services",
+    description:
+      "Leading engineering and architecture firm in Sulaymaniyah, Kurdistan Region of Iraq.",
     images: ["/opengraph-image.png"],
   },
   robots: {
@@ -73,9 +79,9 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   verification: {
