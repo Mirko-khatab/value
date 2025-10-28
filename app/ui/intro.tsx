@@ -689,14 +689,58 @@ export default function Intro({ onComplete }: IntroProps) {
 
       {/* Show intro immediately */}
       <>
-        {/* Unmute hint - shows when audio is ready but blocked */}
+        {/* Beautiful music prompt - shows when audio is ready but blocked */}
         {showUnmuteHint && (
-          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[60] animate-bounce">
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-8 py-4 rounded-full shadow-2xl flex items-center gap-3 border-2 border-white/20">
-              <SpeakerWaveIcon className="w-6 h-6 animate-pulse" />
-              <span className="text-base font-semibold">
-                🎵 Click anywhere to start music
-              </span>
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm animate-fade-in">
+            <div 
+              onClick={handleIntroClick}
+              className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-8 sm:p-12 max-w-md mx-4 transform transition-all duration-300 hover:scale-105 cursor-pointer"
+              style={{
+                animation: 'slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
+              }}
+            >
+              {/* Decorative elements */}
+              <div className="absolute -top-12 left-1/2 transform -translate-x-1/2">
+                <div className="relative w-24 h-24 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-full animate-ping opacity-75"></div>
+                  <SpeakerWaveIcon className="w-12 h-12 text-white relative z-10" />
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="text-center mt-8">
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                  Experience with Sound
+                </h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
+                  Click anywhere to start the music and enjoy the full experience
+                </p>
+
+                {/* Animated music bars */}
+                <div className="flex justify-center items-end gap-1.5 mb-8 h-12">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-2 bg-gradient-to-t from-blue-500 to-purple-500 rounded-full"
+                      style={{
+                        animation: `musicBar ${0.6 + i * 0.1}s ease-in-out infinite alternate`,
+                        animationDelay: `${i * 0.1}s`,
+                        height: '40%'
+                      }}
+                    ></div>
+                  ))}
+                </div>
+
+                {/* Call to action button */}
+                <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105">
+                  <SpeakerWaveIcon className="w-5 h-5" />
+                  <span>Start Music</span>
+                </div>
+              </div>
+
+              {/* Decorative corner elements */}
+              <div className="absolute top-3 right-3 w-2 h-2 bg-purple-500 rounded-full animate-ping"></div>
+              <div className="absolute bottom-3 left-3 w-2 h-2 bg-blue-500 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
             </div>
           </div>
         )}
@@ -750,8 +794,7 @@ export default function Intro({ onComplete }: IntroProps) {
                       alt={`Sketch ${index + 1}`}
                       fill
                       className="object-contain"
-                      priority
-                      loading="eager"
+                      priority={index < 4}
                     />
                   </div>
                 </div>
@@ -771,7 +814,6 @@ export default function Intro({ onComplete }: IntroProps) {
                       fill
                       className="object-contain drop-shadow-2xl"
                       priority
-                      loading="eager"
                     />
                   </div>
                 </div>
@@ -809,7 +851,6 @@ export default function Intro({ onComplete }: IntroProps) {
                       fill
                       className="object-contain drop-shadow-2xl"
                       priority
-                      loading="eager"
                     />
                   </div>
                 </div>
@@ -856,8 +897,6 @@ export default function Intro({ onComplete }: IntroProps) {
                     alt=""
                     fill
                     className="object-contain opacity-50 blur-[1px]"
-                    priority
-                    loading="eager"
                   />
                 </div>
               ))}
@@ -959,6 +998,26 @@ export default function Intro({ onComplete }: IntroProps) {
 
             .trigger-audio-animation {
               animation: audioTrigger 0.1s ease-in-out;
+            }
+
+            @keyframes musicBar {
+              0% {
+                height: 20%;
+              }
+              100% {
+                height: 100%;
+              }
+            }
+
+            @keyframes slideUp {
+              0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.9);
+              }
+              100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+              }
             }
           `}</style>
         </div>
