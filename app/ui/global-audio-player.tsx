@@ -90,16 +90,23 @@ export default function GlobalAudioPlayer({
 
     const fetchAudio = async () => {
       try {
+        let audioUrl = "/music/intro.mp3"; // Default fallback to static file
+
+        // Try to fetch from API first
         const response = await fetch(`/api/audios?use_for=landing`);
         if (response.ok) {
           const data = await response.json();
           if (data && data.length > 0 && data[0].audio_url) {
-            setAudioUrl(data[0].audio_url);
+            audioUrl = data[0].audio_url;
           }
         }
+
+        // Always set audio URL (either from API or fallback)
+        setAudioUrl(audioUrl);
       } catch (error) {
-        console.error("Failed to fetch audio:", error);
-        setHasError(true);
+        console.error("Failed to fetch audio, using fallback:", error);
+        // Use fallback on error
+        setAudioUrl("/music/intro.mp3");
       }
     };
 
@@ -125,7 +132,6 @@ export default function GlobalAudioPlayer({
         await audioRef.current.play();
         setIsPlaying(true);
       } catch (error) {
-
         // Try muted autoplay
         try {
           audioRef.current.muted = true;

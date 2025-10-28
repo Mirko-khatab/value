@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audio Player Helper</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        width: 1px;
+        height: 1px;
+      }
+    </style>
+  </head>
+  <body>
+    <audio id="hiddenAudio" preload="auto" loop style="display: none"></audio>
+    <script>
+      // This iframe helps bypass autoplay restrictions
+      // by creating an audio context when parent requests it
+      const audio = document.getElementById("hiddenAudio");
+
+      window.addEventListener("message", function (event) {
+        if (event.data.action === "play") {
+          if (event.data.src) {
+            audio.src = event.data.src;
+          }
+          audio.play().catch((err) => {
+            console.log("Iframe audio play blocked:", err);
+          });
+        } else if (event.data.action === "pause") {
+          audio.pause();
+        } else if (event.data.action === "setVolume") {
+          audio.volume = event.data.volume || 0.7;
+        }
+      });
+
+      // Notify parent that iframe is ready
+      if (window.parent !== window) {
+        window.parent.postMessage({ action: "iframeReady" }, "*");
+      }
+    </script>
+  </body>
+</html>

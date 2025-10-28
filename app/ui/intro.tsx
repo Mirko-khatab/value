@@ -93,7 +93,8 @@ export default function Intro({ onComplete }: IntroProps) {
           if (event.data.type === "AUDIO_STARTED") {
             window.removeEventListener("message", messageHandler);
             resolve(true);
-          } else if (event.data.type === "AUDIO_BLOCKED") { // eslint-disable-line
+          } else if (event.data.type === "AUDIO_BLOCKED") {
+            // eslint-disable-line
             window.removeEventListener("message", messageHandler);
             resolve(false);
           }
@@ -316,195 +317,179 @@ export default function Intro({ onComplete }: IntroProps) {
 
     const fetchAndPlayAudio = async () => {
       try {
-        const response = await fetch("/api/audios?use_for=intro");
+        let audioUrl = "/music/intro.mp3"; // Default fallback to static file
 
-        if (response.ok) {
-          const data = await response.json();
+        // Try to fetch from API first
+        try {
+          const response = await fetch("/api/audios?use_for=intro");
+          if (response.ok) {
+            const data = await response.json();
+            if (data && data.length > 0 && data[0].audio_url) {
+              audioUrl = data[0].audio_url;
+            }
+          }
+        } catch (apiError) {
+          console.log("Using fallback audio file");
+        }
 
-          if (data && data.length > 0 && data[0].audio_url) {
-            const audioUrl = data[0].audio_url;
-            setAudioUrl(audioUrl);
+        // Always set audio URL (either from API or fallback)
+        setAudioUrl(audioUrl);
 
+        if (audioRef.current) {
+          audioRef.current.src = audioUrl;
+          audioRef.current.loop = true;
+          audioRef.current.preload = "auto";
+
+          // ✅ Start muted with volume 0 (browsers allow this)
+          audioRef.current.muted = true;
+          audioRef.current.volume = 0;
+
+          const tryAutoplay = async () => {
+            // Strategy 1: Try muted autoplay first
+            try {
+              await audioRef.current!.play();
+
+              // Now try to unmute automatically after a short delay
+              setTimeout(async () => {
+                if (audioRef.current) {
+                  audioRef.current.muted = false;
+                  audioRef.current.volume = 0.7;
+                  setIsMuted(false);
+                }
+              }, 1000);
+            } catch (error) {
+              // Strategy 2: Try with very low volume instead of muted
+              try {
+                audioRef.current!.muted = false;
+                audioRef.current!.volume = 0.01; // Very low but not muted
+                await audioRef.current!.play();
+
+                // Gradually increase volume
+                const increaseVolume = () => {
+                  if (audioRef.current && audioRef.current.volume < 0.7) {
+                    audioRef.current.volume = Math.min(
+                      audioRef.current.volume + 0.05,
+                      0.7
+                    );
+                    setTimeout(increaseVolume, 200);
+                  }
+                };
+                setTimeout(increaseVolume, 500);
+
+                setIsMuted(false);
+              } catch (lowVolumeError) {
+                setShowUnmuteHint(true);
+              }
+            }
+          };
+
+          // Try autoplay when audio is ready
+          audioRef.current.addEventListener("canplay", tryAutoplay, {
+            once: true,
+          });
+          audioRef.current.load();
+
+          // Additional automatic attempts
+          setTimeout(() => {
             if (audioRef.current) {
-              audioRef.current.src = audioUrl;
-              audioRef.current.loop = true;
-              audioRef.current.preload = "auto";
-
-              // ✅ Start muted with volume 0 (browsers allow this)
-              audioRef.current.muted = true;
-              audioRef.current.volume = 0;
-
-              const tryAutoplay = async () => {
-                // Strategy 1: Try muted autoplay first
-                try {
-                  await audioRef.current!.play();
-
-                  // Now try to unmute automatically after a short delay
-                  setTimeout(async () => {
-                    if (audioRef.current) {
-                      audioRef.current.muted = false;
-                      audioRef.current.volume = 0.7;
-                      setIsMuted(false);
-                    }
-                  }, 1000);
-                } catch (error) {
-                  // Strategy 2: Try with very low volume instead of muted
-                  try {
-                    audioRef.current!.muted = false;
-                    audioRef.current!.volume = 0.01; // Very low but not muted
-                    await audioRef.current!.play();
-
-                    // Gradually increase volume
-                    const increaseVolume = () => {
-                      if (audioRef.current && audioRef.current.volume < 0.7) {
-                        audioRef.current.volume = Math.min(
-                          audioRef.current.volume + 0.05,
-                          0.7
-                        );
-                        setTimeout(increaseVolume, 200);
-                      }
-                    };
-                    setTimeout(increaseVolume, 500);
-
-                    setIsMuted(false);
-                  } catch (lowVolumeError) {
-                    setShowUnmuteHint(true);
-                  }
-                }
-              };
-
-              // Try autoplay when audio is ready
-              audioRef.current.addEventListener("canplay", tryAutoplay, {
-                once: true,
-              });
-              audioRef.current.load();
-
-              // Additional automatic attempts
-              setTimeout(() => {
-                if (audioRef.current) {
-                  // Try direct play with sound
-                  audioRef.current.muted = false;
-                  audioRef.current.volume = 0.7;
-                  audioRef.current
-                    .play()
-                    .then(() => {
-                      setIsMuted(false);
-                      setShowUnmuteHint(false);
-                    })
-                    .catch(() => {});
-                }
-              }, 100);
-
-              // Try again after page fully loads
-              setTimeout(() => {
-                if (audioRef.current && audioRef.current.paused) {
-                  audioRef.current.muted = false;
-                  audioRef.current.volume = 0.7;
-                  audioRef.current
-                    .play()
-                    .then(() => {
-                      setIsMuted(false);
-                      setShowUnmuteHint(false);
-                    })
-                    .catch(() => {});
-                }
-              }, 2000);
-
-              // Try programmatic focus trick
-              setTimeout(() => {
-                // Create invisible element and focus it
-                const hiddenInput = document.createElement("input");
-                hiddenInput.style.position = "absolute";
-                hiddenInput.style.left = "-9999px";
-                hiddenInput.style.opacity = "0";
-                hiddenInput.style.pointerEvents = "none";
-
-                document.body.appendChild(hiddenInput);
-                hiddenInput.focus();
-
-                // Try to play after focus
-                setTimeout(() => {
-                  if (audioRef.current && audioRef.current.paused) {
-                    audioRef.current.muted = false;
-                    audioRef.current.volume = 0.7;
-                    audioRef.current
-                      .play()
-                      .then(() => {
-                        setIsMuted(false);
-                        setShowUnmuteHint(false);
-                      })
-                      .catch(() => {});
-                  }
-
-                  // Clean up
-                  document.body.removeChild(hiddenInput);
-                }, 100);
-              }, 3000);
-
-              // ✅ Clean user interaction handler
-              const unmuteAndPlay = async () => {
-                if (audioRef.current) {
-                  // Unmute and set volume with smooth fade-in
-                  audioRef.current.muted = false;
-                  audioRef.current.volume = 0;
+              // Try direct play with sound
+              audioRef.current.muted = false;
+              audioRef.current.volume = 0.7;
+              audioRef.current
+                .play()
+                .then(() => {
                   setIsMuted(false);
                   setShowUnmuteHint(false);
-
-                  try {
-                    await audioRef.current.play();
-
-                    // Smooth volume fade-in
-                    const fadeIn = () => {
-                      if (audioRef.current && audioRef.current.volume < 0.7) {
-                        audioRef.current.volume = Math.min(
-                          audioRef.current.volume + 0.05,
-                          0.7
-                        );
-                        setTimeout(fadeIn, 50);
-                      }
-                    };
-                    fadeIn();
-                  } catch (error) {}
-                }
-              };
-
-              // Listen for user interactions
-              document.addEventListener("click", unmuteAndPlay, { once: true });
-              document.addEventListener("keydown", unmuteAndPlay, {
-                once: true,
-              });
-              document.addEventListener("touchstart", unmuteAndPlay, {
-                once: true,
-              });
+                })
+                .catch(() => {});
             }
-          } else {
-            // Try fallback local file
-            tryFallbackAudio();
-          }
-        } else {
-          tryFallbackAudio();
+          }, 100);
+
+          // Try again after page fully loads
+          setTimeout(() => {
+            if (audioRef.current && audioRef.current.paused) {
+              audioRef.current.muted = false;
+              audioRef.current.volume = 0.7;
+              audioRef.current
+                .play()
+                .then(() => {
+                  setIsMuted(false);
+                  setShowUnmuteHint(false);
+                })
+                .catch(() => {});
+            }
+          }, 2000);
+
+          // Try programmatic focus trick
+          setTimeout(() => {
+            // Create invisible element and focus it
+            const hiddenInput = document.createElement("input");
+            hiddenInput.style.position = "absolute";
+            hiddenInput.style.left = "-9999px";
+            hiddenInput.style.opacity = "0";
+            hiddenInput.style.pointerEvents = "none";
+
+            document.body.appendChild(hiddenInput);
+            hiddenInput.focus();
+
+            // Try to play after focus
+            setTimeout(() => {
+              if (audioRef.current && audioRef.current.paused) {
+                audioRef.current.muted = false;
+                audioRef.current.volume = 0.7;
+                audioRef.current
+                  .play()
+                  .then(() => {
+                    setIsMuted(false);
+                    setShowUnmuteHint(false);
+                  })
+                  .catch(() => {});
+              }
+
+              // Clean up
+              document.body.removeChild(hiddenInput);
+            }, 100);
+          }, 3000);
+
+          // ✅ Clean user interaction handler
+          const unmuteAndPlay = async () => {
+            if (audioRef.current) {
+              // Unmute and set volume with smooth fade-in
+              audioRef.current.muted = false;
+              audioRef.current.volume = 0;
+              setIsMuted(false);
+              setShowUnmuteHint(false);
+
+              try {
+                await audioRef.current.play();
+
+                // Smooth volume fade-in
+                const fadeIn = () => {
+                  if (audioRef.current && audioRef.current.volume < 0.7) {
+                    audioRef.current.volume = Math.min(
+                      audioRef.current.volume + 0.7,
+                      0.7
+                    );
+                    setTimeout(fadeIn, 50);
+                  }
+                };
+                fadeIn();
+              } catch (error) {}
+            }
+          };
+
+          // Listen for user interactions
+          document.addEventListener("click", unmuteAndPlay, { once: true });
+          document.addEventListener("keydown", unmuteAndPlay, {
+            once: true,
+          });
+          document.addEventListener("touchstart", unmuteAndPlay, {
+            once: true,
+          });
         }
       } catch (error) {
-        tryFallbackAudio();
-      }
-    };
-
-    const tryFallbackAudio = () => {
-      const fallbackUrl = "/audio/intro-music.mp3";
-      setAudioUrl(fallbackUrl);
-
-      if (audioRef.current) {
-        audioRef.current.src = fallbackUrl;
-        audioRef.current.loop = true;
-        audioRef.current.preload = "auto";
-        audioRef.current.volume = 0.7;
-        audioRef.current.load();
-
-        setTimeout(() => {
-          if (audioRef.current) {
-            audioRef.current.play().catch((error) => {});
-          }
-        }, 500);
+        console.error("Failed to fetch or play audio:", error);
+        // Fallback is already handled at the top of fetchAndPlayAudio
       }
     };
 
