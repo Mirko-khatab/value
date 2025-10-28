@@ -105,28 +105,28 @@ export const Fotter = () => {
     }
   };
 
-  // Format social media URL (convert phone numbers to WhatsApp links)
+  // Format social media URL based on type
   const formatSocialUrl = (url: string, type: SocialMediaType): string => {
-    // For Phone and WhatsApp types, convert to WhatsApp link
-    if (type === SocialMediaType.Phone || type === SocialMediaType.WhatsApp) {
-      // Remove all non-digit characters except +
-      let phoneNumber = url.replace(/[^\d+]/g, '');
-      
-      // If it starts with +, remove it
-      if (phoneNumber.startsWith('+')) {
-        phoneNumber = phoneNumber.substring(1);
-      }
-      
-      // If it's a tel: link, extract the number
-      if (url.startsWith('tel:')) {
-        phoneNumber = url.replace('tel:', '').replace(/[^\d]/g, '');
-      }
-      
+    // For Phone type, convert to WhatsApp link
+    if (type === SocialMediaType.Phone) {
+      // Extract phone number (remove tel:, spaces, dashes, parentheses)
+      const phoneNumber = url.replace(/[tel:\s\-\(\)]/g, "");
       // Return WhatsApp link
       return `https://wa.me/${phoneNumber}`;
     }
     
-    // For other types, return the URL as-is
+    // For WhatsApp type, ensure it's properly formatted
+    if (type === SocialMediaType.WhatsApp) {
+      // If already a wa.me link, return as is
+      if (url.includes("wa.me") || url.includes("whatsapp.com")) {
+        return url;
+      }
+      // Otherwise, extract phone number and format
+      const phoneNumber = url.replace(/[tel:\s\-\(\)]/g, "");
+      return `https://wa.me/${phoneNumber}`;
+    }
+    
+    // For other types, return URL as is
     return url;
   };
 
