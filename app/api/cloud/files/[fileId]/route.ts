@@ -54,6 +54,15 @@ export async function GET(
     // Get the file data
     const fileBuffer = await response.arrayBuffer();
 
+    // Check if buffer is valid (prevent Next.js Image Optimization crash)
+    if (!fileBuffer || fileBuffer.byteLength === 0) {
+      console.warn(`⚠️  Empty or null file buffer for ${fileId}`);
+      return NextResponse.json(
+        { error: "File is empty or corrupted" },
+        { status: 404 }
+      );
+    }
+
     // Forward headers
     const contentType =
       response.headers.get("content-type") || "application/octet-stream";
