@@ -17,6 +17,11 @@ import Intro from "@/app/ui/intro";
 import QuoteGallery from "./ui/home/quote-gallery";
 import { QouteData } from "./ui/home/qoute-data";
 import VideoLoading from "@/app/ui/video-loading";
+import { 
+  getOrganizationStructuredData, 
+  getWebsiteStructuredData, 
+  getProfessionalServiceStructuredData 
+} from "./page-metadata";
 
 export default function Page() {
   const [showIntro, setShowIntro] = useState(false);
@@ -67,6 +72,26 @@ export default function Page() {
 
   return (
     <>
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(getOrganizationStructuredData()),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(getWebsiteStructuredData()),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(getProfessionalServiceStructuredData()),
+        }}
+      />
+
       {/* Show loading video */}
       {showLoading && (
         <div className="fixed inset-0 z-[60] bg-black">
