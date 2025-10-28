@@ -5,6 +5,19 @@ import { LoadingProvider } from "@/app/lib/loading-context";
 import { LanguageProvider } from "@/app/lib/language-context";
 import PageLoadAnimation from "@/app/ui/page-load-animation";
 import GlobalAudioPlayer from "@/app/ui/global-audio-player";
+import type { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+};
+
+export const metadata: Metadata = {
+  title: "Value Architecture",
+  description: "Value Architecture - Professional Architecture Services",
+};
 
 export default function RootLayout({
   children,

@@ -47,9 +47,11 @@ export default function GlobalAudioPlayer({
         // Intro will be shown, so don't show global music
         return false;
       }
+      // If user has seen intro and is on homepage, show music
+      return true;
     }
 
-    // Include all other pages
+    // Include all other pages (projects, products, etc.)
     return true;
   };
 
@@ -120,6 +122,7 @@ export default function GlobalAudioPlayer({
     audioRef.current.src = audioUrl;
     audioRef.current.loop = true; // Enable looping
     audioRef.current.preload = "auto"; // Preload the audio file
+    audioRef.current.volume = 0.7; // Set volume
 
     // Load the audio immediately
     audioRef.current.load();
@@ -129,10 +132,13 @@ export default function GlobalAudioPlayer({
       if (!audioRef.current) return;
 
       try {
+        // First try unmuted play
+        audioRef.current.muted = false;
         await audioRef.current.play();
         setIsPlaying(true);
+        setIsMuted(false);
       } catch (error) {
-        // Try muted autoplay
+        // If unmuted fails, try muted autoplay
         try {
           audioRef.current.muted = true;
           setIsMuted(true);
@@ -153,6 +159,13 @@ export default function GlobalAudioPlayer({
       once: true,
     });
 
+    // Try again after a short delay
+    const retryTimeout = setTimeout(() => {
+      if (audioRef.current && audioRef.current.paused) {
+        attemptPlay();
+      }
+    }, 1000);
+
     return () => {
       if (audioRef.current) {
         audioRef.current.removeEventListener(
@@ -160,6 +173,7 @@ export default function GlobalAudioPlayer({
           handleCanPlayThrough
         );
       }
+      clearTimeout(retryTimeout);
     };
   }, [showPlayer, audioUrl]);
 
@@ -189,34 +203,34 @@ export default function GlobalAudioPlayer({
   }
 
   return (
-    <div className={`fixed bottom-6 right-6 z-[60] flex gap-2 ${className}`}>
+    <div className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[60] flex gap-2 ${className}`}>
       <audio ref={audioRef} preload="auto" playsInline />
 
       {/* Mute/Unmute Button */}
       <button
         onClick={toggleMute}
-        className="p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-110 group"
+        className="p-2 sm:p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-110 group active:scale-95"
         aria-label={isMuted ? "Unmute audio" : "Mute audio"}
         title={isMuted ? "Unmute audio" : "Mute audio"}
       >
         {isMuted ? (
-          <SpeakerXMarkIcon className="w-6 h-6 text-red-500 group-hover:text-red-600" />
+          <SpeakerXMarkIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 group-hover:text-red-600" />
         ) : (
-          <SpeakerWaveIcon className="w-6 h-6 text-blue-500 group-hover:text-blue-600" />
+          <SpeakerWaveIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500 group-hover:text-blue-600" />
         )}
       </button>
 
       {/* Play/Stop Button */}
       <button
         onClick={togglePlay}
-        className="p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-110 group"
+        className="p-2 sm:p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-110 group active:scale-95"
         aria-label={isPlaying ? "Stop audio" : "Play audio"}
         title={isPlaying ? "Stop audio" : "Play audio"}
       >
         {isPlaying ? (
-          <StopIcon className="w-6 h-6 text-orange-500 group-hover:text-orange-600" />
+          <StopIcon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 group-hover:text-orange-600" />
         ) : (
-          <PlayIcon className="w-6 h-6 text-green-500 group-hover:text-green-600" />
+          <PlayIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 group-hover:text-green-600" />
         )}
       </button>
     </div>
