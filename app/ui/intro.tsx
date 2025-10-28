@@ -750,7 +750,8 @@ export default function Intro({ onComplete }: IntroProps) {
                       alt={`Sketch ${index + 1}`}
                       fill
                       className="object-contain"
-                      priority={index < 4}
+                      priority
+                      loading="eager"
                     />
                   </div>
                 </div>
@@ -770,6 +771,7 @@ export default function Intro({ onComplete }: IntroProps) {
                       fill
                       className="object-contain drop-shadow-2xl"
                       priority
+                      loading="eager"
                     />
                   </div>
                 </div>
@@ -807,6 +809,7 @@ export default function Intro({ onComplete }: IntroProps) {
                       fill
                       className="object-contain drop-shadow-2xl"
                       priority
+                      loading="eager"
                     />
                   </div>
                 </div>
@@ -853,6 +856,8 @@ export default function Intro({ onComplete }: IntroProps) {
                     alt=""
                     fill
                     className="object-contain opacity-50 blur-[1px]"
+                    priority
+                    loading="eager"
                   />
                 </div>
               ))}
