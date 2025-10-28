@@ -38,8 +38,8 @@ export default function Intro({ onComplete }: IntroProps) {
   ];
 
   const totalSketches = 12;
-  const sketchDuration = 600; // ms per sketch (slower to see each sketch better)
-  const sloganDuration = 2200; // ms to show each language (slower to read comfortably)
+  const sketchDuration = 800; // ms per sketch (slower for better viewing)
+  const sloganDuration = 3000; // ms to show each language (slower to read comfortably)
   const totalDuration = totalSketches * sketchDuration; // Total time for all sketches
 
   // Fetch and play audio immediately and more aggressively
@@ -617,7 +617,16 @@ export default function Intro({ onComplete }: IntroProps) {
   useEffect(() => {
     if (fadeOut) {
       const timer = setTimeout(() => {
-        if (onComplete) onComplete();
+        // Scroll to top before completing intro (especially important on mobile)
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+        
+        // Small delay to ensure scroll happens before transition
+        setTimeout(() => {
+          if (onComplete) onComplete();
+        }, 300);
       }, 1000);
       return () => clearTimeout(timer);
     }
