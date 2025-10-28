@@ -93,10 +93,10 @@ export const Slide: React.FC<SlideProps> = ({
     checkMobile();
 
     // Add event listener
-    window.addEventListener('resize', checkMobile);
+    window.addEventListener("resize", checkMobile);
 
     // Cleanup
-    return () => window.removeEventListener('resize', checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Get max items based on screen size
