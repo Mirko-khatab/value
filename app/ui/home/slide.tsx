@@ -72,6 +72,7 @@ export const Slide: React.FC<SlideProps> = ({
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Helper function to get localized field
   const getLocalizedField = (item: any, fieldName: string): string => {
@@ -81,6 +82,25 @@ export const Slide: React.FC<SlideProps> = ({
 
   // Check if language is RTL
   const isRTL = language === "ar" || language === "ku";
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    // Check on mount
+    checkMobile();
+
+    // Add event listener
+    window.addEventListener('resize', checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Get max items based on screen size
+  const maxItems = isMobile ? 2 : 6;
 
   // Fetch latest content from all sections
   useEffect(() => {
@@ -101,22 +121,22 @@ export const Slide: React.FC<SlideProps> = ({
 
         if (projectsResponse.ok) {
           const projectsData = await projectsResponse.json();
-          setProjects(projectsData.slice(0, 6));
+          setProjects(projectsData);
         }
 
         if (productsResponse.ok) {
           const productsData = await productsResponse.json();
-          setProducts(productsData.slice(0, 6));
+          setProducts(productsData);
         }
 
         if (graphicsResponse.ok) {
           const graphicsData = await graphicsResponse.json();
-          setGraphics(graphicsData.slice(0, 6));
+          setGraphics(graphicsData);
         }
 
         if (eventsResponse.ok) {
           const eventsData = await eventsResponse.json();
-          setEvents(eventsData.slice(0, 6));
+          setEvents(eventsData);
         }
       } catch (error) {
         console.error("Error fetching latest content:", error);
@@ -331,7 +351,7 @@ export const Slide: React.FC<SlideProps> = ({
             <div className={`${isRTL ? "lg:order-1" : "lg:order-2"}`}>
               {currentSlide.items.length > 0 && (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {currentSlide.items.slice(0, 6).map((item, index) => (
+                  {currentSlide.items.slice(0, maxItems).map((item, index) => (
                     <Link
                       key={item.id}
                       href={

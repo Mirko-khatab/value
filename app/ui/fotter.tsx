@@ -13,7 +13,7 @@ import {
 } from "@/app/lib/definitions";
 
 export const Fotter = () => {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const [footerProperties, setFooterProperties] = useState<FooterProperty[]>(
     []
   );
@@ -159,9 +159,11 @@ export const Fotter = () => {
             </div>
             <div>
               <h3 className="text-sm text-black dark:text-gray-400 sm:text-left transition-colors duration-200">
-                {aboutContent
-                  ? getLocalizedContent(aboutContent, "content")
-                  : "Established in 2020, our engineering office in Sulaymaniyah, Kurdistan Region of Iraq, is registered with the Kurdistan Engineering Union (KEU) under number 308. Our firm specializes in designing, implementing, and supervising a wide range of engineering projects."}
+                   {t("about_description", {
+                      en: "Established in 2020, our engineering office in Sulaymaniyah, Kurdistan Region of Iraq, is registered with the Kurdistan Engineering Union (KEU) under number 308. We are dedicated to providing innovative engineering solutions and exceptional service to our clients across the region.",
+                      ar: "تأسس مكتبنا الهندسي في السليمانية، إقليم كردستان العراق عام 2020، وهو مسجل لدى نقابة المهندسين الكردستانية (KEU) تحت الرقم 308. نحن ملتزمون بتقديم حلول هندسية مبتكرة وخدمة استثنائية لعملائنا في جميع أنحاء المنطقة.",
+                      ku: "ئۆفیسی ئەندازیاریمان لە ساڵی 2020 لە سلێمانی، هەرێمی کوردستانی عێراق دامەزراوە، لە ژێر ژمارە 308 لە یەکێتی ئەندازیارانی کوردستان (KEU) تۆمارکراوە. ئێمە پابەندین بە پێشکەشکردنی چارەسەرە ئەندازیارییە نوێکان و خزمەتگوزاری تایبەت بۆ کڕیارەکانمان لە سەرانسەری هەرێمدا.",
+                    })}
               </h3>
             </div>
           </div>
