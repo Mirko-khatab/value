@@ -17,12 +17,14 @@ export default function GlobalAudioPlayer({
   className = "",
 }: GlobalAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(true); // Default to playing
   const [isMuted, setIsMuted] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [hasError, setHasError] = useState(false);
   const [showPlayer, setShowPlayer] = useState(false);
   const pathname = usePathname();
+  const playAttemptCountRef = useRef(0);
+  const maxPlayAttempts = 10;
 
   // Check if current page should have music
   const shouldShowMusic = () => {
@@ -115,7 +117,7 @@ export default function GlobalAudioPlayer({
     fetchAudio();
   }, [showPlayer]);
 
-  // Initialize audio element and auto-play
+  // Initialize audio element and AGGRESSIVELY auto-play
   useEffect(() => {
     if (!showPlayer || !audioUrl || !audioRef.current) return;
 
@@ -127,9 +129,14 @@ export default function GlobalAudioPlayer({
     // Load the audio immediately
     audioRef.current.load();
 
-    // Try to auto-play as soon as possible
+    // Reset play attempt counter
+    playAttemptCountRef.current = 0;
+
+    // Aggressive auto-play function with multiple strategies
     const attemptPlay = async () => {
       if (!audioRef.current) return;
+
+      playAttemptCountRef.current++;
 
       try {
         // First try unmuted play
@@ -137,6 +144,7 @@ export default function GlobalAudioPlayer({
         await audioRef.current.play();
         setIsPlaying(true);
         setIsMuted(false);
+        console.log("✅ Music autoplaying (unmuted)");
       } catch (error) {
         // If unmuted fails, try muted autoplay
         try {
@@ -144,8 +152,15 @@ export default function GlobalAudioPlayer({
           setIsMuted(true);
           await audioRef.current.play();
           setIsPlaying(true);
+          console.log("✅ Music autoplaying (muted)");
         } catch (mutedError) {
+          console.log("⚠️ Autoplay failed, will retry...");
           setIsPlaying(false);
+
+          // Keep retrying if we haven't hit max attempts
+          if (playAttemptCountRef.current < maxPlayAttempts) {
+            setTimeout(attemptPlay, 500);
+          }
         }
       }
     };
@@ -154,38 +169,70 @@ export default function GlobalAudioPlayer({
     attemptPlay();
 
     // Also try when the audio can play through (is loaded enough)
-    const handleCanPlayThrough = () => attemptPlay();
-    audioRef.current.addEventListener("canplaythrough", handleCanPlayThrough, {
-      once: true,
-    });
+    const handleCanPlayThrough = () => {
+      console.log("🎵 Audio can play through, attempting play...");
+      attemptPlay();
+    };
+    audioRef.current.addEventListener("canplaythrough", handleCanPlayThrough);
 
-    // Try again after a short delay
-    const retryTimeout = setTimeout(() => {
-      if (audioRef.current && audioRef.current.paused) {
+    // Try again when page becomes visible
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && audioRef.current?.paused) {
+        console.log("👁️ Page visible, attempting play...");
         attemptPlay();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Try on any user interaction (click, touch, keypress)
+    const handleUserInteraction = () => {
+      if (audioRef.current?.paused) {
+        console.log("👆 User interaction detected, attempting play...");
+        attemptPlay();
+      }
+    };
+    document.addEventListener("click", handleUserInteraction, { once: true });
+    document.addEventListener("touchstart", handleUserInteraction, { once: true });
+    document.addEventListener("keydown", handleUserInteraction, { once: true });
+
+    // Aggressive retry loop
+    const retryInterval = setInterval(() => {
+      if (audioRef.current && audioRef.current.paused && playAttemptCountRef.current < maxPlayAttempts) {
+        console.log(`🔄 Retry attempt ${playAttemptCountRef.current}/${maxPlayAttempts}...`);
+        attemptPlay();
+      } else if (playAttemptCountRef.current >= maxPlayAttempts) {
+        clearInterval(retryInterval);
       }
     }, 1000);
 
     return () => {
       if (audioRef.current) {
-        audioRef.current.removeEventListener(
-          "canplaythrough",
-          handleCanPlayThrough
-        );
+        audioRef.current.removeEventListener("canplaythrough", handleCanPlayThrough);
       }
-      clearTimeout(retryTimeout);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      document.removeEventListener("click", handleUserInteraction);
+      document.removeEventListener("touchstart", handleUserInteraction);
+      document.removeEventListener("keydown", handleUserInteraction);
+      clearInterval(retryInterval);
     };
   }, [showPlayer, audioUrl]);
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
-        audioRef.current.currentTime = 0; // Stop and reset to beginning
         setIsPlaying(false);
+        console.log("⏸️ Music paused by user");
       } else {
-        audioRef.current.play();
-        setIsPlaying(true);
+        try {
+          audioRef.current.muted = false;
+          await audioRef.current.play();
+          setIsPlaying(true);
+          setIsMuted(false);
+          console.log("▶️ Music resumed by user");
+        } catch (error) {
+          console.error("Error playing audio:", error);
+        }
       }
     }
   };
