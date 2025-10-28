@@ -178,7 +178,7 @@ export default function AboutPage() {
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {stats.slice(0, isMobile ? 2 : 4).map((stat, index) => (
+                  {stats.slice(0, 4).map((stat, index) => (
                     <div
                       key={stat.id}
                       className={`${
