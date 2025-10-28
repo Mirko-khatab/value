@@ -13,9 +13,26 @@ export default function AboutPage() {
   const [stats, setStats] = useState<any[]>([]);
   const [teams, setTeams] = useState<TeamField[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Check if language is RTL
   const isRTL = language === "ar" || language === "ku";
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    // Check on mount
+    checkMobile();
+
+    // Add event listener
+    window.addEventListener("resize", checkMobile);
+
+    // Cleanup
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Helper function to get localized field
   const getLocalizedField = (item: any, fieldName: string): string => {
@@ -161,7 +178,7 @@ export default function AboutPage() {
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {stats.slice(0, 4).map((stat, index) => (
+                  {stats.slice(0, isMobile ? 2 : 4).map((stat, index) => (
                     <div
                       key={stat.id}
                       className={`${
