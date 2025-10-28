@@ -64,6 +64,8 @@ export enum SocialMediaType {
   Instagram = 0,
   Facebook = 1,
   X = 2,
+  Phone = 3,
+  WhatsApp = 4,
 }
 
 export type SocialMedia = {
