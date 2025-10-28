@@ -358,7 +358,7 @@ export default function Intro({ onComplete }: IntroProps) {
               }
             } catch (error) {
               console.log("⚠️ Unmuted autoplay blocked, trying fallbacks...");
-              
+
               // Strategy 2: Try with very low volume
               try {
                 if (audioRef.current) {
@@ -390,7 +390,7 @@ export default function Intro({ onComplete }: IntroProps) {
                     audioRef.current.muted = true;
                     audioRef.current.volume = 0.7;
                     await audioRef.current.play();
-                    
+
                     // Try to unmute after a moment
                     setTimeout(() => {
                       if (audioRef.current) {
@@ -521,7 +521,9 @@ export default function Intro({ onComplete }: IntroProps) {
                   console.log("✅ Music started on retry #5!");
                 })
                 .catch(() => {
-                  console.log("⚠️ All automatic retries exhausted. User interaction may be required.");
+                  console.log(
+                    "⚠️ All automatic retries exhausted. User interaction may be required."
+                  );
                   setShowUnmuteHint(true);
                 });
             }
