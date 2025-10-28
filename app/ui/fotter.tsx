@@ -105,6 +105,31 @@ export const Fotter = () => {
     }
   };
 
+  // Format social media URL (convert phone numbers to WhatsApp links)
+  const formatSocialUrl = (url: string, type: SocialMediaType): string => {
+    // For Phone and WhatsApp types, convert to WhatsApp link
+    if (type === SocialMediaType.Phone || type === SocialMediaType.WhatsApp) {
+      // Remove all non-digit characters except +
+      let phoneNumber = url.replace(/[^\d+]/g, '');
+      
+      // If it starts with +, remove it
+      if (phoneNumber.startsWith('+')) {
+        phoneNumber = phoneNumber.substring(1);
+      }
+      
+      // If it's a tel: link, extract the number
+      if (url.startsWith('tel:')) {
+        phoneNumber = url.replace('tel:', '').replace(/[^\d]/g, '');
+      }
+      
+      // Return WhatsApp link
+      return `https://wa.me/${phoneNumber}`;
+    }
+    
+    // For other types, return the URL as-is
+    return url;
+  };
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -310,7 +335,7 @@ export const Fotter = () => {
                 {socialMedia.map((social) => (
                   <li key={social.id} className="mb-4">
                     <a
-                      href={social.url}
+                      href={formatSocialUrl(social.url, social.type)}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="hover:underline flex items-center gap-2"
@@ -340,7 +365,7 @@ export const Fotter = () => {
             {socialMedia.map((social, index) => (
               <a
                 key={social.id}
-                href={social.url}
+                href={formatSocialUrl(social.url, social.type)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className={`text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors duration-200 ${
