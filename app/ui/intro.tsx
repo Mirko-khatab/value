@@ -696,13 +696,13 @@ export default function Intro({ onComplete }: IntroProps) {
         {audioUrl && (
           <button
             onClick={toggleMute}
-            className="fixed bottom-6 right-6 z-[60] p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-110 group"
+            className="fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-[60] p-1.5 sm:p-3 rounded-full bg-white dark:bg-gray-800 shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 active:scale-95 sm:hover:scale-110 group"
             aria-label={isMuted ? "Unmute audio" : "Mute audio"}
           >
             {isMuted ? (
-              <SpeakerXMarkIcon className="w-6 h-6 text-red-500 group-hover:text-red-600" />
+              <SpeakerXMarkIcon className="w-4 h-4 sm:w-6 sm:h-6 text-red-500 group-hover:text-red-600" />
             ) : (
-              <SpeakerWaveIcon className="w-6 h-6 text-blue-500 group-hover:text-blue-600" />
+              <SpeakerWaveIcon className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500 group-hover:text-blue-600" />
             )}
           </button>
         )}

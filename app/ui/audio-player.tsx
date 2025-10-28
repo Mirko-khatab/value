@@ -109,34 +109,34 @@ export default function AudioPlayer({
   }
 
   return (
-    <div className={`fixed bottom-6 right-6 z-[60] flex gap-2 ${className}`}>
+    <div className={`fixed bottom-3 right-3 sm:bottom-6 sm:right-6 z-[60] flex gap-1.5 sm:gap-2 ${className}`}>
       <audio ref={audioRef} preload="auto" playsInline />
 
       {/* Mute/Unmute Button */}
       <button
         onClick={toggleMute}
-        className="p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-110 group"
+        className="p-1.5 sm:p-3 rounded-full bg-white dark:bg-gray-800 shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 active:scale-95 sm:hover:scale-110 group"
         aria-label={isMuted ? "Unmute audio" : "Mute audio"}
         title={isMuted ? "Unmute audio" : "Mute audio"}
       >
         {isMuted ? (
-          <SpeakerXMarkIcon className="w-6 h-6 text-red-500 group-hover:text-red-600" />
+          <SpeakerXMarkIcon className="w-4 h-4 sm:w-6 sm:h-6 text-red-500 group-hover:text-red-600" />
         ) : (
-          <SpeakerWaveIcon className="w-6 h-6 text-blue-500 group-hover:text-blue-600" />
+          <SpeakerWaveIcon className="w-4 h-4 sm:w-6 sm:h-6 text-blue-500 group-hover:text-blue-600" />
         )}
       </button>
 
       {/* Play/Stop Button */}
       <button
         onClick={togglePlay}
-        className="p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-110 group"
+        className="p-1.5 sm:p-3 rounded-full bg-white dark:bg-gray-800 shadow-md sm:shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 active:scale-95 sm:hover:scale-110 group"
         aria-label={isPlaying ? "Stop audio" : "Play audio"}
         title={isPlaying ? "Stop audio" : "Play audio"}
       >
         {isPlaying ? (
-          <StopIcon className="w-6 h-6 text-orange-500 group-hover:text-orange-600" />
+          <StopIcon className="w-4 h-4 sm:w-6 sm:h-6 text-orange-500 group-hover:text-orange-600" />
         ) : (
-          <PlayIcon className="w-6 h-6 text-green-500 group-hover:text-green-600" />
+          <PlayIcon className="w-4 h-4 sm:w-6 sm:h-6 text-green-500 group-hover:text-green-600" />
         )}
       </button>
     </div>
