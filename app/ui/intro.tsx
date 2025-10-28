@@ -340,47 +340,76 @@ export default function Intro({ onComplete }: IntroProps) {
           audioRef.current.loop = true;
           audioRef.current.preload = "auto";
 
-          // ✅ Start muted with volume 0 (browsers allow this)
-          audioRef.current.muted = true;
-          audioRef.current.volume = 0;
+          // ✅ AGGRESSIVE UNMUTED AUTOPLAY - Try unmuted FIRST!
+          audioRef.current.muted = false;
+          audioRef.current.volume = 0.7;
 
           const tryAutoplay = async () => {
-            // Strategy 1: Try muted autoplay first
+            // Strategy 1: Try UNMUTED autoplay immediately (most aggressive)
             try {
-              await audioRef.current!.play();
-
-              // Now try to unmute automatically after a short delay
-              setTimeout(async () => {
+              if (audioRef.current) {
+                audioRef.current.muted = false;
+                audioRef.current.volume = 0.7;
+                await audioRef.current.play();
+                setIsMuted(false);
+                setShowUnmuteHint(false);
+                console.log("✅ Music playing unmuted!");
+                return true;
+              }
+            } catch (error) {
+              console.log("⚠️ Unmuted autoplay blocked, trying fallbacks...");
+              
+              // Strategy 2: Try with very low volume
+              try {
                 if (audioRef.current) {
                   audioRef.current.muted = false;
-                  audioRef.current.volume = 0.7;
+                  audioRef.current.volume = 0.1;
+                  await audioRef.current.play();
+
+                  // Gradually increase volume
+                  const increaseVolume = () => {
+                    if (audioRef.current && audioRef.current.volume < 0.7) {
+                      audioRef.current.volume = Math.min(
+                        audioRef.current.volume + 0.1,
+                        0.7
+                      );
+                      setTimeout(increaseVolume, 300);
+                    }
+                  };
+                  setTimeout(increaseVolume, 500);
+
                   setIsMuted(false);
+                  setShowUnmuteHint(false);
+                  console.log("✅ Music playing at low volume!");
+                  return true;
                 }
-              }, 1000);
-            } catch (error) {
-              // Strategy 2: Try with very low volume instead of muted
-              try {
-                audioRef.current!.muted = false;
-                audioRef.current!.volume = 0.01; // Very low but not muted
-                await audioRef.current!.play();
-
-                // Gradually increase volume
-                const increaseVolume = () => {
-                  if (audioRef.current && audioRef.current.volume < 0.7) {
-                    audioRef.current.volume = Math.min(
-                      audioRef.current.volume + 0.05,
-                      0.7
-                    );
-                    setTimeout(increaseVolume, 200);
-                  }
-                };
-                setTimeout(increaseVolume, 500);
-
-                setIsMuted(false);
               } catch (lowVolumeError) {
-                setShowUnmuteHint(true);
+                // Strategy 3: Last resort - muted
+                try {
+                  if (audioRef.current) {
+                    audioRef.current.muted = true;
+                    audioRef.current.volume = 0.7;
+                    await audioRef.current.play();
+                    
+                    // Try to unmute after a moment
+                    setTimeout(() => {
+                      if (audioRef.current) {
+                        audioRef.current.muted = false;
+                        setIsMuted(false);
+                        setShowUnmuteHint(false);
+                        console.log("✅ Music unmuted after muted start!");
+                      }
+                    }, 500);
+                    return true;
+                  }
+                } catch (mutedError) {
+                  setShowUnmuteHint(true);
+                  console.log("❌ All autoplay attempts failed");
+                  return false;
+                }
               }
             }
+            return false;
           };
 
           // Try autoplay when audio is ready
@@ -389,23 +418,7 @@ export default function Intro({ onComplete }: IntroProps) {
           });
           audioRef.current.load();
 
-          // Additional automatic attempts
-          setTimeout(() => {
-            if (audioRef.current) {
-              // Try direct play with sound
-              audioRef.current.muted = false;
-              audioRef.current.volume = 0.7;
-              audioRef.current
-                .play()
-                .then(() => {
-                  setIsMuted(false);
-                  setShowUnmuteHint(false);
-                })
-                .catch(() => {});
-            }
-          }, 100);
-
-          // Try again after page fully loads
+          // AGGRESSIVE RETRY #1: Immediate retry with unmuted
           setTimeout(() => {
             if (audioRef.current && audioRef.current.paused) {
               audioRef.current.muted = false;
@@ -415,12 +428,51 @@ export default function Intro({ onComplete }: IntroProps) {
                 .then(() => {
                   setIsMuted(false);
                   setShowUnmuteHint(false);
+                  console.log("✅ Music started on retry #1!");
                 })
-                .catch(() => {});
+                .catch(() => {
+                  console.log("⚠️ Retry #1 failed");
+                });
             }
-          }, 2000);
+          }, 50);
 
-          // Try programmatic focus trick
+          // AGGRESSIVE RETRY #2: After slight delay
+          setTimeout(() => {
+            if (audioRef.current && audioRef.current.paused) {
+              audioRef.current.muted = false;
+              audioRef.current.volume = 0.7;
+              audioRef.current
+                .play()
+                .then(() => {
+                  setIsMuted(false);
+                  setShowUnmuteHint(false);
+                  console.log("✅ Music started on retry #2!");
+                })
+                .catch(() => {
+                  console.log("⚠️ Retry #2 failed");
+                });
+            }
+          }, 500);
+
+          // AGGRESSIVE RETRY #3: After page fully loads
+          setTimeout(() => {
+            if (audioRef.current && audioRef.current.paused) {
+              audioRef.current.muted = false;
+              audioRef.current.volume = 0.7;
+              audioRef.current
+                .play()
+                .then(() => {
+                  setIsMuted(false);
+                  setShowUnmuteHint(false);
+                  console.log("✅ Music started on retry #3!");
+                })
+                .catch(() => {
+                  console.log("⚠️ Retry #3 failed");
+                });
+            }
+          }, 1500);
+
+          // AGGRESSIVE RETRY #4: Programmatic focus trick
           setTimeout(() => {
             // Create invisible element and focus it
             const hiddenInput = document.createElement("input");
@@ -442,14 +494,38 @@ export default function Intro({ onComplete }: IntroProps) {
                   .then(() => {
                     setIsMuted(false);
                     setShowUnmuteHint(false);
+                    console.log("✅ Music started on retry #4 (focus trick)!");
                   })
-                  .catch(() => {});
+                  .catch(() => {
+                    console.log("⚠️ Retry #4 failed");
+                  });
               }
 
               // Clean up
-              document.body.removeChild(hiddenInput);
+              try {
+                document.body.removeChild(hiddenInput);
+              } catch (e) {}
             }, 100);
-          }, 3000);
+          }, 2500);
+
+          // AGGRESSIVE RETRY #5: One more time with feeling
+          setTimeout(() => {
+            if (audioRef.current && audioRef.current.paused) {
+              audioRef.current.muted = false;
+              audioRef.current.volume = 0.7;
+              audioRef.current
+                .play()
+                .then(() => {
+                  setIsMuted(false);
+                  setShowUnmuteHint(false);
+                  console.log("✅ Music started on retry #5!");
+                })
+                .catch(() => {
+                  console.log("⚠️ All automatic retries exhausted. User interaction may be required.");
+                  setShowUnmuteHint(true);
+                });
+            }
+          }, 4000);
 
           // ✅ Clean user interaction handler
           const unmuteAndPlay = async () => {
@@ -620,9 +696,9 @@ export default function Intro({ onComplete }: IntroProps) {
         // Scroll to top before completing intro (especially important on mobile)
         window.scrollTo({
           top: 0,
-          behavior: 'smooth'
+          behavior: "smooth",
         });
-        
+
         // Small delay to ensure scroll happens before transition
         setTimeout(() => {
           if (onComplete) onComplete();
@@ -692,11 +768,11 @@ export default function Intro({ onComplete }: IntroProps) {
         {/* Beautiful music prompt - shows when audio is ready but blocked */}
         {showUnmuteHint && (
           <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/20 backdrop-blur-sm animate-fade-in">
-            <div 
+            <div
               onClick={handleIntroClick}
               className="relative bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-8 sm:p-12 max-w-md mx-4 transform transition-all duration-300 hover:scale-105 cursor-pointer"
               style={{
-                animation: 'slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                animation: "slideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)",
               }}
             >
               {/* Decorative elements */}
@@ -713,7 +789,8 @@ export default function Intro({ onComplete }: IntroProps) {
                   Experience with Sound
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
-                  Click anywhere to start the music and enjoy the full experience
+                  Click anywhere to start the music and enjoy the full
+                  experience
                 </p>
 
                 {/* Animated music bars */}
@@ -723,9 +800,11 @@ export default function Intro({ onComplete }: IntroProps) {
                       key={i}
                       className="w-2 bg-gradient-to-t from-blue-500 to-purple-500 rounded-full"
                       style={{
-                        animation: `musicBar ${0.6 + i * 0.1}s ease-in-out infinite alternate`,
+                        animation: `musicBar ${
+                          0.6 + i * 0.1
+                        }s ease-in-out infinite alternate`,
                         animationDelay: `${i * 0.1}s`,
-                        height: '40%'
+                        height: "40%",
                       }}
                     ></div>
                   ))}
@@ -740,7 +819,10 @@ export default function Intro({ onComplete }: IntroProps) {
 
               {/* Decorative corner elements */}
               <div className="absolute top-3 right-3 w-2 h-2 bg-purple-500 rounded-full animate-ping"></div>
-              <div className="absolute bottom-3 left-3 w-2 h-2 bg-blue-500 rounded-full animate-ping" style={{ animationDelay: '0.5s' }}></div>
+              <div
+                className="absolute bottom-3 left-3 w-2 h-2 bg-blue-500 rounded-full animate-ping"
+                style={{ animationDelay: "0.5s" }}
+              ></div>
             </div>
           </div>
         )}
