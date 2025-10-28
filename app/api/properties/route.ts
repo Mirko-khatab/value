@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getConnection } from "@/app/lib/db";
+import { getConnection } from "@/app/lib/serverutils";
 
 export async function GET() {
   let connection;
