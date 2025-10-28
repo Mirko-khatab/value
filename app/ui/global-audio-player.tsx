@@ -203,40 +203,36 @@ export default function GlobalAudioPlayer({
   }
 
   return (
-    <>
+    <div className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-[60] flex gap-2 ${className}`}>
       <audio ref={audioRef} preload="auto" playsInline />
-      
-      <div className={`fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex gap-2 pointer-events-auto ${className}`}>
-        {/* Mute/Unmute Button */}
-        <button
-          onClick={toggleMute}
-          className="p-2 sm:p-3 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-105 active:scale-95 touch-manipulation"
-          aria-label={isMuted ? "Unmute audio" : "Mute audio"}
-          title={isMuted ? "Unmute audio" : "Mute audio"}
-          style={{ WebkitTapHighlightColor: 'transparent' }}
-        >
-          {isMuted ? (
-            <SpeakerXMarkIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500" />
-          ) : (
-            <SpeakerWaveIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500" />
-          )}
-        </button>
 
-        {/* Play/Stop Button */}
-        <button
-          onClick={togglePlay}
-          className="p-2 sm:p-3 rounded-full bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-105 active:scale-95 touch-manipulation"
-          aria-label={isPlaying ? "Stop audio" : "Play audio"}
-          title={isPlaying ? "Stop audio" : "Play audio"}
-          style={{ WebkitTapHighlightColor: 'transparent' }}
-        >
-          {isPlaying ? (
-            <StopIcon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500" />
-          ) : (
-            <PlayIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-500" />
-          )}
-        </button>
-      </div>
-    </>
+      {/* Mute/Unmute Button */}
+      <button
+        onClick={toggleMute}
+        className="p-2 sm:p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-110 group active:scale-95"
+        aria-label={isMuted ? "Unmute audio" : "Mute audio"}
+        title={isMuted ? "Unmute audio" : "Mute audio"}
+      >
+        {isMuted ? (
+          <SpeakerXMarkIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 group-hover:text-red-600" />
+        ) : (
+          <SpeakerWaveIcon className="w-5 h-5 sm:w-6 sm:h-6 text-blue-500 group-hover:text-blue-600" />
+        )}
+      </button>
+
+      {/* Play/Stop Button */}
+      <button
+        onClick={togglePlay}
+        className="p-2 sm:p-3 rounded-full bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:scale-110 group active:scale-95"
+        aria-label={isPlaying ? "Stop audio" : "Play audio"}
+        title={isPlaying ? "Stop audio" : "Play audio"}
+      >
+        {isPlaying ? (
+          <StopIcon className="w-5 h-5 sm:w-6 sm:h-6 text-orange-500 group-hover:text-orange-600" />
+        ) : (
+          <PlayIcon className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 group-hover:text-green-600" />
+        )}
+      </button>
+    </div>
   );
 }
