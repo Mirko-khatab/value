@@ -87,8 +87,8 @@ export const Fotter = () => {
     }
   };
 
-  // Get social media platform name
-  const getSocialName = (type: SocialMediaType) => {
+  // Get social media platform name/text
+  const getSocialName = (type: SocialMediaType, url?: string) => {
     switch (type) {
       case SocialMediaType.Instagram:
         return "Instagram";
@@ -97,7 +97,8 @@ export const Fotter = () => {
       case SocialMediaType.X:
         return "X (Twitter)";
       case SocialMediaType.Phone:
-        return "Phone";
+        // Show the real phone number text instead of generic label
+        return (url || "").replace(/^tel:\s*/i, "");
       case SocialMediaType.WhatsApp:
         return "WhatsApp";
       default:
@@ -341,7 +342,7 @@ export const Fotter = () => {
                       className="hover:underline flex items-center gap-2"
                     >
                       {getSocialIcon(social.type)}
-                      {getSocialName(social.type)}
+                      {getSocialName(social.type, social.url)}
                     </a>
                   </li>
                 ))}

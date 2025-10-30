@@ -7,6 +7,7 @@ type Theme = "light" | "dark";
 interface ThemeContextType {
   theme: Theme;
   toggleTheme: () => void;
+  setThemeExplicit: (t: Theme) => void;
   colors: {
     primary: string;
     secondary: string;
@@ -21,6 +22,7 @@ interface ThemeContextType {
 const defaultContext: ThemeContextType = {
   theme: "light",
   toggleTheme: () => {},
+  setThemeExplicit: () => {},
   colors: {
     primary: "#2E5A7A",
     secondary: "#7B7B85",
@@ -66,6 +68,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
+  const setThemeExplicit = (t: Theme) => {
+    setTheme(t);
+  };
+
   const colors = {
     primary: theme === "dark" ? "#4FBADB" : "#2E5A7A",
     secondary: theme === "dark" ? "#9CA3AF" : "#7B7B85",
@@ -77,7 +83,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   const contextValue = mounted
-    ? { theme, toggleTheme, colors }
+    ? { theme, toggleTheme, setThemeExplicit, colors }
     : defaultContext;
 
   return (

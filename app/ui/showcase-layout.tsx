@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Navigation from "./navigation";
-import { Fotter } from "./fotter";
+import { Fotter } from "./footer";
 
 interface ShowcaseLayoutProps {
   children: React.ReactNode;

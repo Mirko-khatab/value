@@ -30,6 +30,7 @@ export default function Intro({ onComplete }: IntroProps) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const animationTriggerRef = useRef<HTMLDivElement | null>(null);
+  const userPrefKey = "audioPreference"; // 'autoplay' | 'muted' | 'stopped'
 
   const languages: Language[] = [
     { text: "We value your work", dir: "ltr", name: "English" },
@@ -42,7 +43,7 @@ export default function Intro({ onComplete }: IntroProps) {
   const sloganDuration = 3000; // ms to show each language (slower to read comfortably)
   const totalDuration = totalSketches * sketchDuration; // Total time for all sketches
 
-  // Fetch and play audio immediately and more aggressively
+  // Fetch and play audio immediately and more aggressively (but respect user intent)
   useEffect(() => {
     // Web Audio API - bypasses autoplay restrictions
     const playWithWebAudio = async (audioUrl: string) => {
@@ -340,18 +341,33 @@ export default function Intro({ onComplete }: IntroProps) {
           audioRef.current.loop = true;
           audioRef.current.preload = "auto";
 
-          // ✅ AGGRESSIVE UNMUTED AUTOPLAY - Try unmuted FIRST!
-          audioRef.current.muted = false;
+          // Respect saved preference before attempting anything
+          const pref = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+          if (pref === "stopped") {
+            // Do not start at all
+            return;
+          }
+          if (pref === "muted") {
+            audioRef.current.muted = true;
+          } else {
+            audioRef.current.muted = false;
+          }
           audioRef.current.volume = 0.7;
 
           const tryAutoplay = async () => {
+            const prefNow = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+            if (prefNow === "stopped") return false;
             // Strategy 1: Try UNMUTED autoplay immediately (most aggressive)
             try {
               if (audioRef.current) {
-                audioRef.current.muted = false;
+                if (prefNow === "muted") {
+                  audioRef.current.muted = true; // keep muted if user prefers
+                } else {
+                  audioRef.current.muted = false;
+                }
                 audioRef.current.volume = 0.7;
                 await audioRef.current.play();
-                setIsMuted(false);
+                setIsMuted(audioRef.current.muted);
                 setShowUnmuteHint(false);
                 console.log("✅ Music playing unmuted!");
                 return true;
@@ -362,7 +378,11 @@ export default function Intro({ onComplete }: IntroProps) {
               // Strategy 2: Try with very low volume
               try {
                 if (audioRef.current) {
-                  audioRef.current.muted = false;
+                  if (prefNow === "muted") {
+                    audioRef.current.muted = true;
+                  } else {
+                    audioRef.current.muted = false;
+                  }
                   audioRef.current.volume = 0.1;
                   await audioRef.current.play();
 
@@ -378,7 +398,7 @@ export default function Intro({ onComplete }: IntroProps) {
                   };
                   setTimeout(increaseVolume, 500);
 
-                  setIsMuted(false);
+                  setIsMuted(audioRef.current.muted);
                   setShowUnmuteHint(false);
                   console.log("✅ Music playing at low volume!");
                   return true;
@@ -393,7 +413,9 @@ export default function Intro({ onComplete }: IntroProps) {
 
                     // Try to unmute after a moment
                     setTimeout(() => {
-                      if (audioRef.current) {
+                      // Only unmute if user hasn't chosen muted
+                      const prefLater = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+                      if (audioRef.current && prefLater !== "muted") {
                         audioRef.current.muted = false;
                         setIsMuted(false);
                         setShowUnmuteHint(false);
@@ -418,15 +440,17 @@ export default function Intro({ onComplete }: IntroProps) {
           });
           audioRef.current.load();
 
-          // AGGRESSIVE RETRY #1: Immediate retry with unmuted
+          // AGGRESSIVE RETRY #1: Immediate retry (respect user pref)
           setTimeout(() => {
+            const prefNow = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+            if (prefNow === "stopped") return;
             if (audioRef.current && audioRef.current.paused) {
-              audioRef.current.muted = false;
+              audioRef.current.muted = prefNow === "muted";
               audioRef.current.volume = 0.7;
               audioRef.current
                 .play()
                 .then(() => {
-                  setIsMuted(false);
+                  setIsMuted(audioRef.current ? audioRef.current.muted : false);
                   setShowUnmuteHint(false);
                   console.log("✅ Music started on retry #1!");
                 })
@@ -438,13 +462,15 @@ export default function Intro({ onComplete }: IntroProps) {
 
           // AGGRESSIVE RETRY #2: After slight delay
           setTimeout(() => {
+            const prefNow = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+            if (prefNow === "stopped") return;
             if (audioRef.current && audioRef.current.paused) {
-              audioRef.current.muted = false;
+              audioRef.current.muted = prefNow === "muted";
               audioRef.current.volume = 0.7;
               audioRef.current
                 .play()
                 .then(() => {
-                  setIsMuted(false);
+                  setIsMuted(audioRef.current ? audioRef.current.muted : false);
                   setShowUnmuteHint(false);
                   console.log("✅ Music started on retry #2!");
                 })
@@ -456,13 +482,15 @@ export default function Intro({ onComplete }: IntroProps) {
 
           // AGGRESSIVE RETRY #3: After page fully loads
           setTimeout(() => {
+            const prefNow = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+            if (prefNow === "stopped") return;
             if (audioRef.current && audioRef.current.paused) {
-              audioRef.current.muted = false;
+              audioRef.current.muted = prefNow === "muted";
               audioRef.current.volume = 0.7;
               audioRef.current
                 .play()
                 .then(() => {
-                  setIsMuted(false);
+                  setIsMuted(audioRef.current ? audioRef.current.muted : false);
                   setShowUnmuteHint(false);
                   console.log("✅ Music started on retry #3!");
                 })
@@ -486,13 +514,15 @@ export default function Intro({ onComplete }: IntroProps) {
 
             // Try to play after focus
             setTimeout(() => {
+              const prefNow = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+              if (prefNow === "stopped") return;
               if (audioRef.current && audioRef.current.paused) {
-                audioRef.current.muted = false;
+                audioRef.current.muted = prefNow === "muted";
                 audioRef.current.volume = 0.7;
                 audioRef.current
                   .play()
                   .then(() => {
-                    setIsMuted(false);
+                    setIsMuted(audioRef.current ? audioRef.current.muted : false);
                     setShowUnmuteHint(false);
                     console.log("✅ Music started on retry #4 (focus trick)!");
                   })
@@ -510,13 +540,15 @@ export default function Intro({ onComplete }: IntroProps) {
 
           // AGGRESSIVE RETRY #5: One more time with feeling
           setTimeout(() => {
+            const prefNow = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+            if (prefNow === "stopped") return;
             if (audioRef.current && audioRef.current.paused) {
-              audioRef.current.muted = false;
+              audioRef.current.muted = prefNow === "muted";
               audioRef.current.volume = 0.7;
               audioRef.current
                 .play()
                 .then(() => {
-                  setIsMuted(false);
+                  setIsMuted(audioRef.current ? audioRef.current.muted : false);
                   setShowUnmuteHint(false);
                   console.log("✅ Music started on retry #5!");
                 })
@@ -537,6 +569,7 @@ export default function Intro({ onComplete }: IntroProps) {
               audioRef.current.volume = 0;
               setIsMuted(false);
               setShowUnmuteHint(false);
+              try { localStorage.setItem(userPrefKey, "autoplay"); } catch {}
 
               try {
                 await audioRef.current.play();
@@ -615,6 +648,7 @@ export default function Intro({ onComplete }: IntroProps) {
         audioRef.current.volume = 0;
         setIsMuted(false);
         setShowUnmuteHint(false);
+        try { localStorage.setItem(userPrefKey, "autoplay"); } catch {}
 
         // Smooth volume fade-in
         const fadeIn = () => {
@@ -631,6 +665,7 @@ export default function Intro({ onComplete }: IntroProps) {
         // Muting - instant
         audioRef.current.muted = true;
         setIsMuted(true);
+        try { localStorage.setItem(userPrefKey, "muted"); } catch {}
       }
     }
   };

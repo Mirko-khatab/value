@@ -25,6 +25,7 @@ export default function GlobalAudioPlayer({
   const pathname = usePathname();
   const playAttemptCountRef = useRef(0);
   const maxPlayAttempts = 10;
+  const userPrefKey = "audioPreference"; // 'autoplay' | 'muted' | 'stopped'
 
   // Check if current page should have music
   const shouldShowMusic = () => {
@@ -56,6 +57,26 @@ export default function GlobalAudioPlayer({
     // Include all other pages (projects, products, etc.)
     return true;
   };
+
+  // Load and persist user audio preference
+  useEffect(() => {
+    try {
+      const pref = localStorage.getItem(userPrefKey);
+      if (pref === "stopped") {
+        setIsPlaying(false);
+      }
+      if (pref === "muted") {
+        setIsMuted(true);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      const pref = isPlaying ? (isMuted ? "muted" : "autoplay") : "stopped";
+      localStorage.setItem(userPrefKey, pref);
+    } catch {}
+  }, [isPlaying, isMuted]);
 
   // Update player visibility based on current route
   useEffect(() => {
@@ -117,7 +138,7 @@ export default function GlobalAudioPlayer({
     fetchAudio();
   }, [showPlayer]);
 
-  // Initialize audio element and AGGRESSIVELY auto-play
+  // Initialize audio element and AGGRESSIVELY auto-play (respecting user intent)
   useEffect(() => {
     if (!showPlayer || !audioUrl || !audioRef.current) return;
 
@@ -136,15 +157,23 @@ export default function GlobalAudioPlayer({
     const attemptPlay = async () => {
       if (!audioRef.current) return;
 
+      // Respect user preference
+      const pref = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+      if (pref === "stopped") {
+        // Do not auto-start if user stopped
+        return;
+      }
+
       playAttemptCountRef.current++;
 
       try {
-        // First try unmuted play
-        audioRef.current.muted = false;
+        // If user prefers muted, keep muted; otherwise try unmuted
+        const preferMuted = pref === "muted";
+        audioRef.current.muted = preferMuted ? true : false;
         await audioRef.current.play();
         setIsPlaying(true);
-        setIsMuted(false);
-        console.log("✅ Music autoplaying (unmuted)");
+        setIsMuted(audioRef.current.muted);
+        console.log("✅ Music autoplaying" + (audioRef.current.muted ? " (muted by preference)" : ""));
       } catch (error) {
         // If unmuted fails, try muted autoplay
         try {
@@ -177,6 +206,8 @@ export default function GlobalAudioPlayer({
 
     // Try again when page becomes visible
     const handleVisibilityChange = () => {
+      const pref = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+      if (pref === "stopped") return; // Respect stop
       if (document.visibilityState === "visible" && audioRef.current?.paused) {
         console.log("👁️ Page visible, attempting play...");
         attemptPlay();
@@ -186,6 +217,8 @@ export default function GlobalAudioPlayer({
 
     // Try on any user interaction (click, touch, keypress)
     const handleUserInteraction = () => {
+      const pref = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+      if (pref === "stopped") return; // Don't override stop on interaction
       if (audioRef.current?.paused) {
         console.log("👆 User interaction detected, attempting play...");
         attemptPlay();
@@ -197,6 +230,11 @@ export default function GlobalAudioPlayer({
 
     // Aggressive retry loop
     const retryInterval = setInterval(() => {
+      const pref = typeof window !== "undefined" ? localStorage.getItem(userPrefKey) : null;
+      if (pref === "stopped") {
+        clearInterval(retryInterval);
+        return;
+      }
       if (audioRef.current && audioRef.current.paused && playAttemptCountRef.current < maxPlayAttempts) {
         console.log(`🔄 Retry attempt ${playAttemptCountRef.current}/${maxPlayAttempts}...`);
         attemptPlay();
@@ -222,6 +260,7 @@ export default function GlobalAudioPlayer({
       if (isPlaying) {
         audioRef.current.pause();
         setIsPlaying(false);
+        try { localStorage.setItem(userPrefKey, "stopped"); } catch {}
         console.log("⏸️ Music paused by user");
       } else {
         try {
@@ -229,6 +268,7 @@ export default function GlobalAudioPlayer({
           await audioRef.current.play();
           setIsPlaying(true);
           setIsMuted(false);
+          try { localStorage.setItem(userPrefKey, "autoplay"); } catch {}
           console.log("▶️ Music resumed by user");
         } catch (error) {
           console.error("Error playing audio:", error);
@@ -241,6 +281,7 @@ export default function GlobalAudioPlayer({
     if (audioRef.current) {
       audioRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
+      try { localStorage.setItem(userPrefKey, !isMuted ? "muted" : (isPlaying ? "autoplay" : "stopped")); } catch {}
     }
   };
 
