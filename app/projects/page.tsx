@@ -31,7 +31,6 @@ export default function ProjectsPage() {
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState<string[]>([]);
 
   // Fetch data on mount
   useEffect(() => {
@@ -149,7 +148,6 @@ export default function ProjectsPage() {
     setSelectedSubCategory("");
     setSelectedStatus("");
     setShowFilters(false);
-    setExpandedCategories([]);
   };
 
   // Get sub-categories for a specific category
@@ -159,20 +157,6 @@ export default function ProjectsPage() {
       (sub) => String(sub.category_id) === String(categoryId)
     );
     return filtered;
-  };
-
-  // Toggle category expansion
-  const toggleCategoryExpansion = (categoryId: string) => {
-    setExpandedCategories((prev) =>
-      prev.includes(categoryId)
-        ? prev.filter((id) => id !== categoryId)
-        : [...prev, categoryId]
-    );
-  };
-
-  // Check if category is expanded
-  const isCategoryExpanded = (categoryId: string) => {
-    return expandedCategories.includes(categoryId);
   };
 
   return (
@@ -314,7 +298,7 @@ export default function ProjectsPage() {
                 </select>
               </div>
 
-              {/* Category & Sub-Category Filter - Expandable List */}
+              {/* Category Filter - Dropdown */}
               <div className="w-full">
                 <label
                   className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${
@@ -341,136 +325,93 @@ export default function ProjectsPage() {
                     </>
                   )}
                 </label>
-                
-                {/* Expandable Category List */}
-                <div className="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black shadow-sm max-h-64 overflow-y-auto">
-                  {/* All Categories Option */}
-                  <button
-                    onClick={() => {
-                      setSelectedCategory("");
-                      setSelectedSubCategory("");
-                    }}
-                    className={`w-full px-3 py-2.5 text-sm transition-colors ${
-                      !selectedCategory && !selectedSubCategory
-                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium"
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    } ${isRTL ? "text-right" : "text-left"}`}
-                  >
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => {
+                    setSelectedCategory(e.target.value);
+                    setSelectedSubCategory("");
+                  }}
+                  className={`block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm appearance-none ${
+                    isRTL
+                      ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_12px_center] bg-no-repeat"
+                      : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_12px_center] bg-no-repeat"
+                  }`}
+                >
+                  <option value="">
                     {t("all_categories", {
                       en: "All Categories",
                       ar: "جميع الفئات",
                       ku: "هەموو جۆرەکان",
                     })}
-                  </button>
-
-                  {/* Category Items */}
+                  </option>
                   {categories.map((cat) => {
-                    const categorySubCategories = getSubCategoriesForCategory(
-                      cat.id
-                    );
-                    const hasSubCategories = categorySubCategories.length > 0;
-                    const isExpanded = isCategoryExpanded(cat.id);
-                    const isSelected =
-                      selectedCategory === cat.id && !selectedSubCategory;
-
+                    const hasSubCategories =
+                      getSubCategoriesForCategory(cat.id).length > 0;
                     return (
-                      <div
-                        key={cat.id}
-                        className="border-t border-gray-200 dark:border-gray-700"
-                      >
-                        {/* Category Button */}
-                        <div className="flex items-center">
-                          <button
-                            onClick={() => {
-                              setSelectedCategory(cat.id);
-                              setSelectedSubCategory("");
-                            }}
-                            className={`flex-1 px-3 py-2.5 text-sm transition-colors ${
-                              isSelected
-                                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium"
-                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
-                            } ${isRTL ? "text-right" : "text-left"}`}
-                          >
-                            {getLocalizedField(cat, "title")}
-                          </button>
-
-                          {/* Expand/Collapse Button (only if has sub-categories) */}
-                          {hasSubCategories && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleCategoryExpansion(cat.id);
-                              }}
-                              className={`px-3 py-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors ${
-                                isRTL ? "border-r" : "border-l"
-                              } border-gray-200 dark:border-gray-700`}
-                            >
-                              {isExpanded ? (
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M20 12H4"
-                                  />
-                                </svg>
-                              ) : (
-                                <svg
-                                  className="w-4 h-4"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 4v16m8-8H4"
-                                  />
-                                </svg>
-                              )}
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Sub-Categories (shown when expanded) */}
-                        {hasSubCategories && isExpanded && (
-                          <div className="bg-gray-50 dark:bg-gray-900/50">
-                            {categorySubCategories.map((subCat) => {
-                              const isSubSelected =
-                                selectedSubCategory === subCat.id;
-                              return (
-                                <button
-                                  key={subCat.id}
-                                  onClick={() => {
-                                    setSelectedCategory(cat.id);
-                                    setSelectedSubCategory(subCat.id);
-                                  }}
-                                  className={`w-full px-6 py-2 text-sm transition-colors ${
-                                    isSubSelected
-                                      ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium"
-                                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
-                                  } ${
-                                    isRTL ? "text-right pr-8" : "text-left pl-8"
-                                  }`}
-                                >
-                                  {isRTL ? "← " : "→ "}
-                                  {getLocalizedField(subCat, "title")}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
+                      <option key={cat.id} value={cat.id}>
+                        {hasSubCategories ? "+ " : ""}
+                        {getLocalizedField(cat, "title")}
+                      </option>
                     );
                   })}
-                </div>
+                </select>
               </div>
+
+              {/* Sub-Category Filter - Only show when category with sub-categories is selected */}
+              {selectedCategory &&
+                getSubCategoriesForCategory(selectedCategory).length > 0 && (
+                  <div className="w-full">
+                    <label
+                      className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${
+                        isRTL ? "text-right" : "text-left"
+                      }`}
+                    >
+                      {isRTL ? (
+                        <>
+                          {t("sub_category", {
+                            en: "Sub Category",
+                            ar: "الفئة الفرعية",
+                            ku: "ژێرجۆر",
+                          })}
+                          <FolderIcon className="inline-block h-4 w-4 mr-2" />
+                        </>
+                      ) : (
+                        <>
+                          <FolderIcon className="inline-block h-4 w-4 mr-2" />
+                          {t("sub_category", {
+                            en: "Sub Category",
+                            ar: "الفئة الفرعية",
+                            ku: "ژێرجۆر",
+                          })}
+                        </>
+                      )}
+                    </label>
+                    <select
+                      value={selectedSubCategory}
+                      onChange={(e) => setSelectedSubCategory(e.target.value)}
+                      className={`block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm appearance-none ${
+                        isRTL
+                          ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_12px_center] bg-no-repeat"
+                          : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_12px_center] bg-no-repeat"
+                      }`}
+                    >
+                      <option value="">
+                        {t("all_sub_categories", {
+                          en: "All Sub Categories",
+                          ar: "جميع الفئات الفرعية",
+                          ku: "هەموو ژێرجۆرەکان",
+                        })}
+                      </option>
+                      {getSubCategoriesForCategory(selectedCategory).map(
+                        (subCat) => (
+                          <option key={subCat.id} value={subCat.id}>
+                            {getLocalizedField(subCat, "title")}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+                )}
 
               {/* Status Filter */}
               <div className="w-full">
