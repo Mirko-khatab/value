@@ -17,6 +17,7 @@ import {
   deleteSpecialProject,
   deleteSocialMedia,
   deleteProjectCategory,
+  deleteSubCategory,
   createProduct,
   updateProduct,
   createProject,
@@ -36,6 +37,8 @@ import {
   updateSpecialProject,
   createSocialMedia,
   updateSocialMedia,
+  createSubCategory,
+  updateSubCategory,
 } from "@/app/lib/actions";
 import { formatDateToLocal } from "@/app/lib/utils";
 import { Column, ActionButton } from "./table";
@@ -826,6 +829,80 @@ export const projectCategoryTableConfig = {
 
 // PROJECT CATEGORY FORM
 export const projectCategoryFormFields: FormField[] = [
+  {
+    name: "title_en",
+    label: "Title (English)",
+    type: "text",
+    required: true,
+    gridCol: "half",
+  },
+  {
+    name: "title_ku",
+    label: "Title (Kurdish)",
+    type: "text",
+    required: true,
+    gridCol: "half",
+  },
+  {
+    name: "title_ar",
+    label: "Title (Arabic)",
+    type: "text",
+    required: true,
+    gridCol: "half",
+  },
+];
+
+// SUB CATEGORY TABLE
+export const subCategoryTableConfig = {
+  columns: [
+    {
+      header: "Category",
+      key: "category_name_en",
+      render: (item: any) => item.category_name_en || "N/A",
+    },
+    {
+      header: "English Title",
+      key: "title_en",
+      render: (item: any) => item.title_en,
+    },
+    {
+      header: "Kurdish Title",
+      key: "title_ku",
+      render: (item: any) => item.title_ku,
+    },
+    {
+      header: "Arabic Title",
+      key: "title_ar",
+      render: (item: any) => item.title_ar,
+    },
+  ] as Column<any>[],
+  actions: (item: any): ActionButton[] => [
+    {
+      label: "Edit",
+      href: `/dashboard/sub-category/${item.id}/edit`,
+      icon: <PencilIcon className="w-5 text-blue-500 dark:text-blue-400" />,
+    },
+    {
+      label: "Delete",
+      form: true,
+      onClick: async (id: string) => {
+        await deleteSubCategory(id);
+      },
+      icon: <TrashIcon className="w-5 text-red-500 dark:text-red-400" />,
+    },
+  ],
+};
+
+// SUB CATEGORY FORM
+export const subCategoryFormFields: FormField[] = [
+  {
+    name: "category_id",
+    label: "Category",
+    type: "select",
+    required: true,
+    gridCol: "full",
+    options: [], // Will be populated dynamically from project_categories
+  },
   {
     name: "title_en",
     label: "Title (English)",

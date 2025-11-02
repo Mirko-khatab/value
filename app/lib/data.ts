@@ -13,6 +13,7 @@ import {
   Banner,
   Audio,
   ProjectCategory,
+  SubCategory,
   Graphic,
   FooterProperty,
   Country,
@@ -107,6 +108,52 @@ export async function fetchProjectCategoryById(id: string) {
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch project category.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// SUB CATEGORY DATA FETCHING
+export async function fetchSubCategories() {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT sc.id, sc.category_id, sc.title_ku, sc.title_en, sc.title_ar,
+              pc.title_en as category_name_en,
+              pc.title_ku as category_name_ku,
+              pc.title_ar as category_name_ar
+       FROM sub_categorys sc
+       LEFT JOIN project_categories pc ON sc.category_id = pc.id
+       ORDER BY sc.id DESC`
+    );
+    return rows as SubCategory[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch sub categories.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchSubCategoryById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [rows] = await connection.execute(
+      `SELECT sc.id, sc.category_id, sc.title_ku, sc.title_en, sc.title_ar,
+              pc.title_en as category_name_en,
+              pc.title_ku as category_name_ku,
+              pc.title_ar as category_name_ar
+       FROM sub_categorys sc
+       LEFT JOIN project_categories pc ON sc.category_id = pc.id
+       WHERE sc.id = ?`,
+      [id]
+    );
+    return rows as SubCategory[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch sub category.");
   } finally {
     if (connection) await connection.end();
   }

@@ -154,6 +154,18 @@ export type ProjectCategory = {
   title_ar: string;
 };
 
+export type SubCategory = {
+  id: string;
+  category_id: string;
+  title_ku: string;
+  title_en: string;
+  title_ar: string;
+  // Category name from JOIN (optional)
+  category_name_en?: string;
+  category_name_ku?: string;
+  category_name_ar?: string;
+};
+
 export type Graphic = {
   id: string;
   image_url: string;

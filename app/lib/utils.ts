@@ -105,6 +105,11 @@ export const links = [
     href: "/dashboard/project-category",
     icon: FolderIcon,
   },
+  {
+    name: "Sub Categories",
+    href: "/dashboard/sub-category",
+    icon: RectangleGroupIcon,
+  },
   { name: "Countries", href: "/dashboard/countries", icon: GlobeAltIcon },
   { name: "Locations", href: "/dashboard/locations", icon: MapPinIcon },
   { name: "Products", href: "/dashboard/products", icon: TruckIcon },

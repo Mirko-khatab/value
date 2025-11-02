@@ -2307,6 +2307,109 @@ export async function deleteProjectCategory(id: string) {
   }
 }
 
+// SUB CATEGORY CRUD ACTIONS
+const CreateSubCategory = z.object({
+  category_id: z.string().min(1, "Category is required"),
+  title_ku: z.string().min(1, "Kurdish title is required"),
+  title_en: z.string().min(1, "English title is required"),
+  title_ar: z.string().min(1, "Arabic title is required"),
+});
+
+export type SubCategoryState = {
+  errors?: {
+    category_id?: string[];
+    title_ku?: string[];
+    title_en?: string[];
+    title_ar?: string[];
+  };
+  message?: string | null;
+};
+
+export async function createSubCategory(
+  prevState: SubCategoryState,
+  formData: FormData
+) {
+  const validatedFields = CreateSubCategory.safeParse({
+    category_id: formData.get("category_id"),
+    title_ku: formData.get("title_ku"),
+    title_en: formData.get("title_en"),
+    title_ar: formData.get("title_ar"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Create Sub Category.",
+    };
+  }
+
+  const { category_id, title_ku, title_en, title_ar } = validatedFields.data;
+
+  try {
+    const connection = await getConnection();
+    await connection.execute(
+      "INSERT INTO sub_categorys (category_id, title_ku, title_en, title_ar) VALUES (?, ?, ?, ?)",
+      [category_id, title_ku, title_en, title_ar]
+    );
+    await connection.end();
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Create Sub Category.",
+    };
+  }
+
+  revalidatePath("/dashboard/sub-category");
+  redirect("/dashboard/sub-category");
+}
+
+export async function updateSubCategory(id: string, formData: FormData) {
+  const validatedFields = CreateSubCategory.safeParse({
+    category_id: formData.get("category_id"),
+    title_ku: formData.get("title_ku"),
+    title_en: formData.get("title_en"),
+    title_ar: formData.get("title_ar"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Missing Fields. Failed to Update Sub Category.",
+    };
+  }
+
+  const { category_id, title_ku, title_en, title_ar } = validatedFields.data;
+
+  try {
+    const connection = await getConnection();
+    await connection.execute(
+      "UPDATE sub_categorys SET category_id = ?, title_ku = ?, title_en = ?, title_ar = ? WHERE id = ?",
+      [category_id, title_ku, title_en, title_ar, id]
+    );
+    await connection.end();
+  } catch (error) {
+    console.error("Database Error:", error);
+    return {
+      message: "Database Error: Failed to Update Sub Category.",
+    };
+  }
+
+  revalidatePath("/dashboard/sub-category");
+  redirect("/dashboard/sub-category");
+}
+
+export async function deleteSubCategory(id: string) {
+  try {
+    const connection = await getConnection();
+    await connection.execute("DELETE FROM sub_categorys WHERE id = ?", [id]);
+    await connection.end();
+    revalidatePath("/dashboard/sub-category");
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Database Error: Failed to Delete Sub Category.");
+  }
+}
+
 // GRAPHICS CRUD
 const CreateGraphic = z.object({
   image_url: z.string().min(1, "Image URL is required"),
