@@ -33,7 +33,6 @@ export default function ProjectsPage() {
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [showSubCategories, setShowSubCategories] = useState(false);
 
   // Fetch data on mount
   useEffect(() => {
@@ -150,7 +149,6 @@ export default function ProjectsPage() {
     setSelectedSubCategory("");
     setSelectedStatus("");
     setShowFilters(false);
-    setShowSubCategories(false);
   };
 
   // Get sub-categories for the selected category
@@ -163,9 +161,6 @@ export default function ProjectsPage() {
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
     setSelectedSubCategory(""); // Clear sub-category when category changes
-    // Auto-show sub-categories if they exist
-    const hasSubs = subCategories.some((sub) => sub.category_id === categoryId);
-    setShowSubCategories(hasSubs && categoryId !== "");
   };
 
   return (
@@ -379,53 +374,39 @@ export default function ProjectsPage() {
               {/* Sub-Category Filter (appears when category is selected and has sub-categories) */}
               {selectedCategory && currentSubCategories.length > 0 && (
                 <div className="w-full">
-                  <div className="flex items-center justify-between mb-3">
-                    <label
-                      className={`block text-sm font-medium text-gray-700 dark:text-gray-300 ${
-                        isRTL ? "text-right" : "text-left"
-                      }`}
-                    >
-                      {t("sub_category", {
-                        en: "Sub Category",
-                        ar: "الفئة الفرعية",
-                        ku: "ژێرجۆر",
+                  <label
+                    className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 ${
+                      isRTL ? "text-right" : "text-left"
+                    }`}
+                  >
+                    {t("sub_category", {
+                      en: "Sub Category",
+                      ar: "الفئة الفرعية",
+                      ku: "ژێرجۆر",
+                    })}
+                  </label>
+                  <select
+                    value={selectedSubCategory}
+                    onChange={(e) => setSelectedSubCategory(e.target.value)}
+                    className={`block w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-md appearance-none ${
+                      isRTL
+                        ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_16px_center] bg-no-repeat"
+                        : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_16px_center] bg-no-repeat"
+                    }`}
+                  >
+                    <option value="">
+                      {t("all_sub_categories", {
+                        en: "All Sub Categories",
+                        ar: "جميع الفئات الفرعية",
+                        ku: "هەموو ژێرجۆرەکان",
                       })}
-                    </label>
-                    <button
-                      onClick={() => setShowSubCategories(!showSubCategories)}
-                      className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                    >
-                      {showSubCategories ? (
-                        <MinusIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                      ) : (
-                        <PlusIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                      )}
-                    </button>
-                  </div>
-                  {showSubCategories && (
-                    <select
-                      value={selectedSubCategory}
-                      onChange={(e) => setSelectedSubCategory(e.target.value)}
-                      className={`block w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-md appearance-none ${
-                        isRTL
-                          ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_16px_center] bg-no-repeat"
-                          : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_16px_center] bg-no-repeat"
-                      }`}
-                    >
-                      <option value="">
-                        {t("all_sub_categories", {
-                          en: "All Sub Categories",
-                          ar: "جميع الفئات الفرعية",
-                          ku: "هەموو ژێرجۆرەکان",
-                        })}
+                    </option>
+                    {currentSubCategories.map((subCat) => (
+                      <option key={subCat.id} value={subCat.id}>
+                        {getLocalizedField(subCat, "title")}
                       </option>
-                      {currentSubCategories.map((subCat) => (
-                        <option key={subCat.id} value={subCat.id}>
-                          {getLocalizedField(subCat, "title")}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                    ))}
+                  </select>
                 </div>
               )}
 
