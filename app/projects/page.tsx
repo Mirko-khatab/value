@@ -12,8 +12,8 @@ import {
   FolderIcon,
   ClockIcon,
   AdjustmentsHorizontalIcon,
-  ChevronDownIcon,
-  ChevronUpIcon,
+  PlusIcon,
+  MinusIcon,
 } from "@heroicons/react/24/outline";
 
 export default function ProjectsPage() {
@@ -255,65 +255,65 @@ export default function ProjectsPage() {
 
             {/* Filters - Responsive Grid */}
             <div
-              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 transition-all duration-300 ${
+              className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6 transition-all duration-300 ${
                 showFilters ? "block" : "hidden lg:grid"
               }`}
             >
-              {/* Location Filter */}
-              <div className="w-full">
-                <label
-                  className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 ${
-                    isRTL ? "text-right" : "text-left"
-                  }`}
-                >
-                  {isRTL ? (
-                    <>
-                      {t("location", {
-                        en: "Location",
-                        ar: "الموقع",
-                        ku: "شوێن",
-                      })}
-                      <MapPinIcon className="inline-block h-5 w-5 mr-2" />
-                    </>
-                  ) : (
-                    <>
-                      <MapPinIcon className="inline-block h-5 w-5 mr-2" />
-                      {t("location", {
-                        en: "Location",
-                        ar: "الموقع",
-                        ku: "شوێن",
-                      })}
-                    </>
-                  )}
-                </label>
-                <select
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                  className={`block w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-md appearance-none ${
-                    isRTL
-                      ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_16px_center] bg-no-repeat"
-                      : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_16px_center] bg-no-repeat"
-                  }`}
-                >
-                  <option value="">
-                    {t("all_locations", {
-                      en: "All Locations",
-                      ar: "جميع المواقع",
-                      ku: "هەموو شوێنەکان",
-                    })}
-                  </option>
-                  {locations.map((loc, index) => (
-                    <option key={index} value={loc.city_en}>
-                      {getLocalizedField(loc, "city")}
-                    </option>
-                  ))}
-                </select>
-              </div>
+          {/* Location Filter */}
+          <div className="w-full">
+            <label
+              className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${
+                isRTL ? "text-right" : "text-left"
+              }`}
+            >
+              {isRTL ? (
+                <>
+                  {t("location", {
+                    en: "Location",
+                    ar: "الموقع",
+                    ku: "شوێن",
+                  })}
+                  <MapPinIcon className="inline-block h-4 w-4 mr-2" />
+                </>
+              ) : (
+                <>
+                  <MapPinIcon className="inline-block h-4 w-4 mr-2" />
+                  {t("location", {
+                    en: "Location",
+                    ar: "الموقع",
+                    ku: "شوێن",
+                  })}
+                </>
+              )}
+            </label>
+            <select
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              className={`block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm appearance-none ${
+                isRTL
+                  ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_12px_center] bg-no-repeat"
+                  : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_12px_center] bg-no-repeat"
+              }`}
+            >
+              <option value="">
+                {t("all_locations", {
+                  en: "All Locations",
+                  ar: "جميع المواقع",
+                  ku: "هەموو شوێنەکان",
+                })}
+              </option>
+              {locations.map((loc, index) => (
+                <option key={index} value={loc.city_en}>
+                  {getLocalizedField(loc, "city")}
+                </option>
+              ))}
+            </select>
+          </div>
 
               {/* Category Filter with Expandable Sub-categories */}
               <div className="w-full sm:col-span-2">
                 <label
-                  className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 ${
+                  className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${
                     isRTL ? "text-right" : "text-left"
                   }`}
                 >
@@ -324,11 +324,11 @@ export default function ProjectsPage() {
                         ar: "الفئة",
                         ku: "جۆر",
                       })}
-                      <FolderIcon className="inline-block h-5 w-5 mr-2" />
+                      <FolderIcon className="inline-block h-4 w-4 mr-2" />
                     </>
                   ) : (
                     <>
-                      <FolderIcon className="inline-block h-5 w-5 mr-2" />
+                      <FolderIcon className="inline-block h-4 w-4 mr-2" />
                       {t("category", {
                         en: "Category",
                         ar: "الفئة",
@@ -337,14 +337,14 @@ export default function ProjectsPage() {
                     </>
                   )}
                 </label>
-                <div className="space-y-2 max-h-96 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-black p-3 shadow-md">
+                <div className="space-y-1 max-h-80 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black p-2 shadow-sm">
                   {/* All Categories Option */}
                   <button
                     onClick={() => {
                       setSelectedCategory("");
                       setSelectedSubCategory("");
                     }}
-                    className={`w-full px-4 py-3 rounded-lg transition-colors font-medium ${
+                    className={`w-full px-3 py-2 rounded-md transition-colors text-sm font-medium ${
                       !selectedCategory && !selectedSubCategory
                         ? "bg-blue-600 text-white"
                         : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
@@ -369,14 +369,14 @@ export default function ProjectsPage() {
 
                     return (
                       <div key={cat.id}>
-                        {/* Category Button */}
-                        <div className="flex items-center gap-2">
+                        {/* Category Button with inline +/- */}
+                        <div className="flex items-center gap-1">
                           <button
                             onClick={() => {
                               setSelectedCategory(cat.id);
                               setSelectedSubCategory("");
                             }}
-                            className={`flex-1 px-4 py-3 rounded-lg transition-colors font-medium ${
+                            className={`flex-1 px-3 py-2 rounded-md transition-colors text-sm font-medium ${
                               isCategorySelected
                                 ? "bg-blue-600 text-white"
                                 : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
@@ -386,26 +386,27 @@ export default function ProjectsPage() {
                           </button>
                           {hasSubCategories && (
                             <button
-                              onClick={() => toggleCategoryExpansion(cat.id)}
-                              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
-                              aria-label={
-                                isExpanded ? "Collapse" : "Expand"
-                              }
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleCategoryExpansion(cat.id);
+                              }}
+                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors flex-shrink-0"
+                              aria-label={isExpanded ? "Collapse" : "Expand"}
                             >
                               {isExpanded ? (
-                                <ChevronUpIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                                <MinusIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                               ) : (
-                                <ChevronDownIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                                <PlusIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
                               )}
                             </button>
                           )}
                         </div>
 
-                        {/* Sub-categories (Expandable) */}
+                        {/* Sub-categories (Expandable - CLOSED by default) */}
                         {hasSubCategories && isExpanded && (
                           <div
-                            className={`mt-2 space-y-1 ${
-                              isRTL ? "mr-6" : "ml-6"
+                            className={`mt-1 space-y-1 ${
+                              isRTL ? "mr-5" : "ml-5"
                             }`}
                           >
                             {categorySubCategories.map((subCat) => {
@@ -419,7 +420,7 @@ export default function ProjectsPage() {
                                     setSelectedCategory(cat.id);
                                     setSelectedSubCategory(subCat.id);
                                   }}
-                                  className={`w-full px-4 py-2 rounded-lg transition-colors text-sm ${
+                                  className={`w-full px-3 py-1.5 rounded-md transition-colors text-xs ${
                                     isSubCategorySelected
                                       ? "bg-blue-500 text-white"
                                       : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
@@ -437,69 +438,69 @@ export default function ProjectsPage() {
                 </div>
               </div>
 
-              {/* Status Filter */}
-              <div className="w-full">
-                <label
-                  className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 ${
-                    isRTL ? "text-right" : "text-left"
-                  }`}
-                >
-                  {isRTL ? (
-                    <>
-                      {t("status", { en: "Status", ar: "الحالة", ku: "دۆخ" })}
-                      <ClockIcon className="inline-block h-5 w-5 mr-2" />
-                    </>
-                  ) : (
-                    <>
-                      <ClockIcon className="inline-block h-5 w-5 mr-2" />
-                      {t("status", { en: "Status", ar: "الحالة", ku: "دۆخ" })}
-                    </>
-                  )}
-                </label>
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => setSelectedStatus(e.target.value)}
-                  className={`block w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-md appearance-none ${
-                    isRTL
-                      ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_16px_center] bg-no-repeat"
-                      : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_16px_center] bg-no-repeat"
-                  }`}
-                >
-                  <option value="">
-                    {t("all_statuses", {
-                      en: "All Statuses",
-                      ar: "جميع الحالات",
-                      ku: "هەموو دۆخەکان",
-                    })}
-                  </option>
-                  <option value="0">
-                    {t("in_progress", {
-                      en: "In Progress",
-                      ar: "قيد التنفيذ",
-                      ku: "لە جێبەجێکردندا",
-                    })}
-                  </option>
-                  <option value="1">
-                    {t("finished", {
-                      en: "Finished",
-                      ar: "منتهي",
-                      ku: "تەواوبوو",
-                    })}
-                  </option>
-                </select>
-              </div>
+          {/* Status Filter */}
+          <div className="w-full">
+            <label
+              className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${
+                isRTL ? "text-right" : "text-left"
+              }`}
+            >
+              {isRTL ? (
+                <>
+                  {t("status", { en: "Status", ar: "الحالة", ku: "دۆخ" })}
+                  <ClockIcon className="inline-block h-4 w-4 mr-2" />
+                </>
+              ) : (
+                <>
+                  <ClockIcon className="inline-block h-4 w-4 mr-2" />
+                  {t("status", { en: "Status", ar: "الحالة", ku: "دۆخ" })}
+                </>
+              )}
+            </label>
+            <select
+              value={selectedStatus}
+              onChange={(e) => setSelectedStatus(e.target.value)}
+              className={`block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm appearance-none ${
+                isRTL
+                  ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_12px_center] bg-no-repeat"
+                  : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_12px_center] bg-no-repeat"
+              }`}
+            >
+              <option value="">
+                {t("all_statuses", {
+                  en: "All Statuses",
+                  ar: "جميع الحالات",
+                  ku: "هەموو دۆخەکان",
+                })}
+              </option>
+              <option value="0">
+                {t("in_progress", {
+                  en: "In Progress",
+                  ar: "قيد التنفيذ",
+                  ku: "لە جێبەجێکردندا",
+                })}
+              </option>
+              <option value="1">
+                {t("finished", {
+                  en: "Finished",
+                  ar: "منتهي",
+                  ku: "تەواوبوو",
+                })}
+              </option>
+            </select>
+          </div>
             </div>
 
             {/* Filter Summary & Reset - Full Width */}
             <div
-              className={`flex flex-col sm:flex-row items-start sm:items-center gap-4 text-sm transition-all duration-300 ${
+              className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 text-sm transition-all duration-300 ${
                 showFilters ? "block" : "hidden lg:flex"
               } ${
                 isRTL ? "sm:flex-row-reverse sm:justify-end" : "justify-between"
               }`}
             >
               <p
-                className={`text-gray-600 dark:text-gray-400 text-base ${
+                className={`text-gray-600 dark:text-gray-400 text-sm ${
                   isRTL ? "text-right" : "text-left"
                 }`}
               >
@@ -516,7 +517,7 @@ export default function ProjectsPage() {
                 selectedStatus !== "") && (
                 <button
                   onClick={resetFilters}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-base"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
                 >
                   {t("reset_filters", {
                     en: "Reset Filters",

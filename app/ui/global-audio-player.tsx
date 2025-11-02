@@ -266,7 +266,7 @@ export default function GlobalAudioPlayer({
         try {
           audioRef.current.muted = false;
           await audioRef.current.play();
-          setIsPlaying(true);
+        setIsPlaying(true);
           setIsMuted(false);
           try { localStorage.setItem(userPrefKey, "autoplay"); } catch {}
           console.log("▶️ Music resumed by user");
