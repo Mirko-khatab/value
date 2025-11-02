@@ -4,6 +4,11 @@ import { subCategoryFormFields } from "@/app/ui/dashboard/config";
 import { createSubCategory } from "@/app/lib/actions";
 import { fetchProjectCategories } from "@/app/lib/data";
 
+// Force dynamic rendering to avoid database connection during build
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export default async function Page() {
   // Fetch categories for the dropdown
   const categories = await fetchProjectCategories();
