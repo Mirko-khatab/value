@@ -12,8 +12,8 @@ import {
   FolderIcon,
   ClockIcon,
   AdjustmentsHorizontalIcon,
-  PlusIcon,
-  MinusIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 
 export default function ProjectsPage() {
@@ -22,7 +22,7 @@ export default function ProjectsPage() {
   const [categories, setCategories] = useState<ProjectCategory[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [locations, setLocations] = useState<
-    Array<{ location_en: string; location_ku: string; location_ar: string }>
+    Array<{ city_en: string; city_ku: string; city_ar: string }>
   >([]);
   const [loading, setLoading] = useState(true);
 
@@ -33,6 +33,9 @@ export default function ProjectsPage() {
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
+    new Set()
+  );
 
   // Fetch data on mount
   useEffect(() => {
@@ -149,18 +152,23 @@ export default function ProjectsPage() {
     setSelectedSubCategory("");
     setSelectedStatus("");
     setShowFilters(false);
+    setExpandedCategories(new Set());
   };
 
-  // Get sub-categories for the selected category
-  const currentSubCategories = useMemo(() => {
-    if (!selectedCategory) return [];
-    return subCategories.filter((sub) => sub.category_id === selectedCategory);
-  }, [selectedCategory, subCategories]);
+  // Toggle category expansion
+  const toggleCategoryExpansion = (categoryId: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(categoryId)) {
+      newExpanded.delete(categoryId);
+    } else {
+      newExpanded.add(categoryId);
+    }
+    setExpandedCategories(newExpanded);
+  };
 
-  // Handle category change
-  const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    setSelectedSubCategory(""); // Clear sub-category when category changes
+  // Get sub-categories for a specific category
+  const getSubCategoriesForCategory = (categoryId: string) => {
+    return subCategories.filter((sub) => sub.category_id === categoryId);
   };
 
   return (
@@ -295,15 +303,15 @@ export default function ProjectsPage() {
                     })}
                   </option>
                   {locations.map((loc, index) => (
-                    <option key={index} value={loc.location_en}>
-                      {getLocalizedField(loc, "location")}
+                    <option key={index} value={loc.city_en}>
+                      {getLocalizedField(loc, "city")}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Category Filter */}
-              <div className="w-full">
+              {/* Category Filter with Expandable Sub-categories */}
+              <div className="w-full sm:col-span-2">
                 <label
                   className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 ${
                     isRTL ? "text-right" : "text-left"
@@ -329,86 +337,105 @@ export default function ProjectsPage() {
                     </>
                   )}
                 </label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                  className={`block w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-md appearance-none ${
-                    isRTL
-                      ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_16px_center] bg-no-repeat"
-                      : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_16px_center] bg-no-repeat"
-                  }`}
-                >
-                  <option value="">
+                <div className="space-y-2 max-h-96 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-black p-3 shadow-md">
+                  {/* All Categories Option */}
+                  <button
+                    onClick={() => {
+                      setSelectedCategory("");
+                      setSelectedSubCategory("");
+                    }}
+                    className={`w-full px-4 py-3 rounded-lg transition-colors font-medium ${
+                      !selectedCategory && !selectedSubCategory
+                        ? "bg-blue-600 text-white"
+                        : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+                    } ${isRTL ? "text-right" : "text-left"}`}
+                  >
                     {t("all_categories", {
                       en: "All Categories",
                       ar: "جميع الفئات",
                       ku: "هەموو جۆرەکان",
                     })}
-                  </option>
-                  {categories.map((cat) => {
-                    const hasSubs = subCategories.some(
-                      (sub) => sub.category_id === cat.id
-                    );
-                    return (
-                      <option key={cat.id} value={cat.id}>
-                        {hasSubs ? "+ " : ""}
-                        {getLocalizedField(cat, "title")}
-                      </option>
-                    );
-                  })}
-                </select>
-                {/* Helper text */}
-                <p
-                  className={`mt-2 text-xs text-gray-500 dark:text-gray-400 ${
-                    isRTL ? "text-right" : "text-left"
-                  }`}
-                >
-                  {t("category_hint", {
-                    en: "+ indicates categories with sub-categories",
-                    ar: "+ يشير إلى الفئات التي تحتوي على فئات فرعية",
-                    ku: "+ ئاماژە بە جۆرەکان دەکات کە ژێرجۆریان هەیە",
-                  })}
-                </p>
-              </div>
+                  </button>
 
-              {/* Sub-Category Filter (appears when category is selected and has sub-categories) */}
-              {selectedCategory && currentSubCategories.length > 0 && (
-                <div className="w-full">
-                  <label
-                    className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 ${
-                      isRTL ? "text-right" : "text-left"
-                    }`}
-                  >
-                    {t("sub_category", {
-                      en: "Sub Category",
-                      ar: "الفئة الفرعية",
-                      ku: "ژێرجۆر",
-                    })}
-                  </label>
-                  <select
-                    value={selectedSubCategory}
-                    onChange={(e) => setSelectedSubCategory(e.target.value)}
-                    className={`block w-full px-4 py-4 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-base shadow-md appearance-none ${
-                      isRTL
-                        ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_16px_center] bg-no-repeat"
-                        : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_16px_center] bg-no-repeat"
-                    }`}
-                  >
-                    <option value="">
-                      {t("all_sub_categories", {
-                        en: "All Sub Categories",
-                        ar: "جميع الفئات الفرعية",
-                        ku: "هەموو ژێرجۆرەکان",
-                      })}
-                    </option>
-                    {currentSubCategories.map((subCat) => (
-                      <option key={subCat.id} value={subCat.id}>
-                        {getLocalizedField(subCat, "title")}
-                      </option>
-                    ))}
-                  </select>
+                  {/* Category List with Sub-categories */}
+                  {categories.map((cat) => {
+                    const categorySubCategories = getSubCategoriesForCategory(
+                      cat.id
+                    );
+                    const hasSubCategories = categorySubCategories.length > 0;
+                    const isExpanded = expandedCategories.has(cat.id);
+                    const isCategorySelected =
+                      selectedCategory === cat.id && !selectedSubCategory;
+
+                    return (
+                      <div key={cat.id}>
+                        {/* Category Button */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedCategory(cat.id);
+                              setSelectedSubCategory("");
+                            }}
+                            className={`flex-1 px-4 py-3 rounded-lg transition-colors font-medium ${
+                              isCategorySelected
+                                ? "bg-blue-600 text-white"
+                                : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+                            } ${isRTL ? "text-right" : "text-left"}`}
+                          >
+                            {getLocalizedField(cat, "title")}
+                          </button>
+                          {hasSubCategories && (
+                            <button
+                              onClick={() => toggleCategoryExpansion(cat.id)}
+                              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                              aria-label={
+                                isExpanded ? "Collapse" : "Expand"
+                              }
+                            >
+                              {isExpanded ? (
+                                <ChevronUpIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                              ) : (
+                                <ChevronDownIcon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Sub-categories (Expandable) */}
+                        {hasSubCategories && isExpanded && (
+                          <div
+                            className={`mt-2 space-y-1 ${
+                              isRTL ? "mr-6" : "ml-6"
+                            }`}
+                          >
+                            {categorySubCategories.map((subCat) => {
+                              const isSubCategorySelected =
+                                selectedSubCategory === subCat.id;
+
+                              return (
+                                <button
+                                  key={subCat.id}
+                                  onClick={() => {
+                                    setSelectedCategory(cat.id);
+                                    setSelectedSubCategory(subCat.id);
+                                  }}
+                                  className={`w-full px-4 py-2 rounded-lg transition-colors text-sm ${
+                                    isSubCategorySelected
+                                      ? "bg-blue-500 text-white"
+                                      : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                                  } ${isRTL ? "text-right" : "text-left"}`}
+                                >
+                                  {getLocalizedField(subCat, "title")}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
 
               {/* Status Filter */}
               <div className="w-full">

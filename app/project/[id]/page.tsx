@@ -416,9 +416,16 @@ export default function ProjectDetailPage({ params }: PageProps) {
                           }`}
                         >
                           <FolderIcon className="h-6 w-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                          <span className="font-medium text-lg">
-                            {getLocalizedField(project, "category_name")}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-lg">
+                              {getLocalizedField(project, "category_name")}
+                            </span>
+                            {project.sub_category_name_en && (
+                              <span className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                {getLocalizedField(project, "sub_category_name")}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       )}
 
@@ -565,9 +572,16 @@ export default function ProjectDetailPage({ params }: PageProps) {
                               }`}
                             >
                               <FolderIcon className="h-6 w-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                              <span className="font-medium text-lg">
-                                {getLocalizedField(project, "category_name")}
-                              </span>
+                              <div className="flex flex-col">
+                                <span className="font-medium text-lg">
+                                  {getLocalizedField(project, "category_name")}
+                                </span>
+                                {project.sub_category_name_en && (
+                                  <span className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    {getLocalizedField(project, "sub_category_name")}
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           )}
 
