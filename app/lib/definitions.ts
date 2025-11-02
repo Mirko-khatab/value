@@ -127,6 +127,7 @@ export type Project = {
   description_en: string;
   date: string | Date;
   project_category: number;
+  project_sub_category?: number | null;
   project_status: number; // 0 or 1
   location_id: string;
   // Gallery fields (from JOIN queries)
@@ -138,6 +139,10 @@ export type Project = {
   category_name_en?: string;
   category_name_ku?: string;
   category_name_ar?: string;
+  // Sub-category names from JOIN (multi-language)
+  sub_category_name_en?: string;
+  sub_category_name_ku?: string;
+  sub_category_name_ar?: string;
   // Location fields from JOIN queries
   location_city_ku?: string;
   location_city_ar?: string;

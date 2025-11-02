@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/app/ui/button";
 import { updateProject } from "@/app/lib/actions";
 import MultipleImageUpload from "./multiple-image-upload";
-import { ProjectCategory, Location } from "@/app/lib/definitions";
+import { ProjectCategory, Location, SubCategory } from "@/app/lib/definitions";
 
 interface EditProjectFormProps {
   projectId: string;
@@ -27,6 +27,8 @@ export default function EditProjectForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
+  const [loadingSubCategories, setLoadingSubCategories] = useState(false);
 
   const handleImagesChange = useCallback(
     (images: { url: string; altText: string; orderIndex: number }[]) => {
@@ -34,6 +36,26 @@ export default function EditProjectForm({
     },
     []
   );
+
+  // Fetch sub-categories when category changes
+  useEffect(() => {
+    if (formData.project_category) {
+      setLoadingSubCategories(true);
+      fetch(`/api/sub-categorys/by-category/${formData.project_category}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setSubCategories(data);
+          setLoadingSubCategories(false);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch sub-categories:", err);
+          setSubCategories([]);
+          setLoadingSubCategories(false);
+        });
+    } else {
+      setSubCategories([]);
+    }
+  }, [formData.project_category]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -268,6 +290,41 @@ export default function EditProjectForm({
               ))}
             </select>
           </div>
+
+          {/* Sub-Category (conditional) */}
+          {formData.project_category && (
+            <div className="mb-4">
+              <label
+                htmlFor="project_sub_category"
+                className="mb-2 block text-sm text-gray-900 dark:text-gray-200 font-medium"
+              >
+                Sub-Category {subCategories.length > 0 && "(Optional)"}
+              </label>
+              <select
+                id="project_sub_category"
+                name="project_sub_category"
+                disabled={loadingSubCategories}
+                value={formData.project_sub_category || ""}
+                onChange={(e) =>
+                  handleInputChange("project_sub_category", e.target.value)
+                }
+                className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-200 dark:bg-gray-700 disabled:opacity-50"
+              >
+                <option value="">
+                  {loadingSubCategories
+                    ? "Loading..."
+                    : subCategories.length > 0
+                    ? "Select Sub-Category (Optional)"
+                    : "No sub-categories available"}
+                </option>
+                {subCategories.map((subCat) => (
+                  <option key={subCat.id} value={subCat.id}>
+                    {subCat.title_en}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           {/* Location */}
           <div className="mb-4">
