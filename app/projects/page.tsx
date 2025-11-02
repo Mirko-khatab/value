@@ -110,9 +110,7 @@ export default function ProjectsPage() {
 
       // Sub-category filter (takes priority over category filter)
       if (selectedSubCategory) {
-        if (
-          project.project_sub_category !== parseInt(selectedSubCategory)
-        )
+        if (project.project_sub_category !== parseInt(selectedSubCategory))
           return false;
       }
       // Category filter (only if no sub-category is selected)
@@ -170,9 +168,7 @@ export default function ProjectsPage() {
 
   // Get sub-categories for a specific category
   const getSubCategoriesForCategory = (categoryId: string) => {
-    return subCategories.filter(
-      (sub) => sub.category_id === categoryId
-    );
+    return subCategories.filter((sub) => sub.category_id === categoryId);
   };
 
   // Handle category click
@@ -182,7 +178,10 @@ export default function ProjectsPage() {
   };
 
   // Handle sub-category click
-  const handleSubCategoryClick = (subCategoryId: string, categoryId: string) => {
+  const handleSubCategoryClick = (
+    subCategoryId: string,
+    categoryId: string
+  ) => {
     setSelectedSubCategory(subCategoryId);
     setSelectedCategory(categoryId); // Set parent category too
   };

@@ -220,9 +220,42 @@ export default function Navigation() {
                     <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
                       <div className="py-1">
                         {[
-                          { code: "en" as const, name: "English", flag: "🇬🇧" },
-                          { code: "ar" as const, name: "العربية", flag: "🇸🇦" },
-                          { code: "ku" as const, name: "کوردی", flag: "🇹🇯" },
+                          {
+                            code: "en" as const,
+                            name: "English",
+                            flag: (
+                              <Image
+                                src="/flags/United-Kingdom.svg"
+                                alt="en"
+                                width={20}
+                                height={20}
+                              />
+                            ),
+                          },
+                          {
+                            code: "ar" as const,
+                            name: "العربية",
+                            flag: (
+                              <Image
+                                src="/flags/iraq.svg"
+                                alt="ar"
+                                width={20}
+                                height={20}
+                              />
+                            ),
+                          },
+                          {
+                            code: "ku" as const,
+                            name: "کوردی",
+                            flag: (
+                              <Image
+                                src="/flags/Kurdistan.svg"
+                                alt="ku"
+                                width={20}
+                                height={20}
+                              />
+                            ),
+                          },
                         ].map((lang) => (
                           <button
                             key={lang.code}
