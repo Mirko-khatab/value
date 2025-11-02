@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "@/app/lib/language-context";
 import { Project, ProjectCategory, SubCategory } from "@/app/lib/definitions";
 import Image from "next/image";
@@ -300,7 +300,7 @@ export default function ProjectsPage() {
                 </select>
               </div>
 
-              {/* Category Filter - Simple Dropdown */}
+              {/* Category & Sub-Category Filter - Single Dropdown with nested options */}
               <div className="w-full">
                 <label
                   className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${
@@ -328,10 +328,28 @@ export default function ProjectsPage() {
                   )}
                 </label>
                 <select
-                  value={selectedCategory}
+                  value={selectedSubCategory || selectedCategory}
                   onChange={(e) => {
-                    setSelectedCategory(e.target.value);
-                    setSelectedSubCategory(""); // Reset sub-category when category changes
+                    const value = e.target.value;
+                    // Check if selected value is a sub-category
+                    const isSubCategory = subCategories.some(
+                      (sub) => String(sub.id) === value
+                    );
+                    
+                    if (isSubCategory) {
+                      // Find the parent category for this sub-category
+                      const subCat = subCategories.find(
+                        (sub) => String(sub.id) === value
+                      );
+                      if (subCat) {
+                        setSelectedCategory(String(subCat.category_id));
+                        setSelectedSubCategory(value);
+                      }
+                    } else {
+                      // It's a category
+                      setSelectedCategory(value);
+                      setSelectedSubCategory("");
+                    }
                   }}
                   className={`block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm appearance-none ${
                     isRTL
@@ -346,69 +364,25 @@ export default function ProjectsPage() {
                       ku: "هەموو جۆرەکان",
                     })}
                   </option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {getLocalizedField(cat, "title")}
-                    </option>
-                  ))}
+                  {categories.map((cat) => {
+                    const categorySubCategories = getSubCategoriesForCategory(cat.id);
+                    return (
+                      <React.Fragment key={cat.id}>
+                        {/* Category Option */}
+                        <option value={cat.id}>
+                          {getLocalizedField(cat, "title")}
+                        </option>
+                        {/* Sub-Category Options (indented) */}
+                        {categorySubCategories.map((subCat) => (
+                          <option key={subCat.id} value={subCat.id}>
+                            {isRTL ? "← " : "→ "}{getLocalizedField(subCat, "title")}
+                          </option>
+                        ))}
+                      </React.Fragment>
+                    );
+                  })}
                 </select>
               </div>
-
-              {/* Sub-Category Filter - Only show when category has sub-categories */}
-              {selectedCategory &&
-                getSubCategoriesForCategory(selectedCategory).length > 0 && (
-                  <div className="w-full">
-                    <label
-                      className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${
-                        isRTL ? "text-right" : "text-left"
-                      }`}
-                    >
-                      {isRTL ? (
-                        <>
-                          {t("sub_category", {
-                            en: "Sub Category",
-                            ar: "الفئة الفرعية",
-                            ku: "ژێرجۆر",
-                          })}
-                          <FolderIcon className="inline-block h-4 w-4 mr-2" />
-                        </>
-                      ) : (
-                        <>
-                          <FolderIcon className="inline-block h-4 w-4 mr-2" />
-                          {t("sub_category", {
-                            en: "Sub Category",
-                            ar: "الفئة الفرعية",
-                            ku: "ژێرجۆر",
-                          })}
-                        </>
-                      )}
-                    </label>
-                    <select
-                      value={selectedSubCategory}
-                      onChange={(e) => setSelectedSubCategory(e.target.value)}
-                      className={`block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm appearance-none ${
-                        isRTL
-                          ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_12px_center] bg-no-repeat"
-                          : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_12px_center] bg-no-repeat"
-                      }`}
-                    >
-                      <option value="">
-                        {t("all_sub_categories", {
-                          en: "All Sub Categories",
-                          ar: "جميع الفئات الفرعية",
-                          ku: "هەموو ژێرجۆرەکان",
-                        })}
-                      </option>
-                      {getSubCategoriesForCategory(selectedCategory).map(
-                        (subCat) => (
-                          <option key={subCat.id} value={subCat.id}>
-                            {getLocalizedField(subCat, "title")}
-                          </option>
-                        )
-                      )}
-                    </select>
-                  </div>
-                )}
 
               {/* Status Filter */}
               <div className="w-full">
