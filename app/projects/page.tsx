@@ -350,12 +350,30 @@ export default function ProjectsPage() {
                       ku: "هەموو جۆرەکان",
                     })}
                   </option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {getLocalizedField(cat, "title")}
-                    </option>
-                  ))}
+                  {categories.map((cat) => {
+                    const hasSubs = subCategories.some(
+                      (sub) => sub.category_id === cat.id
+                    );
+                    return (
+                      <option key={cat.id} value={cat.id}>
+                        {hasSubs ? "+ " : ""}
+                        {getLocalizedField(cat, "title")}
+                      </option>
+                    );
+                  })}
                 </select>
+                {/* Helper text */}
+                <p
+                  className={`mt-2 text-xs text-gray-500 dark:text-gray-400 ${
+                    isRTL ? "text-right" : "text-left"
+                  }`}
+                >
+                  {t("category_hint", {
+                    en: "+ indicates categories with sub-categories",
+                    ar: "+ يشير إلى الفئات التي تحتوي على فئات فرعية",
+                    ku: "+ ئاماژە بە جۆرەکان دەکات کە ژێرجۆریان هەیە",
+                  })}
+                </p>
               </div>
 
               {/* Sub-Category Filter (appears when category is selected and has sub-categories) */}
