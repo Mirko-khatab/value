@@ -12,8 +12,6 @@ import {
   FolderIcon,
   ClockIcon,
   AdjustmentsHorizontalIcon,
-  PlusIcon,
-  MinusIcon,
 } from "@heroicons/react/24/outline";
 
 export default function ProjectsPage() {
@@ -33,9 +31,6 @@ export default function ProjectsPage() {
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set()
-  );
 
   // Fetch data on mount
   useEffect(() => {
@@ -152,18 +147,6 @@ export default function ProjectsPage() {
     setSelectedSubCategory("");
     setSelectedStatus("");
     setShowFilters(false);
-    setExpandedCategories(new Set());
-  };
-
-  // Toggle category expansion
-  const toggleCategoryExpansion = (categoryId: string) => {
-    const newExpanded = new Set(expandedCategories);
-    if (newExpanded.has(categoryId)) {
-      newExpanded.delete(categoryId);
-    } else {
-      newExpanded.add(categoryId);
-    }
-    setExpandedCategories(newExpanded);
   };
 
   // Get sub-categories for a specific category
@@ -310,8 +293,8 @@ export default function ProjectsPage() {
                 </select>
               </div>
 
-              {/* Category Filter with Expandable Sub-categories */}
-              <div className="w-full sm:col-span-2">
+              {/* Category Filter - Simple Dropdown */}
+              <div className="w-full">
                 <label
                   className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${
                     isRTL ? "text-right" : "text-left"
@@ -337,106 +320,85 @@ export default function ProjectsPage() {
                     </>
                   )}
                 </label>
-                <div className="space-y-1 max-h-80 overflow-y-auto border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black p-2 shadow-sm">
-                  {/* All Categories Option */}
-                  <button
-                    onClick={() => {
-                      setSelectedCategory("");
-                      setSelectedSubCategory("");
-                    }}
-                    className={`w-full px-3 py-2 rounded-md transition-colors text-sm font-medium ${
-                      !selectedCategory && !selectedSubCategory
-                        ? "bg-blue-600 text-white"
-                        : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                    } ${isRTL ? "text-right" : "text-left"}`}
-                  >
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => {
+                    setSelectedCategory(e.target.value);
+                    setSelectedSubCategory(""); // Reset sub-category when category changes
+                  }}
+                  className={`block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm appearance-none ${
+                    isRTL
+                      ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_12px_center] bg-no-repeat"
+                      : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_12px_center] bg-no-repeat"
+                  }`}
+                >
+                  <option value="">
                     {t("all_categories", {
                       en: "All Categories",
                       ar: "جميع الفئات",
                       ku: "هەموو جۆرەکان",
                     })}
-                  </button>
-
-                  {/* Category List with Sub-categories */}
-                  {categories.map((cat) => {
-                    const categorySubCategories = getSubCategoriesForCategory(
-                      cat.id
-                    );
-                    const hasSubCategories = categorySubCategories.length > 0;
-                    const isExpanded = expandedCategories.has(cat.id);
-                    const isCategorySelected =
-                      selectedCategory === cat.id && !selectedSubCategory;
-
-                    return (
-                      <div key={cat.id}>
-                        {/* Category Button with inline +/- */}
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => {
-                              setSelectedCategory(cat.id);
-                              setSelectedSubCategory("");
-                            }}
-                            className={`flex-1 px-3 py-2 rounded-md transition-colors text-sm font-medium ${
-                              isCategorySelected
-                                ? "bg-blue-600 text-white"
-                                : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
-                            } ${isRTL ? "text-right" : "text-left"}`}
-                          >
-                            {getLocalizedField(cat, "title")}
-                          </button>
-                          {hasSubCategories && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleCategoryExpansion(cat.id);
-                              }}
-                              className="p-1.5 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors flex-shrink-0"
-                              aria-label={isExpanded ? "Collapse" : "Expand"}
-                            >
-                              {isExpanded ? (
-                                <MinusIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                              ) : (
-                                <PlusIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
-                              )}
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Sub-categories (Expandable - CLOSED by default) */}
-                        {hasSubCategories && isExpanded && (
-                          <div
-                            className={`mt-1 space-y-1 ${
-                              isRTL ? "mr-5" : "ml-5"
-                            }`}
-                          >
-                            {categorySubCategories.map((subCat) => {
-                              const isSubCategorySelected =
-                                selectedSubCategory === subCat.id;
-
-                              return (
-                                <button
-                                  key={subCat.id}
-                                  onClick={() => {
-                                    setSelectedCategory(cat.id);
-                                    setSelectedSubCategory(subCat.id);
-                                  }}
-                                  className={`w-full px-3 py-1.5 rounded-md transition-colors text-xs ${
-                                    isSubCategorySelected
-                                      ? "bg-blue-500 text-white"
-                                      : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                                  } ${isRTL ? "text-right" : "text-left"}`}
-                                >
-                                  {getLocalizedField(subCat, "title")}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
+                  </option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {getLocalizedField(cat, "title")}
+                    </option>
+                  ))}
+                </select>
               </div>
+
+              {/* Sub-Category Filter - Only show when category has sub-categories */}
+              {selectedCategory && getSubCategoriesForCategory(selectedCategory).length > 0 && (
+                <div className="w-full">
+                  <label
+                    className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${
+                      isRTL ? "text-right" : "text-left"
+                    }`}
+                  >
+                    {isRTL ? (
+                      <>
+                        {t("sub_category", {
+                          en: "Sub Category",
+                          ar: "الفئة الفرعية",
+                          ku: "ژێرجۆر",
+                        })}
+                        <FolderIcon className="inline-block h-4 w-4 mr-2" />
+                      </>
+                    ) : (
+                      <>
+                        <FolderIcon className="inline-block h-4 w-4 mr-2" />
+                        {t("sub_category", {
+                          en: "Sub Category",
+                          ar: "الفئة الفرعية",
+                          ku: "ژێرجۆر",
+                        })}
+                      </>
+                    )}
+                  </label>
+                  <select
+                    value={selectedSubCategory}
+                    onChange={(e) => setSelectedSubCategory(e.target.value)}
+                    className={`block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm appearance-none ${
+                      isRTL
+                        ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_12px_center] bg-no-repeat"
+                        : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_12px_center] bg-no-repeat"
+                    }`}
+                  >
+                    <option value="">
+                      {t("all_sub_categories", {
+                        en: "All Sub Categories",
+                        ar: "جميع الفئات الفرعية",
+                        ku: "هەموو ژێرجۆرەکان",
+                      })}
+                    </option>
+                    {getSubCategoriesForCategory(selectedCategory).map((subCat) => (
+                      <option key={subCat.id} value={subCat.id}>
+                        {getLocalizedField(subCat, "title")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               {/* Status Filter */}
               <div className="w-full">
