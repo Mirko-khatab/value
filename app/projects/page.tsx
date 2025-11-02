@@ -152,8 +152,12 @@ export default function ProjectsPage() {
 
   // Get sub-categories for a specific category
   const getSubCategoriesForCategory = (categoryId: string) => {
-    const filtered = subCategories.filter((sub) => sub.category_id === categoryId);
+    // Convert both to strings for comparison
+    const filtered = subCategories.filter(
+      (sub) => String(sub.category_id) === String(categoryId)
+    );
     console.log(`🔍 Sub-categories for category ${categoryId}:`, filtered);
+    console.log(`📊 All sub-categories:`, subCategories);
     return filtered;
   };
 
