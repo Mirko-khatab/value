@@ -194,26 +194,26 @@ export default function ProductsPage() {
                   </Link>
                 ))}
               </div>
-              
-              {/* Loading indicator */}
-              {loading && (
-                <div className="flex justify-center items-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
-                </div>
-              )}
-              
-              {/* End of results indicator */}
-              {!hasMore && filteredProducts.length > 0 && (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    {t("no_more_products", {
-                      en: "No more products to load",
-                      ar: "لا توجد منتجات أخرى للتحميل",
-                      ku: "هیچ بەرهەمێکی تر نییە بۆ بارکردن",
-                    })}
-                  </p>
-                </div>
-              )}
+            )}
+            
+            {/* Loading indicator */}
+            {loading && (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
+              </div>
+            )}
+            
+            {/* End of results indicator */}
+            {!hasMore && filteredProducts.length > 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400">
+                  {t("no_more_products", {
+                    en: "No more products to load",
+                    ar: "لا توجد منتجات أخرى للتحميل",
+                    ku: "هیچ بەرهەمێکی تر نییە بۆ بارکردن",
+                  })}
+                </p>
+              </div>
             )}
           </div>
         </div>

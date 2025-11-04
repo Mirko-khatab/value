@@ -628,26 +628,26 @@ export default function ProjectsPage() {
                   </Link>
                 ))}
               </div>
-              
-              {/* Loading indicator */}
-              {loading && (
-                <div className="flex justify-center items-center py-8">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
-                </div>
-              )}
-              
-              {/* End of results indicator */}
-              {!hasMore && filteredProjects.length > 0 && (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">
-                    {t("no_more_projects", {
-                      en: "No more projects to load",
-                      ar: "لا توجد مشاريع أخرى للتحميل",
-                      ku: "هیچ پڕۆژەیەکی تر نییە بۆ بارکردن",
-                    })}
-                  </p>
-                </div>
-              )}
+            )}
+            
+            {/* Loading indicator */}
+            {loading && (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
+              </div>
+            )}
+            
+            {/* End of results indicator */}
+            {!hasMore && filteredProjects.length > 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400">
+                  {t("no_more_projects", {
+                    en: "No more projects to load",
+                    ar: "لا توجد مشاريع أخرى للتحميل",
+                    ku: "هیچ پڕۆژەیەکی تر نییە بۆ بارکردن",
+                  })}
+                </p>
+              </div>
             )}
           </div>
         </div>
