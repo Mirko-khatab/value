@@ -41,9 +41,9 @@ export default function ProductsPage() {
 
   // Filter products based on search query
   const filteredProducts = useMemo(() => {
-    if (!searchQuery.trim()) return products;
+    if (!searchQuery.trim()) return products as Product[];
 
-    return products.filter((product) => {
+    return (products as Product[]).filter((product) => {
       const title = getLocalizedField(product, "title").toLowerCase();
       const description = getLocalizedField(
         product,
@@ -53,7 +53,7 @@ export default function ProductsPage() {
 
       return title.includes(query) || description.includes(query);
     });
-  }, [products, searchQuery, language]);
+  }, [products, searchQuery, language, getLocalizedField]);
 
   // Reset filters
   const resetFilters = () => {
@@ -155,7 +155,7 @@ export default function ProductsPage() {
                 }`}
                 dir={isRTL ? "rtl" : "ltr"}
               >
-                {filteredProducts.map((product: Product, index) => (
+                {filteredProducts.map((product, index) => (
                   <Link
                     key={product.id}
                     href={`/product/${product.id}`}

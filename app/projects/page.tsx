@@ -91,7 +91,7 @@ export default function ProjectsPage() {
 
   // Filter projects based on current filters
   const filteredProjects = useMemo(() => {
-    return projects.filter((project) => {
+    return (projects as Project[]).filter((project) => {
       // Search filter
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -578,7 +578,7 @@ export default function ProjectsPage() {
                 }`}
                 dir={isRTL ? "rtl" : "ltr"}
               >
-                {filteredProjects.map((project: Project, index) => (
+                {filteredProjects.map((project, index) => (
                   <Link
                     key={project.id}
                     href={`/project/${project.id}`}
