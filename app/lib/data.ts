@@ -419,6 +419,9 @@ export async function fetchFilteredProjects(
         pc.title_en as category_name_en,
         pc.title_ku as category_name_ku,
         pc.title_ar as category_name_ar,
+        sc.title_en as sub_category_name_en,
+        sc.title_ku as sub_category_name_ku,
+        sc.title_ar as sub_category_name_ar,
         l.city_en as location_city_en,
         l.city_ku as location_city_ku,
         l.city_ar as location_city_ar,
@@ -430,6 +433,7 @@ export async function fetchFilteredProjects(
         g.order_index as gallery_order_index
       FROM projects p
       LEFT JOIN project_categories pc ON p.project_category = pc.id
+      LEFT JOIN sub_categorys sc ON p.project_sub_category = sc.id
       LEFT JOIN locations l ON p.location_id = l.id
       LEFT JOIN countries c ON l.country_id = c.id
       LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(p.id AS CHAR) 
