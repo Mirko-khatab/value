@@ -27,7 +27,7 @@ export function useInfiniteScroll<T>(
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   
-  const observer = useRef<IntersectionObserver>();
+  const observer = useRef<IntersectionObserver | null>(null);
   const lastElementRef = useCallback((node: HTMLElement | null) => {
     if (loading) return;
     if (observer.current) observer.current.disconnect();
