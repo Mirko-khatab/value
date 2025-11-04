@@ -296,6 +296,74 @@ export async function fetchProjects() {
   }
 }
 
+export async function fetchProjectsPaginated(page: number = 1, limit: number = 12) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const offset = (page - 1) * limit;
+    
+    // Get total count for hasMore calculation
+    const [countResult] = await connection.execute(
+      "SELECT COUNT(*) as total FROM projects"
+    );
+    const total = (countResult as any)[0].total;
+    
+    // Fetch paginated projects
+    const [projects] = await connection.execute(
+      `
+      SELECT 
+        p.*,
+        pc.title_en as category_name_en,
+        pc.title_ku as category_name_ku,
+        pc.title_ar as category_name_ar,
+        sc.title_en as sub_category_name_en,
+        sc.title_ku as sub_category_name_ku,
+        sc.title_ar as sub_category_name_ar,
+        l.city_en as location_city_en,
+        l.city_ku as location_city_ku,
+        l.city_ar as location_city_ar,
+        c.name_en as location_country_name_en,
+        c.name_ku as location_country_name_ku,
+        c.name_ar as location_country_name_ar,
+        g.image_url as gallery_image_url,
+        g.alt_text as gallery_alt_text,
+        g.order_index as gallery_order_index
+      FROM projects p
+      LEFT JOIN project_categories pc ON p.project_category = pc.id
+      LEFT JOIN sub_categorys sc ON p.project_sub_category = sc.id
+      LEFT JOIN locations l ON p.location_id = l.id
+      LEFT JOIN countries c ON l.country_id = c.id
+      LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(p.id AS CHAR) 
+        AND CAST(g.parent_type AS CHAR) = CAST(? AS CHAR)
+        AND g.order_index = (
+          SELECT MIN(CAST(g2.order_index AS UNSIGNED))
+          FROM galleries g2
+          WHERE CAST(g2.parent_id AS CHAR) = CAST(p.id AS CHAR)
+            AND CAST(g2.parent_type AS CHAR) = CAST(? AS CHAR)
+        )
+      ORDER BY p.date DESC
+      LIMIT ? OFFSET ?
+    `,
+      [ParentType.Project.toString(), ParentType.Project.toString(), limit, offset]
+    );
+    
+    const hasMore = offset + limit < total;
+    
+    return {
+      data: projects as Project[],
+      hasMore,
+      total,
+      page,
+      limit
+    };
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch projects.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
 export async function fetchProjectById(id: string) {
   let connection;
   try {
@@ -457,6 +525,56 @@ export async function fetchProducts() {
       [ParentType.Product.toString(), ParentType.Product.toString()]
     );
     return products as Product[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch products.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+export async function fetchProductsPaginated(page: number = 1, limit: number = 12) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const offset = (page - 1) * limit;
+    
+    // Get total count for hasMore calculation
+    const [countResult] = await connection.execute(
+      "SELECT COUNT(*) as total FROM products"
+    );
+    const total = (countResult as any)[0].total;
+    
+    // Fetch paginated products
+    const [products] = await connection.execute(
+      `SELECT 
+        p.*,
+        g.image_url as gallery_image_url,
+        g.alt_text as gallery_alt_text,
+        g.order_index as gallery_order_index
+      FROM products p
+      LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(p.id AS CHAR) 
+        AND CAST(g.parent_type AS CHAR) = CAST(? AS CHAR)
+        AND g.order_index = (
+          SELECT MIN(CAST(g2.order_index AS UNSIGNED))
+          FROM galleries g2
+          WHERE CAST(g2.parent_id AS CHAR) = CAST(p.id AS CHAR)
+            AND CAST(g2.parent_type AS CHAR) = CAST(? AS CHAR)
+        )
+      ORDER BY p.id DESC
+      LIMIT ? OFFSET ?`,
+      [ParentType.Product.toString(), ParentType.Product.toString(), limit, offset]
+    );
+    
+    const hasMore = offset + limit < total;
+    
+    return {
+      data: products as Product[],
+      hasMore,
+      total,
+      page,
+      limit
+    };
   } catch (error) {
     console.error("Database Error:", error);
     throw new Error("Failed to fetch products.");

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useLanguage } from "@/app/lib/language-context";
 import { Product } from "@/app/lib/definitions";
+import { useInfiniteScroll } from "@/app/lib/hooks/useInfiniteScroll";
 import Image from "next/image";
 import Link from "next/link";
 import ShowcaseLayout from "@/app/ui/showcase-layout";
@@ -10,8 +11,6 @@ import { MagnifyingGlassIcon, FolderIcon } from "@heroicons/react/24/outline";
 
 export default function ProductsPage() {
   const { language, t } = useLanguage();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Check if language is RTL
@@ -23,23 +22,22 @@ export default function ProductsPage() {
     return item[field] || item[`${fieldName}_en`] || "";
   };
 
-  // Fetch products data
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const productsResponse = await fetch("/api/products/public");
-        const productsData = await productsResponse.json();
-        setProducts(productsData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
+  // Infinite scroll fetch function
+  const fetchProducts = useCallback(async (page: number, limit: number) => {
+    const response = await fetch(`/api/products/public?page=${page}&limit=${limit}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch products');
     }
-
-    fetchData();
+    return await response.json();
   }, []);
+
+  // Use infinite scroll hook
+  const {
+    items: products,
+    loading,
+    hasMore,
+    lastElementRef
+  } = useInfiniteScroll(fetchProducts, 12);
 
   // Filter products based on search query
   const filteredProducts = useMemo(() => {
@@ -157,11 +155,12 @@ export default function ProductsPage() {
                 }`}
                 dir={isRTL ? "rtl" : "ltr"}
               >
-                {filteredProducts.map((product) => (
+                {filteredProducts.map((product, index) => (
                   <Link
                     key={product.id}
                     href={`/product/${product.id}`}
                     className="group bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-200 dark:border-gray-700 hover:scale-105 hover:-translate-y-2"
+                    ref={index === filteredProducts.length - 1 ? lastElementRef : null}
                   >
                     {/* Product Image */}
                     <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
@@ -195,6 +194,26 @@ export default function ProductsPage() {
                   </Link>
                 ))}
               </div>
+              
+              {/* Loading indicator */}
+              {loading && (
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
+                </div>
+              )}
+              
+              {/* End of results indicator */}
+              {!hasMore && filteredProducts.length > 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {t("no_more_products", {
+                      en: "No more products to load",
+                      ar: "لا توجد منتجات أخرى للتحميل",
+                      ku: "هیچ بەرهەمێکی تر نییە بۆ بارکردن",
+                    })}
+                  </p>
+                </div>
+              )}
             )}
           </div>
         </div>

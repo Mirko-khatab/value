@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useLanguage } from "@/app/lib/language-context";
 import { Project, ProjectCategory, SubCategory } from "@/app/lib/definitions";
+import { useInfiniteScroll } from "@/app/lib/hooks/useInfiniteScroll";
 import Image from "next/image";
 import Link from "next/link";
 import ShowcaseLayout from "@/app/ui/showcase-layout";
@@ -16,13 +17,12 @@ import {
 
 export default function ProjectsPage() {
   const { language, t } = useLanguage();
-  const [projects, setProjects] = useState<Project[]>([]);
   const [categories, setCategories] = useState<ProjectCategory[]>([]);
   const [subCategories, setSubCategories] = useState<SubCategory[]>([]);
   const [locations, setLocations] = useState<
     Array<{ city_en: string; city_ku: string; city_ar: string }>
   >([]);
-  const [loading, setLoading] = useState(true);
+  const [metaDataLoading, setMetaDataLoading] = useState(true);
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,25 +32,37 @@ export default function ProjectsPage() {
   const [selectedStatus, setSelectedStatus] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
-  // Fetch data on mount
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
+  // Infinite scroll fetch function
+  const fetchProjects = useCallback(async (page: number, limit: number) => {
+    const response = await fetch(`/api/projects/public?page=${page}&limit=${limit}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch projects');
+    }
+    return await response.json();
+  }, []);
 
-        // Fetch all data in parallel
-        const [projectsRes, categoriesRes, subCategoriesRes, locationsRes] =
+  // Use infinite scroll hook
+  const {
+    items: projects,
+    loading,
+    hasMore,
+    lastElementRef,
+    reset: resetProjects
+  } = useInfiniteScroll(fetchProjects, 12);
+
+  // Fetch metadata (categories, sub-categories, locations) on mount
+  useEffect(() => {
+    async function fetchMetaData() {
+      try {
+        setMetaDataLoading(true);
+
+        // Fetch metadata in parallel
+        const [categoriesRes, subCategoriesRes, locationsRes] =
           await Promise.all([
-            fetch("/api/projects/public"),
             fetch("/api/project-categories"),
             fetch("/api/sub-categorys"),
             fetch("/api/projects/locations"),
           ]);
-
-        if (projectsRes.ok) {
-          const projectsData = await projectsRes.json();
-          setProjects(projectsData);
-        }
 
         if (categoriesRes.ok) {
           const categoriesData = await categoriesRes.json();
@@ -68,13 +80,13 @@ export default function ProjectsPage() {
           setLocations(locationsData);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching metadata:", error);
       } finally {
-        setLoading(false);
+        setMetaDataLoading(false);
       }
     }
 
-    fetchData();
+    fetchMetaData();
   }, []);
 
   // Filter projects based on current filters
@@ -566,11 +578,12 @@ export default function ProjectsPage() {
                 }`}
                 dir={isRTL ? "rtl" : "ltr"}
               >
-                {filteredProjects.map((project) => (
+                {filteredProjects.map((project, index) => (
                   <Link
                     key={project.id}
                     href={`/project/${project.id}`}
                     className="group bg-white dark:bg-black rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-200 dark:border-gray-700 hover:scale-105 hover:-translate-y-2"
+                    ref={index === filteredProjects.length - 1 ? lastElementRef : null}
                   >
                     {/* Project Image */}
                     <div className="relative aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 overflow-hidden">
@@ -615,6 +628,26 @@ export default function ProjectsPage() {
                   </Link>
                 ))}
               </div>
+              
+              {/* Loading indicator */}
+              {loading && (
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
+                </div>
+              )}
+              
+              {/* End of results indicator */}
+              {!hasMore && filteredProjects.length > 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {t("no_more_projects", {
+                      en: "No more projects to load",
+                      ar: "لا توجد مشاريع أخرى للتحميل",
+                      ku: "هیچ پڕۆژەیەکی تر نییە بۆ بارکردن",
+                    })}
+                  </p>
+                </div>
+              )}
             )}
           </div>
         </div>
