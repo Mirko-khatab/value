@@ -578,7 +578,7 @@ export default function ProjectsPage() {
                 }`}
                 dir={isRTL ? "rtl" : "ltr"}
               >
-                {filteredProjects.map((project, index) => (
+                {filteredProjects.map((project: Project, index) => (
                   <Link
                     key={project.id}
                     href={`/project/${project.id}`}

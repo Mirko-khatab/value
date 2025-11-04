@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useLanguage } from "@/app/lib/language-context";
 import { Product } from "@/app/lib/definitions";
 import { useInfiniteScroll } from "@/app/lib/hooks/useInfiniteScroll";
@@ -155,7 +155,7 @@ export default function ProductsPage() {
                 }`}
                 dir={isRTL ? "rtl" : "ltr"}
               >
-                {filteredProducts.map((product, index) => (
+                {filteredProducts.map((product: Product, index) => (
                   <Link
                     key={product.id}
                     href={`/product/${product.id}`}
