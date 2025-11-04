@@ -357,7 +357,7 @@ export async function createProject(
         description_en,
         date,
         project_category,
-        project_sub_category || null,
+        project_sub_category || 0,
         project_status,
         location_id,
       ]
@@ -478,7 +478,7 @@ export async function updateProject(id: string, formData: FormData) {
         description_en,
         date,
         project_category,
-        project_sub_category || null,
+        project_sub_category || 0,
         project_status,
         location_id,
         id,

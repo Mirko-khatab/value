@@ -51,6 +51,16 @@ export default async function ProjectsTable({
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {project.description_en}
                     </p>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        <span className="font-medium">Category:</span> {project.category_name_en || "N/A"}
+                      </p>
+                      {project.sub_category_name_en && (
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          <span className="font-medium">Sub-Category:</span> {project.sub_category_name_en}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex w-full items-center justify-between pt-4">
@@ -87,6 +97,18 @@ export default async function ProjectsTable({
                   scope="col"
                   className="px-3 py-5 font-medium text-gray-900 dark:text-gray-100"
                 >
+                  Category
+                </th>
+                <th
+                  scope="col"
+                  className="px-3 py-5 font-medium text-gray-900 dark:text-gray-100"
+                >
+                  Sub-Category
+                </th>
+                <th
+                  scope="col"
+                  className="px-3 py-5 font-medium text-gray-900 dark:text-gray-100"
+                >
                   Description
                 </th>
                 <th
@@ -94,12 +116,6 @@ export default async function ProjectsTable({
                   className="px-3 py-5 font-medium text-gray-900 dark:text-gray-100"
                 >
                   Date
-                </th>
-                <th
-                  scope="col"
-                  className="px-3 py-5 font-medium text-gray-900 dark:text-gray-100"
-                >
-                  Order
                 </th>
                 <th scope="col" className="relative py-3 pl-6 pr-3">
                   <span className="sr-only">Edit</span>
@@ -138,6 +154,20 @@ export default async function ProjectsTable({
                     </div>
                   </td>
                   <td className="whitespace-nowrap px-3 py-3">
+                    <span className="inline-flex items-center rounded-full bg-blue-100 dark:bg-blue-900 px-2 py-1 text-xs font-medium text-blue-800 dark:text-blue-200">
+                      {project.category_name_en || "N/A"}
+                    </span>
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3">
+                    {project.sub_category_name_en ? (
+                      <span className="inline-flex items-center rounded-full bg-green-100 dark:bg-green-900 px-2 py-1 text-xs font-medium text-green-800 dark:text-green-200">
+                        {project.sub_category_name_en}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 dark:text-gray-500 text-xs">—</span>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-3">
                     <div className="max-w-xs truncate">
                       {project.description_en}
                     </div>
@@ -148,9 +178,6 @@ export default async function ProjectsTable({
                       : (project.date as Date)
                           ?.toISOString?.()
                           ?.split("T")[0] || "N/A"}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-3">
-                    {project.gallery_order_index || "N/A"}
                   </td>
                   <td className="whitespace-nowrap py-3 pl-6 pr-3">
                     <div className="flex justify-end gap-3">
