@@ -297,10 +297,17 @@ export const Fotter = () => {
                     >
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {language === "ar"
-                          ? "مدينة دروازة ٣، السليمانية"
+                          ? "السليمانية- برج مكس- خلف مبنى محافظة السليمانية"
                           : language === "ku"
-                          ? "شاری دەروازە ٣، سلێمانی"
-                          : "Darwaza city 3, Sulaymaniyah"}
+                          ? "سلێمانی- میکس تاوەر- پشتی بینای پارێزگای سلێمانی"
+                          : "Sulaymaniyah -Mix Tower - Behind Sulaymaniyah Governorate Building"}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        {language === "ar"
+                          ? "( برج S - الدور 12 - شقة 9 )"
+                          : language === "ku"
+                          ? "( تاوەریS -نهۆمی١٢ -شوقەی٩ )"
+                          : "(S Tower -12th Floor -Apartment 9 )"}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400">
                         {language === "ar"

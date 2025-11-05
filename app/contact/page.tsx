@@ -42,7 +42,9 @@ export default function ContactPage() {
             </div>
             <div>
               <h2 className="text-2xl font-semibold mb-2">Location</h2>
-              <p>Sulaymaniyah, Kurdistan Region of Iraq</p>
+              <p>Sulaymaniyah - Mix Tower - Behind Sulaymaniyah Governorate Building</p>
+              <p>(S Tower - 12th Floor - Apartment 9)</p>
+              <p>Kurdistan Region of Iraq</p>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 KEU Registered #308
               </p>

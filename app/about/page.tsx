@@ -369,16 +369,16 @@ export default function AboutPage() {
 
                         <p className="text-gray-600 dark:text-gray-300 mt-1">
                           {t("detailed_address", {
-                            en: "Darwaza city 3 Sulaymaniyah",
-                            ar: "مدينة دروازة ٣ السليمانية",
-                            ku: "شاری دەروازە ٣ سلێمانی",
+                            en: "Sulaymaniyah - Mix Tower - Behind Sulaymaniyah Governorate Building",
+                            ar: "السليمانية- برج مكس- خلف مبنى محافظة السليمانية",
+                            ku: "سلێمانی- میکس تاوەر- پشتی بینای پارێزگای سلێمانی",
                           })}
                         </p>
                         <p className="text-gray-600 dark:text-gray-300">
                           {t("area_info", {
-                            en: "Darwaza city 3 emaray 3",
-                            ar: "مدينة دروازة ٣ عمارة ٣",
-                            ku: "شاری دەروازە ٣ عیمارەی ٣",
+                            en: "(S Tower - 12th Floor - Apartment 9)",
+                            ar: "( برج S - الدور 12 - شقة 9 )",
+                            ku: "( تاوەریS -نهۆمی١٢ -شوقەی٩ )",
                           })}
                         </p>
                         <p className="text-gray-600 dark:text-gray-300">
@@ -508,12 +508,48 @@ export default function AboutPage() {
                 </div>
               </div>
 
-              {/* Google Map */}
-              <div className={`${isRTL ? "lg:order-1" : ""}`}>
+              {/* Location Image and Google Map */}
+              <div className={`${isRTL ? "lg:order-1" : ""} space-y-6`}>
+                {/* Location Area Image */}
+                <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 shadow-lg">
+                  <div className="relative w-full h-64 rounded-xl overflow-hidden">
+                    <Image
+                      src="/image/location.png"
+                      alt={t("location_area", {
+                        en: "Value Architecture Office Location Area",
+                        ar: "منطقة مكتب فاليو للمعمار",
+                        ku: "ناوچەی ئۆفیسی ڤالیو ئارکیتێکتس",
+                      })}
+                      fill
+                      className="object-cover rounded-xl"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-20 rounded-xl flex items-end p-4">
+                      <div className="text-white">
+                        <h4 className="font-semibold text-lg">
+                          {t("office_area", {
+                            en: "Office Area",
+                            ar: "منطقة المكتب",
+                            ku: "ناوچەی ئۆفیس",
+                          })}
+                        </h4>
+                        <p className="text-sm opacity-90">
+                          {t("mix_tower_location", {
+                            en: "Mix Tower, Sulaymaniyah",
+                            ar: "برج مكس، السليمانية",
+                            ku: "میکس تاوەر، سلێمانی",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Google Map */}
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 shadow-lg">
                   <div className="relative w-full h-96 rounded-xl overflow-hidden">
                     <iframe
-                      src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345093747!2d45.37964!3d35.56363!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDMzJzQ5LjEiTiA0NcKwMjInNDYuNyJF!5e0!3m2!1sen!2s!4v1635789012345!5m2!1sen!2s&q=Darwaza+pshw+rest+cafe+Darwaza+city+3+Sulaymaniyah`}
+                      src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8354345093747!2d45.378548599999995!3d35.563395330459926!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzXCsDMzJzQ5LjEiTiA0NcKwMjInNDYuNyJF!5e0!3m2!1sen!2s!4v1635789012345!5m2!1sen!2s&q=Mix+Tower+Sulaymaniyah+Governorate+Building`}
                       width="100%"
                       height="100%"
                       style={{ border: 0 }}
@@ -535,7 +571,7 @@ export default function AboutPage() {
                   {/* Map Actions */}
                   <div className="mt-4 flex flex-col sm:flex-row gap-3">
                     <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=Darwaza+pshw+rest+cafe+Darwaza+city+3+Sulaymaniyah`}
+                      href={`https://www.google.com/maps/dir/?api=1&destination=35.563395330459926,45.378548599999995`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 bg-[#2E5A7A] hover:bg-[#1e3a52] text-white px-4 py-3 rounded-lg font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2"

@@ -61,8 +61,8 @@ export function getProfessionalServiceStructuredData() {
     },
     geo: {
       '@type': 'GeoCoordinates',
-      latitude: 35.5558,
-      longitude: 45.4347
+      latitude: 35.563395330459926,
+      longitude: 45.378548599999995
     },
     openingHoursSpecification: {
       '@type': 'OpeningHoursSpecification',
