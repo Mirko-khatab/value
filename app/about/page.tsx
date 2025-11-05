@@ -14,6 +14,7 @@ export default function AboutPage() {
   const [teams, setTeams] = useState<TeamField[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+  const [isLocationImageOpen, setIsLocationImageOpen] = useState(false);
 
   // Check if language is RTL
   const isRTL = language === "ar" || language === "ku";
@@ -512,7 +513,10 @@ export default function AboutPage() {
               <div className={`${isRTL ? "lg:order-1" : ""} space-y-6`}>
                 {/* Location Area Image */}
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 shadow-lg">
-                  <div className="relative w-full h-64 rounded-xl overflow-hidden">
+                  <div 
+                    className="relative w-full h-64 rounded-xl overflow-hidden cursor-pointer group"
+                    onClick={() => setIsLocationImageOpen(true)}
+                  >
                     <Image
                       src="/image/location.png"
                       alt={t("location_area", {
@@ -521,11 +525,11 @@ export default function AboutPage() {
                         ku: "ناوچەی ئۆفیسی ڤالیو ئارکیتێکتس",
                       })}
                       fill
-                      className="object-cover rounded-xl"
+                      className="object-cover rounded-xl transition-transform duration-300 group-hover:scale-105"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-20 rounded-xl flex items-end p-4">
-                      <div className="text-white">
+                    <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-30 rounded-xl flex items-end p-4 transition-all duration-300">
+                      <div className="text-white flex-1">
                         <h4 className="font-semibold text-lg">
                           {t("office_area", {
                             en: "Office Area",
@@ -540,6 +544,22 @@ export default function AboutPage() {
                             ku: "میکس تاوەر، سلێمانی",
                           })}
                         </p>
+                      </div>
+                      {/* Click to view icon */}
+                      <div className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <svg
+                          className="w-6 h-6"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                          />
+                        </svg>
                       </div>
                     </div>
                   </div>
@@ -622,6 +642,74 @@ export default function AboutPage() {
             </div>
           </div>
         </div>
+
+        {/* Location Image Modal */}
+        {isLocationImageOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-4"
+            onClick={() => setIsLocationImageOpen(false)}
+          >
+            <div className="relative w-full max-w-7xl h-full max-h-[90vh] flex flex-col">
+              {/* Close button */}
+              <button
+                onClick={() => setIsLocationImageOpen(false)}
+                className="absolute top-4 right-4 z-10 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-full p-2 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200"
+                aria-label="Close"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              {/* Image container */}
+              <div
+                className="relative flex-1 rounded-lg overflow-hidden"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <Image
+                  src="/image/location.png"
+                  alt={t("location_area", {
+                    en: "Value Architecture Office Location Area",
+                    ar: "منطقة مكتب فاليو للمعمار",
+                    ku: "ناوچەی ئۆفیسی ڤالیو ئارکیتێکتس",
+                  })}
+                  fill
+                  className="object-contain"
+                  sizes="100vw"
+                  priority
+                />
+              </div>
+
+              {/* Image caption */}
+              <div className="mt-4 text-center text-white">
+                <h3 className="text-xl font-semibold">
+                  {t("office_area", {
+                    en: "Office Area - Mix Tower",
+                    ar: "منطقة المكتب - برج مكس",
+                    ku: "ناوچەی ئۆفیس - میکس تاوەر",
+                  })}
+                </h3>
+                <p className="text-sm mt-2 opacity-90">
+                  {t("click_to_close", {
+                    en: "Click anywhere to close",
+                    ar: "انقر في أي مكان للإغلاق",
+                    ku: "کرتەکردن لە هەر شوێنێک بۆ داخستن",
+                  })}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </ShowcaseLayout>
   );
