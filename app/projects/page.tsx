@@ -614,16 +614,52 @@ export default function ProjectsPage() {
                         {getLocalizedField(project, "title")}
                       </h3>
 
-                      {/* Optional: Add a subtle description or category */}
-                      {project.category_name_en && (
-                        <p
-                          className={`text-sm text-gray-500 dark:text-gray-400 mt-2 ${
-                            isRTL ? "text-right" : "text-left"
-                          }`}
-                        >
-                          {getLocalizedField(project, "category_name")}
-                        </p>
-                      )}
+                      {/* Category and Type */}
+                      <div className={`flex flex-col gap-2 mt-3 ${
+                        isRTL ? "items-end" : "items-start"
+                      }`}>
+                        {/* Category */}
+                        {project.category_name_en && (
+                          <p
+                            className={`text-sm text-gray-500 dark:text-gray-400 ${
+                              isRTL ? "text-right" : "text-left"
+                            }`}
+                          >
+                            {getLocalizedField(project, "category_name")}
+                          </p>
+                        )}
+                        
+                        {/* Project Type Badge */}
+                        {project.project_type !== undefined && (
+                          <span
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                              project.project_type === 0
+                                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                : project.project_type === 1
+                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                            }`}
+                          >
+                            {project.project_type === 0
+                              ? t("design", {
+                                  en: "Design",
+                                  ar: "تصميم",
+                                  ku: "دیزاین",
+                                })
+                              : project.project_type === 1
+                              ? t("implement", {
+                                  en: "Implement",
+                                  ar: "تنفيذ",
+                                  ku: "جێبەجێکردن",
+                                })
+                              : t("both", {
+                                  en: "Design & Implement",
+                                  ar: "تصميم وتنفيذ",
+                                  ku: "دیزاین و جێبەجێکردن",
+                                })}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </Link>
                 ))}

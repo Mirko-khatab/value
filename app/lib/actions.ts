@@ -278,6 +278,7 @@ const CreateProject = z.object({
   project_category: z.string().min(1, "Project category is required"),
   project_sub_category: z.string().optional(),
   project_status: z.string().min(1, "Project status is required"),
+  project_type: z.string().min(1, "Project type is required"),
   location_id: z.string().min(1, "Location is required"),
 });
 
@@ -312,6 +313,7 @@ export async function createProject(
     project_category: formData.get("project_category"),
     project_sub_category: formData.get("project_sub_category") || undefined,
     project_status: formData.get("project_status"),
+    project_type: formData.get("project_type"),
     location_id: formData.get("location_id"),
   });
 
@@ -333,6 +335,7 @@ export async function createProject(
     project_category,
     project_sub_category,
     project_status,
+    project_type,
     location_id,
   } = validatedFields.data;
 
@@ -346,8 +349,8 @@ export async function createProject(
       `INSERT INTO projects (
         title_ku, title_ar, title_en, 
         description_ku, description_ar, description_en,
-        date, project_category, project_sub_category, project_status, location_id
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        date, project_category, project_sub_category, project_status, project_type, location_id
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         title_ku,
         title_ar,
@@ -359,6 +362,7 @@ export async function createProject(
         project_category,
         project_sub_category || 0,
         project_status,
+        project_type,
         location_id,
       ]
     );
@@ -443,6 +447,7 @@ export async function updateProject(id: string, formData: FormData) {
         project_category: formData.get("project_category"),
         project_sub_category: formData.get("project_sub_category") || undefined,
         project_status: formData.get("project_status"),
+        project_type: formData.get("project_type"),
         location_id: formData.get("location_id"),
       });
     } catch (validationError) {
@@ -461,6 +466,7 @@ export async function updateProject(id: string, formData: FormData) {
       project_category,
       project_sub_category,
       project_status,
+      project_type,
       location_id,
     } = validatedData;
 
@@ -468,7 +474,7 @@ export async function updateProject(id: string, formData: FormData) {
 
     // Update the project with new data
     await connection.execute(
-      "UPDATE projects SET title_ku = ?, title_ar = ?, title_en = ?, description_ku = ?, description_ar = ?, description_en = ?, date = ?, project_category = ?, project_sub_category = ?, project_status = ?, location_id = ? WHERE id = ?",
+      "UPDATE projects SET title_ku = ?, title_ar = ?, title_en = ?, description_ku = ?, description_ar = ?, description_en = ?, date = ?, project_category = ?, project_sub_category = ?, project_status = ?, project_type = ?, location_id = ? WHERE id = ?",
       [
         title_ku,
         title_ar,
@@ -480,6 +486,7 @@ export async function updateProject(id: string, formData: FormData) {
         project_category,
         project_sub_category || 0,
         project_status,
+        project_type,
         location_id,
         id,
       ]

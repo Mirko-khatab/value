@@ -513,7 +513,7 @@ export default function AboutPage() {
               <div className={`${isRTL ? "lg:order-1" : ""} space-y-6`}>
                 {/* Location Area Image */}
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-2xl p-4 shadow-lg">
-                  <div 
+                  <div
                     className="relative w-full h-64 rounded-xl overflow-hidden cursor-pointer group"
                     onClick={() => setIsLocationImageOpen(true)}
                   >

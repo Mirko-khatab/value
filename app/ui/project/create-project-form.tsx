@@ -346,6 +346,27 @@ export default function CreateProjectForm({
               <option value="1">Finished</option>
             </select>
           </div>
+
+          {/* Project Type */}
+          <div className="mb-4">
+            <label
+              htmlFor="project_type"
+              className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-200"
+            >
+              Project Type <span className="text-red-500 dark:text-red-400">*</span>
+            </label>
+            <select
+              id="project_type"
+              name="project_type"
+              required
+              defaultValue="0"
+              className="w-full px-4 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-gray-200 dark:bg-gray-700"
+            >
+              <option value="0">Design</option>
+              <option value="1">Implement</option>
+              <option value="2">Design & Implement</option>
+            </select>
+          </div>
         </div>
 
         {/* Gallery Images */}

@@ -392,6 +392,45 @@ export default function EditProjectForm({
               </option>
             </select>
           </div>
+
+          {/* Project Type */}
+          <div className="mb-4">
+            <label
+              htmlFor="project_type"
+              className="mb-2 block text-sm text-gray-900 dark:text-gray-200 font-medium"
+            >
+              Project Type <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="project_type"
+              name="project_type"
+              required
+              value={formData.project_type ?? "0"}
+              onChange={(e) =>
+                handleInputChange("project_type", e.target.value)
+              }
+              className="w-full px-4 py-2 border rounded-md focus:ring-2 dark:focus:ring-white focus:ring-blue-500 text-gray-900 dark:text-gray-200 dark:bg-gray-700"
+            >
+              <option
+                value="0"
+                className="text-gray-900 dark:text-gray-200 dark:bg-gray-700"
+              >
+                Design
+              </option>
+              <option
+                value="1"
+                className="text-gray-900 dark:text-gray-200 dark:bg-gray-700"
+              >
+                Implement
+              </option>
+              <option
+                value="2"
+                className="text-gray-900 dark:text-gray-200 dark:bg-gray-700"
+              >
+                Design & Implement
+              </option>
+            </select>
+          </div>
         </div>
 
         {/* Gallery Images */}

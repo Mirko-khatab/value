@@ -129,6 +129,7 @@ export type Project = {
   project_category: number;
   project_sub_category?: number | null;
   project_status: number; // 0 or 1
+  project_type: number; // 0 = design, 1 = implement, 2 = both
   location_id: string;
   // Gallery fields (from JOIN queries)
   gallery_image_url?: string;
