@@ -630,23 +630,23 @@ export default function ProjectsPage() {
                         )}
                         
                         {/* Project Type Badge */}
-                        {project.project_type !== undefined && (
+                        {project.project_type !== undefined && project.project_type !== null && (
                           <span
                             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              project.project_type === 0
+                              Number(project.project_type) === 0
                                 ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                : project.project_type === 1
+                                : Number(project.project_type) === 1
                                 ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
                                 : "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
                             }`}
                           >
-                            {project.project_type === 0
+                            {Number(project.project_type) === 0
                               ? t("design", {
                                   en: "Design",
                                   ar: "تصميم",
                                   ku: "دیزاین",
                                 })
-                              : project.project_type === 1
+                              : Number(project.project_type) === 1
                               ? t("implement", {
                                   en: "Implement",
                                   ar: "تنفيذ",
