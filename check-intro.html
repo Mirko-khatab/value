@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Check Intro State</title>
+</head>
+<body>
+  <h1>Intro Debug Tool</h1>
+  <div id="status"></div>
+  <br>
+  <button onclick="localStorage.clear(); location.reload()">Clear localStorage & Reload</button>
+  <br><br>
+  <a href="http://localhost:3000">Go to Main Page</a>
+  
+  <script>
+    const hasSeenIntro = localStorage.getItem("hasSeenIntro");
+    document.getElementById("status").innerHTML = `
+      <p><strong>hasSeenIntro:</strong> ${hasSeenIntro}</p>
+      <p><strong>Will show intro?</strong> ${hasSeenIntro ? 'NO ❌' : 'YES ✅'}</p>
+    `;
+  </script>
+</body>
+</html>

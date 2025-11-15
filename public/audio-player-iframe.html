@@ -1,44 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Audio Player Helper</title>
+    <title>Audio Player Iframe</title>
     <style>
       body {
         margin: 0;
         padding: 0;
-        width: 1px;
-        height: 1px;
+        background: transparent;
+        overflow: hidden;
+      }
+      audio {
+        display: none;
       }
     </style>
   </head>
   <body>
-    <audio id="hiddenAudio" preload="auto" loop style="display: none"></audio>
-    <script>
-      // This iframe helps bypass autoplay restrictions
-      // by creating an audio context when parent requests it
-      const audio = document.getElementById("hiddenAudio");
+    <audio id="audio" loop preload="auto"></audio>
 
-      window.addEventListener("message", function (event) {
-        if (event.data.action === "play") {
-          if (event.data.src) {
-            audio.src = event.data.src;
-          }
-          audio.play().catch((err) => {
-            console.log("Iframe audio play blocked:", err);
-          });
-        } else if (event.data.action === "pause") {
-          audio.pause();
-        } else if (event.data.action === "setVolume") {
-          audio.volume = event.data.volume || 0.7;
+    <script>
+      const audio = document.getElementById("audio");
+      let isPlaying = false;
+
+      // Listen for messages from parent
+      window.addEventListener("message", async (event) => {
+        const { action, audioUrl, volume } = event.data;
+
+        console.log("🎵 Iframe received message:", action, audioUrl);
+
+        switch (action) {
+          case "LOAD_AUDIO":
+            if (audioUrl) {
+              audio.src = audioUrl;
+              audio.volume = volume || 0.7;
+              console.log("🎵 Audio loaded in iframe:", audioUrl);
+            }
+            break;
+
+          case "PLAY_AUDIO":
+            try {
+              // Iframes sometimes have different autoplay policies
+              await audio.play();
+              isPlaying = true;
+              console.log("✅ Audio playing in iframe!");
+
+              // Notify parent of success
+              window.parent.postMessage(
+                {
+                  type: "AUDIO_STARTED",
+                  success: true,
+                },
+                "*"
+              );
+            } catch (error) {
+              console.log("❌ Iframe audio blocked:", error.message);
+              window.parent.postMessage(
+                {
+                  type: "AUDIO_BLOCKED",
+                  success: false,
+                  error: error.message,
+                },
+                "*"
+              );
+            }
+            break;
+
+          case "STOP_AUDIO":
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            console.log("⏹️ Audio stopped in iframe");
+            break;
+
+          case "SET_VOLUME":
+            audio.volume = volume || 0.7;
+            console.log("🔊 Volume set to:", audio.volume);
+            break;
+
+          case "MUTE":
+            audio.muted = true;
+            console.log("🔇 Audio muted in iframe");
+            break;
+
+          case "UNMUTE":
+            audio.muted = false;
+            console.log("🔊 Audio unmuted in iframe");
+            break;
         }
       });
 
-      // Notify parent that iframe is ready
-      if (window.parent !== window) {
-        window.parent.postMessage({ action: "iframeReady" }, "*");
-      }
+      // Auto-attempt playback on load (sometimes works in iframes)
+      window.addEventListener("load", () => {
+        console.log("🎵 Iframe loaded - ready for audio commands");
+
+        // Notify parent that iframe is ready
+        window.parent.postMessage(
+          {
+            type: "IFRAME_READY",
+          },
+          "*"
+        );
+      });
+
+      // Monitor audio events
+      audio.addEventListener("loadeddata", () => {
+        console.log("✅ Audio data loaded in iframe");
+        window.parent.postMessage(
+          {
+            type: "AUDIO_LOADED",
+            duration: audio.duration,
+          },
+          "*"
+        );
+      });
+
+      audio.addEventListener("error", (e) => {
+        console.error("❌ Audio error in iframe:", e);
+        window.parent.postMessage(
+          {
+            type: "AUDIO_ERROR",
+            error: e.message || "Unknown error",
+          },
+          "*"
+        );
+      });
+
+      audio.addEventListener("ended", () => {
+        if (audio.loop) {
+          audio.currentTime = 0;
+          audio.play().catch(console.error);
+        }
+      });
     </script>
   </body>
 </html>

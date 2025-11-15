@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Audio Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px;
+        font-size: 16px;
+      }
+      .status {
+        margin: 10px 0;
+        padding: 10px;
+        background: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Audio Test Page</h1>
+
+    <div class="status" id="status">Loading...</div>
+
+    <h3>Test Database Audio:</h3>
+    <button onclick="testDatabaseAudio()">Test Database Audio</button>
+
+    <h3>Test Local Audio:</h3>
+    <button onclick="testLocalAudio()">
+      Test Local Audio (intro-music.mp3)
+    </button>
+
+    <h3>Controls:</h3>
+    <button onclick="playAudio()">Play</button>
+    <button onclick="pauseAudio()">Pause</button>
+    <button onclick="toggleMute()">Toggle Mute</button>
+
+    <audio id="testAudio" controls style="width: 100%; margin: 20px 0"></audio>
+
+    <script>
+      const audio = document.getElementById("testAudio");
+      const status = document.getElementById("status");
+
+      function updateStatus(message) {
+        status.innerHTML = message;
+        console.log(message);
+      }
+
+      async function testDatabaseAudio() {
+        try {
+          updateStatus("Fetching database audio...");
+          const response = await fetch("/api/audios?use_for=intro");
+          const data = await response.json();
+
+          if (data && data.length > 0) {
+            const audioUrl = data[0].audio_url;
+            updateStatus(`Database audio found: ${audioUrl}`);
+            audio.src = audioUrl;
+            audio.load();
+          } else {
+            updateStatus("No database audio found");
+          }
+        } catch (error) {
+          updateStatus(`Database audio error: ${error.message}`);
+        }
+      }
+
+      function testLocalAudio() {
+        updateStatus("Testing local audio file...");
+        audio.src = "/audio/intro-music.mp3";
+        audio.load();
+      }
+
+      function playAudio() {
+        audio
+          .play()
+          .then(() => {
+            updateStatus("Audio playing");
+          })
+          .catch((error) => {
+            updateStatus(`Play failed: ${error.message}`);
+          });
+      }
+
+      function pauseAudio() {
+        audio.pause();
+        updateStatus("Audio paused");
+      }
+
+      function toggleMute() {
+        audio.muted = !audio.muted;
+        updateStatus(`Audio ${audio.muted ? "muted" : "unmuted"}`);
+      }
+
+      // Audio event listeners
+      audio.addEventListener("loadstart", () =>
+        updateStatus("Loading started...")
+      );
+      audio.addEventListener("loadeddata", () =>
+        updateStatus("Audio data loaded")
+      );
+      audio.addEventListener("canplay", () => updateStatus("Audio can play"));
+      audio.addEventListener("error", (e) =>
+        updateStatus(`Audio error: ${e.message || "Unknown error"}`)
+      );
+
+      updateStatus("Ready to test audio");
+    </script>
+  </body>
+</html>

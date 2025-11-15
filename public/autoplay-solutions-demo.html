@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>🎵 Auto-Play Solutions Demo</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+      .solution {
+        background: rgba(255, 255, 255, 0.1);
+        margin: 20px 0;
+        padding: 20px;
+        border-radius: 15px;
+        border-left: 4px solid #4ade80;
+      }
+      .solution.active {
+        border-left-color: #f59e0b;
+        background: rgba(245, 158, 11, 0.2);
+      }
+      button {
+        padding: 12px 24px;
+        margin: 8px;
+        font-size: 16px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        background: linear-gradient(45deg, #4ade80, #22c55e);
+        color: white;
+        transition: all 0.3s;
+        font-weight: 600;
+      }
+      button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      button.danger {
+        background: linear-gradient(45deg, #ef4444, #dc2626);
+      }
+      button.warning {
+        background: linear-gradient(45deg, #f59e0b, #d97706);
+      }
+      .status {
+        margin: 15px 0;
+        padding: 15px;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+      .success {
+        background: rgba(34, 197, 94, 0.2);
+        border: 1px solid #22c55e;
+      }
+      .error {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid #ef4444;
+      }
+      .info {
+        background: rgba(59, 130, 246, 0.2);
+        border: 1px solid #3b82f6;
+      }
+      audio {
+        width: 100%;
+        margin: 15px 0;
+        border-radius: 10px;
+      }
+      .hint {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(45deg, #8b5cf6, #a855f7);
+        color: white;
+        padding: 15px 20px;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        animation: bounce 2s infinite;
+        z-index: 1000;
+        display: none;
+      }
+      .hint.show {
+        display: block;
+      }
+      @keyframes bounce {
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-10px);
+        }
+        60% {
+          transform: translateY(-5px);
+        }
+      }
+      .volume-bar {
+        width: 100%;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+        margin: 10px 0;
+        overflow: hidden;
+      }
+      .volume-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4ade80, #22c55e);
+        width: 0%;
+        transition: width 0.1s ease;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hint" id="clickHint">🎵 Click anywhere to enable audio!</div>
+
+    <div class="container">
+      <h1>🎵 Auto-Play Solutions Demo</h1>
+      <p>
+        This page demonstrates 3 different approaches to auto-play audio without
+        requiring explicit user clicks.
+      </p>
+
+      <div class="status info" id="mainStatus">
+        Ready to test auto-play solutions...
+      </div>
+
+      <!-- Solution 1: Muted Auto-Play -->
+      <div class="solution" id="solution1">
+        <h3>🔇 Solution 1: Muted Auto-Play + Smart Unmute</h3>
+        <p>
+          <strong>How it works:</strong> Starts audio muted (browsers allow
+          this), then automatically unmutes when user interacts with the page.
+        </p>
+
+        <button onclick="testSolution1()">🎯 Test Muted Auto-Play</button>
+        <button onclick="stopAllAudio()" class="danger">⏹️ Stop</button>
+
+        <div class="volume-bar">
+          <div class="volume-fill" id="volume1"></div>
+        </div>
+
+        <audio id="audio1" controls></audio>
+        <div class="status info" id="status1">
+          Click "Test Muted Auto-Play" to start
+        </div>
+      </div>
+
+      <!-- Solution 2: Intersection Observer -->
+      <div class="solution" id="solution2">
+        <h3>👁️ Solution 2: Visibility-Triggered Auto-Play</h3>
+        <p>
+          <strong>How it works:</strong> Uses Intersection Observer to detect
+          when audio element becomes visible, then starts muted playback.
+        </p>
+
+        <button onclick="testSolution2()">🎯 Test Visibility Trigger</button>
+        <button onclick="stopAllAudio()" class="danger">⏹️ Stop</button>
+
+        <div class="volume-bar">
+          <div class="volume-fill" id="volume2"></div>
+        </div>
+
+        <audio id="audio2" controls style="opacity: 0.5"></audio>
+        <div class="status info" id="status2">
+          Click "Test Visibility Trigger" to start
+        </div>
+      </div>
+
+      <!-- Solution 3: Progressive Enhancement -->
+      <div class="solution" id="solution3">
+        <h3>📈 Solution 3: Progressive Enhancement + Fade-In</h3>
+        <p>
+          <strong>How it works:</strong> Combines multiple strategies with
+          smooth volume fade-in effects for better user experience.
+        </p>
+
+        <button onclick="testSolution3()">
+          🎯 Test Progressive Enhancement
+        </button>
+        <button onclick="stopAllAudio()" class="danger">⏹️ Stop</button>
+
+        <div class="volume-bar">
+          <div class="volume-fill" id="volume3"></div>
+        </div>
+
+        <audio id="audio3" controls></audio>
+        <div class="status info" id="status3">
+          Click "Test Progressive Enhancement" to start
+        </div>
+      </div>
+
+      <!-- Global Controls -->
+      <div style="margin-top: 30px; text-align: center">
+        <h3>🎛️ Global Controls</h3>
+        <button onclick="loadAllAudio()">📥 Load Audio from Database</button>
+        <button onclick="testAllSolutions()" class="warning">
+          🚀 Test All Solutions
+        </button>
+        <button onclick="stopAllAudio()" class="danger">
+          ⏹️ Stop All Audio
+        </button>
+      </div>
+
+      <!-- Instructions -->
+      <div
+        style="
+          margin-top: 30px;
+          background: rgba(255, 255, 255, 0.1);
+          padding: 20px;
+          border-radius: 15px;
+        "
+      >
+        <h3>📋 Instructions</h3>
+        <ol>
+          <li>
+            <strong>Load Audio:</strong> Click "Load Audio from Database" first
+          </li>
+          <li>
+            <strong>Test Individual Solutions:</strong> Try each solution to see
+            how they work
+          </li>
+          <li>
+            <strong>Watch Console:</strong> Open browser dev tools to see
+            detailed logs
+          </li>
+          <li>
+            <strong>Interact:</strong> Click anywhere on the page to trigger
+            unmuting
+          </li>
+          <li>
+            <strong>Volume Bars:</strong> Show real-time audio volume levels
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <script>
+      const audios = {
+        audio1: document.getElementById("audio1"),
+        audio2: document.getElementById("audio2"),
+        audio3: document.getElementById("audio3"),
+      };
+
+      const statuses = {
+        status1: document.getElementById("status1"),
+        status2: document.getElementById("status2"),
+        status3: document.getElementById("status3"),
+        mainStatus: document.getElementById("mainStatus"),
+      };
+
+      const volumeBars = {
+        volume1: document.getElementById("volume1"),
+        volume2: document.getElementById("volume2"),
+        volume3: document.getElementById("volume3"),
+      };
+
+      const solutions = {
+        solution1: document.getElementById("solution1"),
+        solution2: document.getElementById("solution2"),
+        solution3: document.getElementById("solution3"),
+      };
+
+      let audioUrl = null;
+      let hasUserInteracted = false;
+      let currentTest = null;
+
+      function updateStatus(statusId, message, type = "info") {
+        const status = statuses[statusId];
+        if (status) {
+          status.innerHTML = message;
+          status.className = `status ${type}`;
+        }
+        console.log(`[${statusId}] ${message}`);
+      }
+
+      function updateVolumeBar(barId, volume) {
+        const bar = volumeBars[barId];
+        if (bar) {
+          bar.style.width = `${volume * 100}%`;
+        }
+      }
+
+      function setActiveSolution(solutionId) {
+        // Reset all solutions
+        Object.values(solutions).forEach((s) => s.classList.remove("active"));
+        // Activate current solution
+        if (solutions[solutionId]) {
+          solutions[solutionId].classList.add("active");
+        }
+        currentTest = solutionId;
+      }
+
+      async function loadAllAudio() {
+        try {
+          updateStatus(
+            "mainStatus",
+            "🔄 Loading audio from database...",
+            "info"
+          );
+
+          const response = await fetch("/api/audios?use_for=intro");
+          const data = await response.json();
+
+          if (data && data.length > 0) {
+            audioUrl = data[0].audio_url;
+            updateStatus(
+              "mainStatus",
+              `✅ Audio loaded: ${audioUrl}`,
+              "success"
+            );
+
+            // Set audio source for all players
+            Object.values(audios).forEach((audio) => {
+              audio.src = audioUrl;
+              audio.loop = true;
+              audio.preload = "auto";
+              audio.volume = 0.7;
+            });
+          } else {
+            updateStatus(
+              "mainStatus",
+              "❌ No audio found in database",
+              "error"
+            );
+          }
+        } catch (error) {
+          updateStatus(
+            "mainStatus",
+            `❌ Error loading audio: ${error.message}`,
+            "error"
+          );
+        }
+      }
+
+      function stopAllAudio() {
+        Object.entries(audios).forEach(([id, audio]) => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.muted = true;
+          updateVolumeBar(id.replace("audio", "volume"), 0);
+        });
+
+        // Reset all solution states
+        Object.values(solutions).forEach((s) => s.classList.remove("active"));
+        currentTest = null;
+
+        updateStatus("mainStatus", "⏹️ All audio stopped", "info");
+      }
+
+      // Solution 1: Muted Auto-Play + Smart Unmute
+      async function testSolution1() {
+        if (!audioUrl) {
+          updateStatus("status1", "❌ Please load audio first!", "error");
+          return;
+        }
+
+        setActiveSolution("solution1");
+        updateStatus("status1", "🔄 Testing muted auto-play...", "info");
+
+        const audio = audios.audio1;
+
+        try {
+          // Step 1: Try unmuted first
+          audio.muted = false;
+          await audio.play();
+          updateStatus(
+            "status1",
+            "✅ Playing with sound immediately!",
+            "success"
+          );
+          startVolumeMonitoring("volume1", audio);
+        } catch (error) {
+          console.log("Unmuted blocked:", error.message);
+
+          try {
+            // Step 2: Fall back to muted
+            audio.muted = true;
+            await audio.play();
+            updateStatus(
+              "status1",
+              "✅ Playing MUTED - click anywhere to unmute!",
+              "success"
+            );
+            showClickHint();
+            startVolumeMonitoring("volume1", audio);
+          } catch (mutedError) {
+            updateStatus(
+              "status1",
+              `❌ Even muted playback failed: ${mutedError.message}`,
+              "error"
+            );
+          }
+        }
+      }
+
+      // Solution 2: Intersection Observer
+      function testSolution2() {
+        if (!audioUrl) {
+          updateStatus("status2", "❌ Please load audio first!", "error");
+          return;
+        }
+
+        setActiveSolution("solution2");
+        updateStatus("status2", "🔄 Setting up visibility trigger...", "info");
+
+        const audio = audios.audio2;
+
+        // Create intersection observer
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach(async (entry) => {
+              if (entry.isIntersecting) {
+                updateStatus(
+                  "status2",
+                  "👁️ Audio element visible - starting playback...",
+                  "info"
+                );
+
+                try {
+                  audio.muted = true; // Start muted for better success rate
+                  await audio.play();
+                  updateStatus(
+                    "status2",
+                    "✅ Auto-playing on visibility (muted)!",
+                    "success"
+                  );
+                  showClickHint();
+                  startVolumeMonitoring("volume2", audio);
+                } catch (error) {
+                  updateStatus(
+                    "status2",
+                    `❌ Visibility-triggered play failed: ${error.message}`,
+                    "error"
+                  );
+                }
+
+                observer.disconnect(); // Stop observing after first trigger
+              }
+            });
+          },
+          { threshold: 0.5 }
+        );
+
+        // Start observing the audio element
+        observer.observe(audio);
+        updateStatus(
+          "status2",
+          "👁️ Watching for audio element visibility...",
+          "info"
+        );
+      }
+
+      // Solution 3: Progressive Enhancement + Fade-In
+      async function testSolution3() {
+        if (!audioUrl) {
+          updateStatus("status3", "❌ Please load audio first!", "error");
+          return;
+        }
+
+        setActiveSolution("solution3");
+        updateStatus(
+          "status3",
+          "🔄 Testing progressive enhancement...",
+          "info"
+        );
+
+        const audio = audios.audio3;
+
+        // Strategy 1: Try unmuted
+        try {
+          audio.muted = false;
+          audio.volume = 0;
+          await audio.play();
+
+          // Smooth fade-in
+          updateStatus("status3", "✅ Playing with smooth fade-in!", "success");
+          fadeInVolume(audio, "volume3");
+        } catch (error) {
+          console.log("Unmuted blocked:", error.message);
+
+          // Strategy 2: Muted with fade-in on interaction
+          try {
+            audio.muted = true;
+            await audio.play();
+            updateStatus(
+              "status3",
+              "✅ Playing muted - will fade in on interaction!",
+              "success"
+            );
+            showClickHint();
+            startVolumeMonitoring("volume3", audio);
+          } catch (mutedError) {
+            updateStatus(
+              "status3",
+              `❌ All strategies failed: ${mutedError.message}`,
+              "error"
+            );
+          }
+        }
+      }
+
+      function fadeInVolume(audio, volumeBarId, targetVolume = 0.7) {
+        const fadeStep = () => {
+          if (audio.volume < targetVolume) {
+            audio.volume = Math.min(audio.volume + 0.05, targetVolume);
+            updateVolumeBar(volumeBarId, audio.volume);
+            setTimeout(fadeStep, 50);
+          }
+        };
+        fadeStep();
+      }
+
+      function startVolumeMonitoring(volumeBarId, audio) {
+        const monitor = () => {
+          if (!audio.paused) {
+            const volume = audio.muted ? 0 : audio.volume;
+            updateVolumeBar(volumeBarId, volume);
+            setTimeout(monitor, 100);
+          }
+        };
+        monitor();
+      }
+
+      function showClickHint() {
+        const hint = document.getElementById("clickHint");
+        hint.classList.add("show");
+        setTimeout(() => hint.classList.remove("show"), 5000);
+      }
+
+      function testAllSolutions() {
+        updateStatus(
+          "mainStatus",
+          "🚀 Testing all solutions sequentially...",
+          "info"
+        );
+
+        setTimeout(() => testSolution1(), 500);
+        setTimeout(() => testSolution2(), 2000);
+        setTimeout(() => testSolution3(), 4000);
+      }
+
+      // Global click handler for unmuting
+      document.addEventListener("click", () => {
+        if (!hasUserInteracted) {
+          hasUserInteracted = true;
+          console.log("✅ User interaction detected - enabling audio unmuting");
+
+          // Unmute and fade in any playing audio
+          Object.entries(audios).forEach(([id, audio]) => {
+            if (!audio.paused && audio.muted) {
+              audio.muted = false;
+              audio.volume = 0;
+              const volumeBarId = id.replace("audio", "volume");
+              fadeInVolume(audio, volumeBarId);
+
+              const statusId = id.replace("audio", "status");
+              updateStatus(
+                statusId,
+                "🔊 Audio unmuted with fade-in!",
+                "success"
+              );
+            }
+          });
+
+          document.getElementById("clickHint").classList.remove("show");
+        }
+      });
+
+      // Auto-load audio on page load
+      window.addEventListener("load", () => {
+        updateStatus("mainStatus", "🚀 Page loaded - loading audio...", "info");
+        loadAllAudio();
+      });
+    </script>
+  </body>
+</html>

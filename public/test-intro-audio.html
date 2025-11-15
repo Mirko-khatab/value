@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test Intro Audio</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: #f0f0f0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      button {
+        padding: 15px 30px;
+        margin: 10px;
+        font-size: 18px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background: #3b82f6;
+        color: white;
+        transition: all 0.2s;
+      }
+      button:hover {
+        background: #2563eb;
+        transform: translateY(-1px);
+      }
+      .status {
+        margin: 15px 0;
+        padding: 15px;
+        background: #f8fafc;
+        border-radius: 8px;
+        border-left: 4px solid #3b82f6;
+      }
+      .success {
+        border-left-color: #10b981;
+        background: #f0fdf4;
+      }
+      .error {
+        border-left-color: #ef4444;
+        background: #fef2f2;
+      }
+      audio {
+        width: 100%;
+        margin: 20px 0;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎵 Intro Audio Test</h1>
+
+      <div class="status" id="status">Ready to test...</div>
+
+      <h3>Step 1: Load Audio</h3>
+      <button onclick="loadIntroAudio()">
+        📥 Load Intro Audio from Database
+      </button>
+
+      <h3>Step 2: Test Playback</h3>
+      <button onclick="testPlayback()">▶️ Test Audio Playback</button>
+      <button onclick="stopAudio()">⏹️ Stop Audio</button>
+
+      <audio id="testAudio" controls></audio>
+
+      <div
+        id="audioInfo"
+        style="margin-top: 20px; font-size: 14px; color: #666"
+      ></div>
+    </div>
+
+    <script>
+      const audio = document.getElementById("testAudio");
+      const status = document.getElementById("status");
+      const audioInfo = document.getElementById("audioInfo");
+
+      function updateStatus(message, type = "info") {
+        status.innerHTML = message;
+        status.className = `status ${type}`;
+        console.log(message);
+      }
+
+      function updateAudioInfo(info) {
+        audioInfo.innerHTML = info;
+      }
+
+      async function loadIntroAudio() {
+        try {
+          updateStatus("🔄 Fetching intro audio from database...", "info");
+
+          const response = await fetch("/api/audios?use_for=intro");
+          const data = await response.json();
+
+          console.log("Audio API Response:", data);
+
+          if (data && data.length > 0) {
+            const audioData = data[0];
+            const audioUrl = audioData.audio_url;
+
+            updateStatus(`✅ Audio loaded successfully!`, "success");
+            updateAudioInfo(`
+                        <strong>Audio Details:</strong><br>
+                        • Title: ${audioData.title_en}<br>
+                        • URL: ${audioUrl}<br>
+                        • Use For: ${audioData.use_for}<br>
+                        • Active: ${audioData.is_active ? "Yes" : "No"}
+                    `);
+
+            audio.src = audioUrl;
+            audio.load();
+
+            // Add event listeners
+            audio.addEventListener("loadedmetadata", () => {
+              updateStatus(
+                `✅ Audio ready! Duration: ${audio.duration.toFixed(
+                  1
+                )} seconds`,
+                "success"
+              );
+            });
+
+            audio.addEventListener("error", (e) => {
+              updateStatus(
+                `❌ Audio error: ${e.message || "Failed to load"}`,
+                "error"
+              );
+            });
+          } else {
+            updateStatus("❌ No intro audio found in database", "error");
+          }
+        } catch (error) {
+          updateStatus(`❌ Error: ${error.message}`, "error");
+          console.error("Error:", error);
+        }
+      }
+
+      function testPlayback() {
+        if (!audio.src) {
+          updateStatus("❌ Please load audio first!", "error");
+          return;
+        }
+
+        updateStatus("🎵 Attempting to play audio...", "info");
+
+        // Ensure unmuted
+        audio.muted = false;
+        audio.volume = 0.7;
+
+        audio
+          .play()
+          .then(() => {
+            updateStatus("✅ Audio playing successfully! 🎵", "success");
+          })
+          .catch((error) => {
+            updateStatus(`❌ Playback failed: ${error.message}`, "error");
+            console.error("Playback error:", error);
+          });
+      }
+
+      function stopAudio() {
+        audio.pause();
+        audio.currentTime = 0;
+        updateStatus("⏹️ Audio stopped", "info");
+      }
+
+      // Auto-load on page load
+      window.addEventListener("load", () => {
+        updateStatus(
+          '🚀 Page loaded - click "Load Intro Audio" to start',
+          "info"
+        );
+      });
+    </script>
+  </body>
+</html>
