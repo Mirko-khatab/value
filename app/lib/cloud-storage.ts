@@ -1,5 +1,8 @@
 "use server";
 
+// Import form-data for proper multipart/form-data handling in Node.js
+import FormDataNode from "form-data";
+
 // Cloud Storage API Configuration
 // Use localhost if CLOUD_API_BASE_URL is not set, since cloud app runs on same server
 const CLOUD_API_BASE =
@@ -42,8 +45,9 @@ export async function uploadFileToCloud(
       throw new Error("Cloud storage API key is not configured. Please set CLOUD_API_KEY_FULL environment variable.");
     }
 
-    // Use native FormData (available in Node.js 18+)
-    const formData = new FormData();
+    // Use form-data package for proper multipart/form-data in Node.js
+    // This ensures compatibility with multer on the server side
+    const formData = new FormDataNode();
 
     // Generate a unique filename to avoid duplicates
     // Format: timestamp-randomstring-originalname.ext
@@ -57,31 +61,12 @@ export async function uploadFileToCloud(
       : fileName;
     const uniqueFileName = `${timestamp}-${randomString}-${baseName}${fileExtension}`;
 
-    // In Node.js, we need to handle file uploads properly
-    // Try to use File if available (Node.js 20+), otherwise use Blob
-    let fileToUpload: Blob | File;
-    
-    if (typeof File !== 'undefined') {
-      // Node.js 20+ has File constructor
-      fileToUpload = new File([fileBuffer], uniqueFileName, {
-        type: fileType,
-        lastModified: Date.now(),
-      });
-    } else {
-      // Fallback for Node.js 18: use Blob
-      fileToUpload = new Blob([fileBuffer], {
-        type: fileType,
-      });
-    }
-    
-    // Append to FormData
-    // In Node.js 18+, FormData.append() accepts Blob/File with filename
-    if (fileToUpload instanceof File) {
-      formData.append("file", fileToUpload);
-    } else {
-      // For Blob, we need to append with filename (Node.js 18+ supports this)
-      formData.append("file", fileToUpload, uniqueFileName);
-    }
+    // Append the buffer directly to form-data
+    // form-data package accepts Buffer directly with options
+    formData.append("file", fileBuffer, {
+      filename: uniqueFileName,
+      contentType: fileType,
+    });
 
     // Add metadata if provided
     if (metadata) {
@@ -98,13 +83,17 @@ export async function uploadFileToCloud(
 
     // Upload to cloud storage with allowDuplicates parameter
     const uploadUrl = `${CLOUD_API_BASE}/file/upload?allowDuplicates=true`;
+    
+    // form-data package provides getHeaders() method for proper Content-Type with boundary
+    const headers = {
+      "X-API-Key": CLOUD_API_KEY_FULL,
+      ...formData.getHeaders(), // This sets Content-Type with boundary
+    };
+    
     const response = await fetch(uploadUrl, {
       method: "POST",
-      headers: {
-        "X-API-Key": CLOUD_API_KEY_FULL,
-        // Don't set Content-Type, let fetch set it with boundary
-      },
-      body: formData,
+      headers,
+      body: formData as any, // form-data is compatible with fetch body
     });
 
     if (!response.ok) {
