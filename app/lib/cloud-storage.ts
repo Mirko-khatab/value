@@ -2,6 +2,8 @@
 
 // Import form-data for proper multipart/form-data handling in Node.js
 import FormDataNode from "form-data";
+// Use node-fetch for better form-data compatibility
+import fetchNode from "node-fetch";
 
 // Cloud Storage API Configuration
 // Use localhost if CLOUD_API_BASE_URL is not set, since cloud app runs on same server
@@ -90,10 +92,11 @@ export async function uploadFileToCloud(
       ...formData.getHeaders(), // This sets Content-Type with boundary
     };
     
-    const response = await fetch(uploadUrl, {
+    // Use node-fetch for better compatibility with form-data package
+    const response = await fetchNode(uploadUrl, {
       method: "POST",
       headers,
-      body: formData as any, // form-data is compatible with fetch body
+      body: formData, // form-data works perfectly with node-fetch
     });
 
     if (!response.ok) {
