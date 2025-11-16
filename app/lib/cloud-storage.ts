@@ -36,6 +36,11 @@ export async function uploadFileToCloud(
   metadata?: Record<string, any>
 ): Promise<UploadResult> {
   try {
+    // Check if API key is configured
+    if (!CLOUD_API_KEY_FULL) {
+      throw new Error("Cloud storage API key is not configured. Please set CLOUD_API_KEY_FULL environment variable.");
+    }
+
     // Use native FormData (available in Node.js 18+)
     const formData = new FormData();
 
@@ -51,11 +56,31 @@ export async function uploadFileToCloud(
       : fileName;
     const uniqueFileName = `${timestamp}-${randomString}-${baseName}${fileExtension}`;
 
-    // Create a Blob from the buffer for the file
-    const blob = new Blob([fileBuffer.buffer as ArrayBuffer], {
-      type: fileType,
-    });
-    formData.append("file", blob, uniqueFileName);
+    // In Node.js, we need to handle file uploads properly
+    // Try to use File if available (Node.js 20+), otherwise use Blob
+    let fileToUpload: Blob | File;
+    
+    if (typeof File !== 'undefined') {
+      // Node.js 20+ has File constructor
+      fileToUpload = new File([fileBuffer], uniqueFileName, {
+        type: fileType,
+        lastModified: Date.now(),
+      });
+    } else {
+      // Fallback for Node.js 18: use Blob
+      fileToUpload = new Blob([fileBuffer], {
+        type: fileType,
+      });
+    }
+    
+    // Append to FormData
+    // In Node.js 18+, FormData.append() accepts Blob/File with filename
+    if (fileToUpload instanceof File) {
+      formData.append("file", fileToUpload);
+    } else {
+      // For Blob, we need to append with filename (Node.js 18+ supports this)
+      formData.append("file", fileToUpload, uniqueFileName);
+    }
 
     // Add metadata if provided
     if (metadata) {
@@ -82,7 +107,23 @@ export async function uploadFileToCloud(
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      let errorData: any = {};
+      try {
+        const text = await response.text();
+        errorData = text ? JSON.parse(text) : {};
+      } catch (e) {
+        console.error("Failed to parse error response:", e);
+      }
+
+      // Log detailed error information
+      console.error("❌ Cloud storage upload failed:", {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorData,
+        uploadUrl: uploadUrl,
+        hasApiKey: !!CLOUD_API_KEY_FULL,
+        apiKeyLength: CLOUD_API_KEY_FULL?.length || 0,
+      });
 
       // Handle rate limiting gracefully
       if (
@@ -92,6 +133,13 @@ export async function uploadFileToCloud(
         console.warn("⚠️  Cloud storage rate limit reached during upload");
         throw new Error(
           "Too many requests from this IP, please try again later."
+        );
+      }
+
+      // Handle authentication errors
+      if (response.status === 401 || response.status === 403) {
+        throw new Error(
+          "Authentication failed. Please check your cloud storage API key configuration."
         );
       }
 
@@ -110,16 +158,25 @@ export async function uploadFileToCloud(
 
       console.warn("⚠️  Cloud storage upload warning:", errorData);
       throw new Error(
-        errorData.message || `Upload failed with status ${response.status}`
+        errorData.message || 
+        errorData.error || 
+        `Upload failed with status ${response.status}: ${response.statusText}`
       );
     }
 
     const result = await response.json();
+    if (!result.data) {
+      throw new Error("Invalid response from cloud storage: missing data field");
+    }
     return result.data;
   } catch (error) {
-    console.warn("⚠️  Warning uploading to cloud storage:", error);
+    console.error("❌ Error uploading to cloud storage:", error);
+    if (error instanceof Error) {
+      // Re-throw with more context if it's already an Error
+      throw error;
+    }
     throw new Error(
-      error instanceof Error ? error.message : "Failed to upload file"
+      `Failed to upload file: ${error instanceof Error ? error.message : String(error)}`
     );
   }
 }
@@ -246,3 +303,4 @@ export async function listCloudFiles(
  * cloud-storage-utils.ts to avoid "use server" restrictions.
  * Import them from "./cloud-storage-utils" instead.
  */
+
