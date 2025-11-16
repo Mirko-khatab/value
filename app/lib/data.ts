@@ -1208,3 +1208,63 @@ export async function fetchQuoteById(id: string) {
     if (connection) await connection.end();
   }
 }
+
+// fetchBannerById
+export async function fetchBannerById(id: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [banner] = await connection.execute(
+      `SELECT * FROM banners WHERE id = ?`,
+      [id]
+    );
+    return banner as Banner[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch banner by id from database.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// fetchFilteredBanners
+export async function fetchFilteredBanners(
+  query: string,
+  currentPage: number
+) {
+  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const searchTerm = `%${query}%`;
+  let connection;
+  try {
+    connection = await getConnection();
+    const [banners] = await connection.execute(
+      `SELECT * FROM banners WHERE title_en LIKE ? OR title_ku LIKE ? OR title_ar LIKE ? ORDER BY sort_order ASC, id DESC LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
+      [searchTerm, searchTerm, searchTerm]
+    );
+    return banners as Banner[];
+  } catch (error) {
+    console.error("Database Error:", error);
+    throw new Error("Failed to fetch filtered banners.");
+  } finally {
+    if (connection) await connection.end();
+  }
+}
+
+// fetchTotalBannersPages
+export async function fetchTotalBannersPages(searchQuery: string) {
+  let connection;
+  try {
+    connection = await getConnection();
+    const [result] = await connection.execute(
+      `SELECT COUNT(*) as total FROM banners WHERE title_en LIKE ? OR title_ku LIKE ? OR title_ar LIKE ?`,
+      [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`]
+    );
+    const count = (result as any[])[0].total;
+    return Math.ceil(count / ITEMS_PER_PAGE);
+  } catch (error) {
+    console.error("Database Error:", error);
+    return 1; // Return 1 page as fallback
+  } finally {
+    if (connection) await connection.end();
+  }
+}
