@@ -4,8 +4,9 @@
  * These are NOT server actions, just helper functions
  */
 
+// Use localhost if CLOUD_API_BASE_URL is not set, since cloud app runs on same server
 const CLOUD_API_BASE =
-  process.env.CLOUD_API_BASE_URL || "https://cloud.mirkokawa.dev/api";
+  process.env.CLOUD_API_BASE_URL || "http://localhost:1200/api";
 const CLOUD_API_KEY_READ = process.env.CLOUD_API_KEY_READ || "";
 
 /**
