@@ -49,24 +49,6 @@ export async function POST(request: NextRequest) {
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";
 
-    // Check if it's a file too large error
-    if (
-      errorMessage.includes("too large") ||
-      errorMessage.includes("413") ||
-      errorMessage.includes("Payload Too Large")
-    ) {
-      console.warn("⚠️  File upload too large");
-      return NextResponse.json(
-        {
-          error: "File too large",
-          message:
-            "The file you're trying to upload is too large. Maximum upload size is 25MB. Please reduce the file size and try again.",
-          canRetry: false,
-        },
-        { status: 413 }
-      );
-    }
-
     // Check if it's a rate limiting error
     if (
       errorMessage.includes("Too many requests") ||

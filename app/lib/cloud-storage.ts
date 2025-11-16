@@ -84,14 +84,6 @@ export async function uploadFileToCloud(
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
 
-      // Handle payload too large (413) error
-      if (response.status === 413) {
-        console.warn("⚠️  File too large for upload");
-        throw new Error(
-          `File is too large. Maximum upload size is 25MB. Please reduce the file size and try again.`
-        );
-      }
-
       // Handle rate limiting gracefully
       if (
         response.status === 429 ||

@@ -30,7 +30,6 @@ export default function ProjectsPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
-  const [selectedProjectType, setSelectedProjectType] = useState("");
   const [showFilters, setShowFilters] = useState(false);
 
   // Infinite scroll fetch function
@@ -133,11 +132,6 @@ export default function ProjectsPage() {
         if (project.project_status !== parseInt(selectedStatus)) return false;
       }
 
-      // Project Type filter
-      if (selectedProjectType !== "") {
-        if (Number(project.project_type) !== parseInt(selectedProjectType)) return false;
-      }
-
       return true;
     });
   }, [
@@ -147,7 +141,6 @@ export default function ProjectsPage() {
     selectedCategory,
     selectedSubCategory,
     selectedStatus,
-    selectedProjectType,
   ]);
 
   // Get localized field helper
@@ -166,7 +159,6 @@ export default function ProjectsPage() {
     setSelectedCategory("");
     setSelectedSubCategory("");
     setSelectedStatus("");
-    setSelectedProjectType("");
     setShowFilters(false);
   };
 
@@ -484,73 +476,6 @@ export default function ProjectsPage() {
                   </option>
                 </select>
               </div>
-
-              {/* Project Type Filter */}
-              <div className="w-full">
-                <label
-                  className={`block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 ${
-                    isRTL ? "text-right" : "text-left"
-                  }`}
-                >
-                  {isRTL ? (
-                    <>
-                      {t("project_type", {
-                        en: "Project Type",
-                        ar: "نوع المشروع",
-                        ku: "جۆری پڕۆژە",
-                      })}
-                      <FolderIcon className="inline-block h-4 w-4 mr-2" />
-                    </>
-                  ) : (
-                    <>
-                      <FolderIcon className="inline-block h-4 w-4 mr-2" />
-                      {t("project_type", {
-                        en: "Project Type",
-                        ar: "نوع المشروع",
-                        ku: "جۆری پڕۆژە",
-                      })}
-                    </>
-                  )}
-                </label>
-                <select
-                  value={selectedProjectType}
-                  onChange={(e) => setSelectedProjectType(e.target.value)}
-                  className={`block w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-black text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm appearance-none ${
-                    isRTL
-                      ? "text-right bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:left_12px_center] bg-no-repeat"
-                      : "text-left bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDEyIDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xIDFMNiA2TDExIDEiIHN0cm9rZT0iIzZCNzI4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPC9zdmc+Cg==')] bg-[length:12px_8px] bg-[position:right_12px_center] bg-no-repeat"
-                  }`}
-                >
-                  <option value="">
-                    {t("all_project_types", {
-                      en: "All Project Types",
-                      ar: "جميع أنواع المشاريع",
-                      ku: "هەموو جۆرەکانی پڕۆژە",
-                    })}
-                  </option>
-                  <option value="0">
-                    {t("design", {
-                      en: "Design",
-                      ar: "تصميم",
-                      ku: "دیزاین",
-                    })}
-                  </option>
-                  <option value="1">
-                    {t("implement", {
-                      en: "Implement",
-                      ar: "تنفيذ",
-                      ku: "جێبەجێکردن",
-                    })}
-                  </option>
-                  <option value="2">
-                    {t("both", {
-                      en: "Design & Implement",
-                      ar: "تصميم وتنفيذ",
-                      ku: "دیزاین و جێبەجێکردن",
-                    })}
-                  </option>
-                </select>
-              </div>
             </div>
 
             {/* Filter Summary & Reset - Full Width */}
@@ -576,8 +501,7 @@ export default function ProjectsPage() {
                 selectedLocation ||
                 selectedCategory ||
                 selectedSubCategory ||
-                selectedStatus !== "" ||
-                selectedProjectType !== "") && (
+                selectedStatus !== "") && (
                 <button
                   onClick={resetFilters}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
@@ -612,8 +536,7 @@ export default function ProjectsPage() {
                 selectedLocation ||
                 selectedCategory ||
                 selectedSubCategory ||
-                selectedStatus !== "" ||
-                selectedProjectType !== "") && (
+                selectedStatus !== "") && (
                 <button
                   onClick={resetFilters}
                   className={`px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium text-sm ${

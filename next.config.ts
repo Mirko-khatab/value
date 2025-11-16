@@ -3,12 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   trailingSlash: false,
-  // Increase body size limit for file uploads (default is 1MB)
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '25mb',
-    },
-  },
   images: {
     remotePatterns: [
       // Legacy CloudFront domain (can be removed after full migration)
