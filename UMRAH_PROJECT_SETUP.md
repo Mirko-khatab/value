@@ -1,7 +1,9 @@
 # Umrah Project Setup Guide
+
 ## Subdomain: umrah.mirkokawa.dev
 
 ### Prerequisites Checklist
+
 - [x] Project code at `/root/Documents/umrah`
 - [x] Database uploaded
 - [ ] Subdomain DNS configured
@@ -19,6 +21,7 @@ ls -la
 ```
 
 Look for:
+
 - `package.json` - Node.js dependencies
 - `next.config.js` or `next.config.ts` - Next.js config
 - Database connection files
@@ -29,6 +32,7 @@ Look for:
 You need to add a DNS A record for the subdomain:
 
 **DNS Settings (in your domain registrar/DNS provider):**
+
 ```
 Type: A
 Name: umrah.mirkokawa
@@ -37,6 +41,7 @@ TTL: 3600
 ```
 
 Wait 5-15 minutes for DNS propagation, then test:
+
 ```bash
 ping umrah.mirkokawa.dev
 ```
@@ -317,6 +322,7 @@ pm2 list
 ```
 
 Expected output:
+
 ```
 ┌────┬──────────────────┬─────────┬─────────┬──────┬──────────┐
 │ id │ name             │ status  │ cpu     │ mem  │ port     │
@@ -329,6 +335,7 @@ Expected output:
 ## Troubleshooting
 
 ### If build fails:
+
 ```bash
 cd /root/Documents/umrah
 rm -rf .next node_modules
@@ -337,6 +344,7 @@ npm run build
 ```
 
 ### If database connection fails:
+
 ```bash
 # Test MySQL connection
 mysql -u umrahapp -p'UmrahApp2024Pass' umrah_db -e 'SHOW TABLES;'
@@ -346,6 +354,7 @@ pm2 env 1  # 1 is the process id
 ```
 
 ### If port 3001 is already in use:
+
 ```bash
 # Check what's using port 3001
 lsof -i :3001
@@ -357,6 +366,7 @@ lsof -i :3001
 ```
 
 ### View application logs:
+
 ```bash
 # PM2 logs
 pm2 logs umrah-app
@@ -414,6 +424,7 @@ After completing these steps:
 ## Need Help?
 
 If you encounter issues, check:
+
 - PM2 logs: `pm2 logs umrah-app`
 - Nginx logs: `tail -f /var/log/nginx/umrah.mirkokawa.dev.error.log`
 - DNS: `dig umrah.mirkokawa.dev`
