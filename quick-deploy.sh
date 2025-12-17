@@ -40,7 +40,7 @@ echo "🌐 Step 3: Deploying to production..."
 echo "Enter your server password when prompted..."
 echo ""
 
-ssh root@167.235.28.79 << 'ENDSSH'
+ssh root@46.224.48.179 << 'ENDSSH'
 cd /root/Documents/value
 
 echo "📥 Pulling latest changes..."

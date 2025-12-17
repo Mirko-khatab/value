@@ -314,6 +314,7 @@ export async function fetchProjectsPaginated(
 
     // Fetch paginated projects
     const parentType = ParentType.Project.toString();
+    // Use string interpolation for LIMIT/OFFSET as MySQL execute() doesn't support them as parameters
     const [projects] = await connection.execute(
       `
       SELECT 
@@ -347,9 +348,9 @@ export async function fetchProjectsPaginated(
             AND g2.parent_type = ?
         )
       ORDER BY p.date DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${parseInt(String(limit))} OFFSET ${parseInt(String(offset))}
     `,
-      [parentType, parentType, limit, offset]
+      [parentType, parentType]
     );
 
     const hasMore = offset + limit < total;
@@ -556,6 +557,7 @@ export async function fetchProductsPaginated(
 
     // Fetch paginated products
     const parentType = ParentType.Product.toString();
+    // Use string interpolation for LIMIT/OFFSET as MySQL execute() doesn't support them as parameters
     const [products] = await connection.execute(
       `SELECT 
         p.*,
@@ -572,8 +574,8 @@ export async function fetchProductsPaginated(
             AND g2.parent_type = ?
         )
       ORDER BY p.id DESC
-      LIMIT ? OFFSET ?`,
-      [parentType, parentType, limit, offset]
+      LIMIT ${parseInt(String(limit))} OFFSET ${parseInt(String(offset))}`,
+      [parentType, parentType]
     );
 
     const hasMore = offset + limit < total;

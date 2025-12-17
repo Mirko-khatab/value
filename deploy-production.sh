@@ -4,7 +4,7 @@ echo "🚀 Deploying to Production Server..."
 echo ""
 
 # Configuration
-SERVER="root@167.235.28.79"
+SERVER="root@46.224.48.179"
 REMOTE_PATH="/root/Documents/value"
 
 echo "📦 Step 1: Building locally..."

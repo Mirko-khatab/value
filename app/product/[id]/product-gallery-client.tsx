@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Gallery } from "@/app/lib/definitions";
 import {
   ChevronDoubleRightIcon,
@@ -23,6 +23,17 @@ export default function ProductGalleryClient({
     galleries.length > 0
       ? galleries.map((gallery) => gallery.image_url)
       : ["/image/2.jpg", "/image/logo.png"];
+
+  // Preload all gallery images for faster switching
+  useEffect(() => {
+    images.forEach((imageSrc) => {
+      const link = document.createElement('link');
+      link.rel = 'prefetch';
+      link.as = 'image';
+      link.href = imageSrc;
+      document.head.appendChild(link);
+    });
+  }, [images]);
 
   const handlePreviousImage = () => {
     setSelectedImageIndex((prev) =>
@@ -66,6 +77,8 @@ export default function ProductGalleryClient({
         width={500}
         height={500}
         className="rounded-md w-[400px] h-[271px] object-cover"
+        priority={selectedImageIndex === 0}
+        loading={selectedImageIndex === 0 ? "eager" : "lazy"}
       />
       <div className="flex flex-row justify-center items-center gap-4">
         <button
@@ -98,6 +111,8 @@ export default function ProductGalleryClient({
                     ? "opacity-100"
                     : "opacity-70 hover:opacity-90"
                 }`}
+                priority={index <= 2}
+                loading={index <= 2 ? "eager" : "lazy"}
               />
             </button>
           ))}
