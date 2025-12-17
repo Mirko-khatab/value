@@ -251,6 +251,7 @@ export async function fetchProjects() {
   let connection;
   try {
     connection = await getConnection();
+    const parentType = ParentType.Project.toString();
     const [projects] = await connection.execute(
       `
       SELECT 
@@ -275,17 +276,17 @@ export async function fetchProjects() {
       LEFT JOIN sub_categorys sc ON p.project_sub_category = sc.id
       LEFT JOIN locations l ON p.location_id = l.id
       LEFT JOIN countries c ON l.country_id = c.id
-      LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(p.id AS CHAR) 
-        AND CAST(g.parent_type AS CHAR) = CAST(? AS CHAR)
+      LEFT JOIN galleries g ON g.parent_id = p.id 
+        AND g.parent_type = ?
         AND g.order_index = (
-          SELECT MIN(CAST(g2.order_index AS UNSIGNED))
+          SELECT MIN(g2.order_index)
           FROM galleries g2
-          WHERE CAST(g2.parent_id AS CHAR) = CAST(p.id AS CHAR)
-            AND CAST(g2.parent_type AS CHAR) = CAST(? AS CHAR)
+          WHERE g2.parent_id = p.id
+            AND g2.parent_type = ?
         )
       ORDER BY p.date DESC
     `,
-      [ParentType.Project.toString(), ParentType.Project.toString()]
+      [parentType, parentType]
     );
     return projects as Project[];
   } catch (error) {
@@ -296,19 +297,23 @@ export async function fetchProjects() {
   }
 }
 
-export async function fetchProjectsPaginated(page: number = 1, limit: number = 12) {
+export async function fetchProjectsPaginated(
+  page: number = 1,
+  limit: number = 12
+) {
   let connection;
   try {
     connection = await getConnection();
     const offset = (page - 1) * limit;
-    
+
     // Get total count for hasMore calculation
     const [countResult] = await connection.execute(
       "SELECT COUNT(*) as total FROM projects"
     );
     const total = (countResult as any)[0].total;
-    
+
     // Fetch paginated projects
+    const parentType = ParentType.Project.toString();
     const [projects] = await connection.execute(
       `
       SELECT 
@@ -333,28 +338,28 @@ export async function fetchProjectsPaginated(page: number = 1, limit: number = 1
       LEFT JOIN sub_categorys sc ON p.project_sub_category = sc.id
       LEFT JOIN locations l ON p.location_id = l.id
       LEFT JOIN countries c ON l.country_id = c.id
-      LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(p.id AS CHAR) 
-        AND CAST(g.parent_type AS CHAR) = CAST(? AS CHAR)
+      LEFT JOIN galleries g ON g.parent_id = p.id 
+        AND g.parent_type = ?
         AND g.order_index = (
-          SELECT MIN(CAST(g2.order_index AS UNSIGNED))
+          SELECT MIN(g2.order_index)
           FROM galleries g2
-          WHERE CAST(g2.parent_id AS CHAR) = CAST(p.id AS CHAR)
-            AND CAST(g2.parent_type AS CHAR) = CAST(? AS CHAR)
+          WHERE g2.parent_id = p.id
+            AND g2.parent_type = ?
         )
       ORDER BY p.date DESC
       LIMIT ? OFFSET ?
     `,
-      [ParentType.Project.toString(), ParentType.Project.toString(), limit, offset]
+      [parentType, parentType, limit, offset]
     );
-    
+
     const hasMore = offset + limit < total;
-    
+
     return {
       data: projects as Project[],
       hasMore,
       total,
       page,
-      limit
+      limit,
     };
   } catch (error) {
     console.error("Database Error:", error);
@@ -413,6 +418,7 @@ export async function fetchFilteredProjects(
   let connection;
   try {
     connection = await getConnection();
+    const parentType = ParentType.Project.toString();
     const [projects] = await connection.execute(
       `SELECT 
         p.*,
@@ -436,13 +442,13 @@ export async function fetchFilteredProjects(
       LEFT JOIN sub_categorys sc ON p.project_sub_category = sc.id
       LEFT JOIN locations l ON p.location_id = l.id
       LEFT JOIN countries c ON l.country_id = c.id
-      LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(p.id AS CHAR) 
-        AND CAST(g.parent_type AS CHAR) = CAST(? AS CHAR)
+      LEFT JOIN galleries g ON g.parent_id = p.id 
+        AND g.parent_type = ?
         AND g.order_index = (
-          SELECT MIN(CAST(g2.order_index AS UNSIGNED))
+          SELECT MIN(g2.order_index)
           FROM galleries g2
-          WHERE CAST(g2.parent_id AS CHAR) = CAST(p.id AS CHAR)
-            AND CAST(g2.parent_type AS CHAR) = CAST(? AS CHAR)
+          WHERE g2.parent_id = p.id
+            AND g2.parent_type = ?
         )
       WHERE 
         p.title_en LIKE ? OR 
@@ -450,13 +456,7 @@ export async function fetchFilteredProjects(
         p.title_ar LIKE ?
       ORDER BY p.date DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
-      [
-        ParentType.Project.toString(),
-        ParentType.Project.toString(),
-        searchTerm,
-        searchTerm,
-        searchTerm,
-      ]
+      [parentType, parentType, searchTerm, searchTerm, searchTerm]
     );
     return projects as Project[];
   } catch (error) {
@@ -492,9 +492,10 @@ export async function fetchProjectGalleriesData(projectId: string) {
   let connection;
   try {
     connection = await getConnection();
+    const parentType = ParentType.Project.toString();
     const [galleries] = await connection.execute(
-      "SELECT * FROM galleries WHERE CAST(parent_id AS CHAR) = CAST(? AS CHAR) AND CAST(parent_type AS CHAR) = CAST(? AS CHAR) ORDER BY CAST(order_index AS UNSIGNED) ASC",
-      [projectId, ParentType.Project.toString()]
+      "SELECT * FROM galleries WHERE parent_id = ? AND parent_type = ? ORDER BY order_index ASC",
+      [projectId, parentType]
     );
     return galleries as Gallery[];
   } catch (error) {
@@ -510,6 +511,7 @@ export async function fetchProducts() {
   let connection;
   try {
     connection = await getConnection();
+    const parentType = ParentType.Product.toString();
     const [products] = await connection.execute(
       `SELECT 
         p.*,
@@ -517,16 +519,16 @@ export async function fetchProducts() {
         g.alt_text as gallery_alt_text,
         g.order_index as gallery_order_index
       FROM products p
-      LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(p.id AS CHAR) 
-        AND CAST(g.parent_type AS CHAR) = CAST(? AS CHAR)
+      LEFT JOIN galleries g ON g.parent_id = p.id 
+        AND g.parent_type = ?
         AND g.order_index = (
-          SELECT MIN(CAST(g2.order_index AS UNSIGNED))
+          SELECT MIN(g2.order_index)
           FROM galleries g2
-          WHERE CAST(g2.parent_id AS CHAR) = CAST(p.id AS CHAR)
-            AND CAST(g2.parent_type AS CHAR) = CAST(? AS CHAR)
+          WHERE g2.parent_id = p.id
+            AND g2.parent_type = ?
         )
       ORDER BY p.id DESC`,
-      [ParentType.Product.toString(), ParentType.Product.toString()]
+      [parentType, parentType]
     );
     return products as Product[];
   } catch (error) {
@@ -537,19 +539,23 @@ export async function fetchProducts() {
   }
 }
 
-export async function fetchProductsPaginated(page: number = 1, limit: number = 12) {
+export async function fetchProductsPaginated(
+  page: number = 1,
+  limit: number = 12
+) {
   let connection;
   try {
     connection = await getConnection();
     const offset = (page - 1) * limit;
-    
+
     // Get total count for hasMore calculation
     const [countResult] = await connection.execute(
       "SELECT COUNT(*) as total FROM products"
     );
     const total = (countResult as any)[0].total;
-    
+
     // Fetch paginated products
+    const parentType = ParentType.Product.toString();
     const [products] = await connection.execute(
       `SELECT 
         p.*,
@@ -557,27 +563,27 @@ export async function fetchProductsPaginated(page: number = 1, limit: number = 1
         g.alt_text as gallery_alt_text,
         g.order_index as gallery_order_index
       FROM products p
-      LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(p.id AS CHAR) 
-        AND CAST(g.parent_type AS CHAR) = CAST(? AS CHAR)
+      LEFT JOIN galleries g ON g.parent_id = p.id 
+        AND g.parent_type = ?
         AND g.order_index = (
-          SELECT MIN(CAST(g2.order_index AS UNSIGNED))
+          SELECT MIN(g2.order_index)
           FROM galleries g2
-          WHERE CAST(g2.parent_id AS CHAR) = CAST(p.id AS CHAR)
-            AND CAST(g2.parent_type AS CHAR) = CAST(? AS CHAR)
+          WHERE g2.parent_id = p.id
+            AND g2.parent_type = ?
         )
       ORDER BY p.id DESC
       LIMIT ? OFFSET ?`,
-      [ParentType.Product.toString(), ParentType.Product.toString(), limit, offset]
+      [parentType, parentType, limit, offset]
     );
-    
+
     const hasMore = offset + limit < total;
-    
+
     return {
       data: products as Product[],
       hasMore,
       total,
       page,
-      limit
+      limit,
     };
   } catch (error) {
     console.error("Database Error:", error);
@@ -615,6 +621,7 @@ export async function fetchFilteredProducts(
   let connection;
   try {
     connection = await getConnection();
+    const parentType = ParentType.Product.toString();
     const [products] = await connection.execute(
       `SELECT 
         p.*,
@@ -622,13 +629,13 @@ export async function fetchFilteredProducts(
         g.alt_text as gallery_alt_text,
         g.order_index as gallery_order_index
       FROM products p
-      LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(p.id AS CHAR) 
-        AND CAST(g.parent_type AS CHAR) = CAST(? AS CHAR)
+      LEFT JOIN galleries g ON g.parent_id = p.id 
+        AND g.parent_type = ?
         AND g.order_index = (
-          SELECT MIN(CAST(g2.order_index AS UNSIGNED))
+          SELECT MIN(g2.order_index)
           FROM galleries g2
-          WHERE CAST(g2.parent_id AS CHAR) = CAST(p.id AS CHAR)
-            AND CAST(g2.parent_type AS CHAR) = CAST(? AS CHAR)
+          WHERE g2.parent_id = p.id
+            AND g2.parent_type = ?
         )
       WHERE 
         p.title_en LIKE ? OR 
@@ -640,8 +647,8 @@ export async function fetchFilteredProducts(
       ORDER BY p.id DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
       [
-        ParentType.Product.toString(),
-        ParentType.Product.toString(),
+        parentType,
+        parentType,
         searchTerm,
         searchTerm,
         searchTerm,
@@ -763,9 +770,10 @@ export async function fetchProductGalleries(productId: string) {
   let connection;
   try {
     connection = await getConnection();
+    const parentType = ParentType.Product.toString();
     const [galleries] = await connection.execute(
-      "SELECT * FROM galleries WHERE CAST(parent_id AS CHAR) = CAST(? AS CHAR) AND CAST(parent_type AS CHAR) = CAST(? AS CHAR) ORDER BY CAST(order_index AS UNSIGNED) ASC",
-      [productId, ParentType.Product.toString()]
+      "SELECT * FROM galleries WHERE parent_id = ? AND parent_type = ? ORDER BY order_index ASC",
+      [productId, parentType]
     );
     return galleries as Gallery[];
   } catch (error) {
@@ -800,9 +808,10 @@ export async function fetchEventGalleries(eventId: string) {
   let connection;
   try {
     connection = await getConnection();
+    const parentType = ParentType.Event.toString();
     const [galleries] = await connection.execute(
-      "SELECT * FROM galleries WHERE CAST(parent_id AS CHAR) = CAST(? AS CHAR) AND CAST(parent_type AS CHAR) = CAST(? AS CHAR) ORDER BY CAST(order_index AS UNSIGNED) ASC",
-      [eventId, ParentType.Event.toString()]
+      "SELECT * FROM galleries WHERE parent_id = ? AND parent_type = ? ORDER BY order_index ASC",
+      [eventId, parentType]
     );
     return galleries as Gallery[];
   } catch (error) {
@@ -820,6 +829,7 @@ export async function fetchFilteredEvents(query: string, currentPage: number) {
   let connection;
   try {
     connection = await getConnection();
+    const parentType = ParentType.Event.toString();
     const [events] = await connection.execute(
       `SELECT 
         e.*,
@@ -827,13 +837,13 @@ export async function fetchFilteredEvents(query: string, currentPage: number) {
         g.alt_text as gallery_alt_text,
         g.order_index as gallery_order_index
       FROM event e
-      LEFT JOIN galleries g ON CAST(g.parent_id AS CHAR) = CAST(e.id AS CHAR) 
-        AND CAST(g.parent_type AS CHAR) = CAST(? AS CHAR)
+      LEFT JOIN galleries g ON g.parent_id = e.id 
+        AND g.parent_type = ?
         AND g.order_index = (
-          SELECT MIN(CAST(g2.order_index AS UNSIGNED))
+          SELECT MIN(g2.order_index)
           FROM galleries g2
-          WHERE CAST(g2.parent_id AS CHAR) = CAST(e.id AS CHAR)
-            AND CAST(g2.parent_type AS CHAR) = CAST(? AS CHAR)
+          WHERE g2.parent_id = e.id
+            AND g2.parent_type = ?
         )
       WHERE 
         e.title_en LIKE ? OR 
@@ -845,8 +855,8 @@ export async function fetchFilteredEvents(query: string, currentPage: number) {
         ORDER BY e.id DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
       [
-        ParentType.Event.toString(),
-        ParentType.Event.toString(),
+        parentType,
+        parentType,
         searchTerm,
         searchTerm,
         searchTerm,
@@ -1228,10 +1238,7 @@ export async function fetchBannerById(id: string) {
 }
 
 // fetchFilteredBanners
-export async function fetchFilteredBanners(
-  query: string,
-  currentPage: number
-) {
+export async function fetchFilteredBanners(query: string, currentPage: number) {
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
   const searchTerm = `%${query}%`;
   let connection;
