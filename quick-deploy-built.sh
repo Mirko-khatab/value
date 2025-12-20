@@ -63,3 +63,7 @@ echo ""
 echo "🎉 Deployment finished!"
 echo "Visit https://valuearch.com to test"
 echo ""
+
+
+
+

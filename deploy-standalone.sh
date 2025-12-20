@@ -65,3 +65,7 @@ echo ""
 echo "🔍 To monitor logs in real-time:"
 echo "   ssh $SERVER pm2 logs valuearch-app"
 echo ""
+
+
+
+

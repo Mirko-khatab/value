@@ -50,3 +50,7 @@ echo "Next steps:"
 echo "1. Run: ./deploy-production.sh"
 echo "2. Or manually restart: ssh $SERVER 'cd $REMOTE_PATH && pm2 restart valuearch-app --update-env'"
 echo ""
+
+
+
+

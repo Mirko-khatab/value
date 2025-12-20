@@ -261,3 +261,7 @@ pm2 start npm --name valuearch-app -- start
 - [Next.js Environment Variables](https://nextjs.org/docs/basic-features/environment-variables)
 - [Auth.js Configuration](https://authjs.dev/reference/core#authconfig)
 - [PM2 Environment Variables](https://pm2.keymetrics.io/docs/usage/environment/)
+
+
+
+

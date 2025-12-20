@@ -100,3 +100,7 @@ echo "1. Visit https://${SERVER_HOST} to verify HTTPS works"
 echo "2. Try to access http://${SERVER_HOST} to verify redirect"
 echo "3. Test login functionality"
 echo "4. Monitor logs: pm2 logs ${APP_NAME}"
+
+
+
+

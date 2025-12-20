@@ -185,3 +185,7 @@ curl https://valuearch.com/api/projects/public?page=1&limit=12
 - The auth fix requires environment variable configuration on the server
 - Consider using PM2 ecosystem file for better environment variable management
 - All database queries using `connection.query()` with LIMIT/OFFSET should be audited and fixed similarly
+
+
+
+
