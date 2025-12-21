@@ -450,13 +450,19 @@ export async function fetchProjectById(id: string) {
     `,
       [id]
     );
-    const projectArray = projects as Project[];
-    return projectArray;
+    const projectArray = (projects as Project[]) || [];
+    return projectArray.length > 0 ? projectArray[0] : null;
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch project.");
+    console.error("Database Error in fetchProjectById:", error);
+    return null;
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -549,12 +555,18 @@ export async function fetchProjectGalleriesData(projectId: string) {
       "SELECT * FROM galleries WHERE parent_id = ? AND parent_type = ? ORDER BY order_index ASC",
       [projectId, parentType]
     );
-    return galleries as Gallery[];
+    return (galleries as Gallery[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch project galleries.");
+    console.error("Database Error in fetchProjectGalleriesData:", error);
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
