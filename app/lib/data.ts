@@ -582,12 +582,18 @@ export async function fetchProducts() {
       ORDER BY p.id DESC`,
       [parentType, parentType]
     );
-    return products as Product[];
+    return (products as Product[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch products.");
+    console.error("Database Error in fetchProducts:", error);
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 

@@ -14,15 +14,19 @@ export async function GET() {
        LEFT JOIN project_categories pc ON sc.category_id = pc.id
        ORDER BY sc.id DESC`
     );
-    return NextResponse.json(rows);
+    return NextResponse.json(rows || []);
   } catch (error) {
-    console.error("Database Error:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch sub categories" },
-      { status: 500 }
-    );
+    console.error("Database Error in sub-categorys API:", error);
+    // Return empty array instead of 500
+    return NextResponse.json([]);
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
