@@ -87,12 +87,18 @@ export async function fetchProjectCategories() {
     const [rows] = await connection.execute(
       "SELECT id, title_ku, title_en, title_ar FROM project_categories ORDER BY id DESC"
     );
-    return rows as ProjectCategory[];
+    return (rows as ProjectCategory[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch project categories.");
+    console.error("Database Error in fetchProjectCategories:", error);
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -127,12 +133,18 @@ export async function fetchSubCategories() {
        LEFT JOIN project_categories pc ON sc.category_id = pc.id
        ORDER BY sc.id DESC`
     );
-    return rows as SubCategory[];
+    return (rows as SubCategory[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch sub categories.");
+    console.error("Database Error in fetchSubCategories:", error);
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -202,12 +214,18 @@ export async function fetchLocations() {
     const [locations] = await connection.execute(
       "SELECT l.*, c.name_en as country_name FROM locations l LEFT JOIN countries c ON l.country_id = c.id ORDER BY l.city_en ASC"
     );
-    return locations as Location[];
+    return (locations as Location[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch locations.");
+    console.error("Database Error in fetchLocations:", error);
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -586,7 +604,18 @@ export async function fetchProductsPaginated(
     const [countResult] = await connection.execute(
       "SELECT COUNT(*) as total FROM products"
     );
-    const total = (countResult as any)[0].total;
+    const total = (countResult as any)[0]?.total || 0;
+
+    // Return empty result if no products
+    if (total === 0) {
+      return {
+        data: [],
+        hasMore: false,
+        total: 0,
+        page,
+        limit,
+      };
+    }
 
     // Fetch paginated products
     const parentType = ParentType.Product.toString();
@@ -614,17 +643,29 @@ export async function fetchProductsPaginated(
     const hasMore = offset + limit < total;
 
     return {
-      data: products as Product[],
+      data: (products as Product[]) || [],
       hasMore,
       total,
       page,
       limit,
     };
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch products.");
+    console.error("Database Error in fetchProductsPaginated:", error);
+    return {
+      data: [],
+      hasMore: false,
+      total: 0,
+      page,
+      limit,
+    };
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -945,12 +986,18 @@ export async function fetchSocialMedia() {
     const [socialMedia] = await connection.execute(
       "SELECT * FROM social_media ORDER BY id ASC"
     );
-    return socialMedia as SocialMedia[];
+    return (socialMedia as SocialMedia[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch social media.");
+    console.error("Database Error in fetchSocialMedia:", error);
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -960,14 +1007,20 @@ export async function fetchFooterProperties() {
   try {
     connection = await getConnection();
     const [properties] = await connection.execute(
-      "SELECT * FROM properties WHERE `key` LIKE 'footer_%' ORDER BY `key` ASC"
+      "SELECT * FROM footer_properties ORDER BY id ASC"
     );
-    return properties as Property[];
+    return (properties as FooterProperty[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch footer properties.");
+    console.error("Database Error in fetchFooterProperties:", error);
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -1009,12 +1062,18 @@ export async function fetchFilteredAudios(query: string, currentPage: number) {
       `SELECT * FROM audios WHERE title_en LIKE ? OR title_ku LIKE ? OR title_ar LIKE ? ORDER BY id DESC LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}`,
       [searchTerm, searchTerm, searchTerm]
     );
-    return audios as Audio[];
+    return (audios as Audio[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch filtered audios.");
+    console.error("Database Error in fetchFilteredAudios:", error);
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
