@@ -1,0 +1,37 @@
+# ===============================================
+# COMPLETE .env FILE FOR VALUEARCH
+# WITH CLOUD STORAGE KEYS
+# ===============================================
+
+# Database Configuration
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=gM7-3$F<1&4^!
+MYSQL_DATABASE=dashboard
+
+# Auth.js Configuration
+AUTH_SECRET=ImNUCn0j+wg3bMZLb0Vdssdr/w/enyMZsoVQKzt68F0=
+AUTH_URL=https://valuearch.com
+AUTH_TRUST_HOST=true
+
+# Node Environment
+NODE_ENV=production
+
+# Cloud Storage Configuration (IMPORTANT!)
+CLOUD_API_BASE_URL=https://cloud.mirkokawa.dev/api
+CLOUD_API_KEY_FULL=18d6e7cce19d7c8ceadf7443db140ccb632f912f793ba9d69073d9d96ef86f13
+CLOUD_API_KEY_READ=9728b284b8658dce9554c9495d3dfc65fa9ad69f1916cfb583c171996ff24a6d
+
+# Public Cloud Storage (for client-side access)
+NEXT_PUBLIC_CLOUD_API_BASE_URL=https://cloud.mirkokawa.dev/api
+NEXT_PUBLIC_CLOUD_API_KEY_READ=9728b284b8658dce9554c9495d3dfc65fa9ad69f1916cfb583c171996ff24a6d
+
+# ===============================================
+# WHAT EACH CLOUD KEY DOES:
+# ===============================================
+# CLOUD_API_KEY_FULL  = Admin key (upload, delete, full access)
+# CLOUD_API_KEY_READ  = Public key (read-only, view files)
+# 
+# These keys connect to your cloud storage server at:
+# https://cloud.mirkokawa.dev
+# ===============================================

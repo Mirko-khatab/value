@@ -1,0 +1,57 @@
+# ===============================================
+# .env FILE FOR VALUEARCH - READY TO USE
+# ===============================================
+# Copy this entire content to create your .env file
+# ===============================================
+
+# Database Configuration
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=gM7-3$F<1&4^!
+MYSQL_DATABASE=dashboard
+
+# Auth.js Configuration
+AUTH_SECRET=ImNUCn0j+wg3bMZLb0Vdssdr/w/enyMZsoVQKzt68F0=
+AUTH_URL=https://valuearch.com
+AUTH_TRUST_HOST=true
+
+# Node Environment
+NODE_ENV=production
+
+# Cloud Storage Configuration (Optional)
+CLOUD_API_BASE_URL=https://cloud.mirkokawa.dev/api
+CLOUD_API_KEY_FULL=your-cloud-api-key-here-if-needed
+CLOUD_API_KEY_READ=your-cloud-api-key-here-if-needed
+
+# ===============================================
+# HOW TO USE THIS FILE:
+# ===============================================
+
+# FOR LOCAL DEVELOPMENT:
+# 1. Copy this file to: /Users/miko/Documents/web/value/.env
+# 2. Change AUTH_URL to: http://localhost:3000
+# 3. Change NODE_ENV to: development
+
+# FOR PRODUCTION SERVER:
+# 1. SSH to server (or use Hetzner Console)
+# 2. Run: nano /root/Documents/valuearch/.env
+# 3. Paste this entire content
+# 4. Save: Ctrl+X, Y, Enter
+# 5. Restart: pm2 restart valuearch-app
+
+# ===============================================
+# MANUAL CREATION STEPS:
+# ===============================================
+
+# Step 1: Create .env file
+# nano .env
+
+# Step 2: Paste the content above (lines 9-21)
+
+# Step 3: Save the file
+# Press: Ctrl+X, then Y, then Enter
+
+# Step 4: Verify
+# cat .env
+
+# ===============================================

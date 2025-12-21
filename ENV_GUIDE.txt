@@ -1,0 +1,72 @@
+# ===============================================
+# .env FILE GUIDE FOR VALUEARCH
+# ===============================================
+
+## 📁 WHERE TO CREATE THIS FILE:
+# Save this as: /Users/miko/Documents/web/value/.env
+# Or as: /Users/miko/Documents/web/value/.env.local
+# (Both work - .env.local takes priority if both exist)
+
+## 🔐 FOR PRODUCTION SERVER:
+# Copy this to: /root/Documents/valuearch/.env
+
+# ===============================================
+# REQUIRED VARIABLES
+# ===============================================
+
+# Database Connection
+MYSQL_HOST=localhost
+MYSQL_USER=root
+MYSQL_PASSWORD=gM7-3$F<1&4^!
+MYSQL_DATABASE=dashboard
+
+# Auth.js (Authentication)
+AUTH_SECRET=your-secret-key-here-change-this-to-random-string-min-32-chars
+AUTH_URL=https://valuearch.com
+AUTH_TRUST_HOST=true
+
+# Environment
+NODE_ENV=production
+
+# ===============================================
+# OPTIONAL - CLOUD STORAGE CONFIGURATION
+# ===============================================
+# Only needed if you're using the cloud storage server
+
+CLOUD_API_BASE_URL=https://cloud.mirkokawa.dev/api
+CLOUD_API_KEY_FULL=your-cloud-api-key-full-here
+CLOUD_API_KEY_READ=your-cloud-api-key-read-here
+
+# ===============================================
+# NOTES:
+# ===============================================
+
+# 1. AUTH_SECRET: Generate a random string (min 32 characters)
+#    You can generate one by running:
+#    node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+#
+# 2. For LOCAL development:
+#    - Change MYSQL_HOST to localhost
+#    - Change AUTH_URL to http://localhost:3000
+#    - Change NODE_ENV to development
+#
+# 3. For PRODUCTION server:
+#    - Keep MYSQL_HOST as localhost
+#    - Change AUTH_URL to https://valuearch.com
+#    - Keep NODE_ENV as production
+#
+# 4. NEVER commit this file to Git!
+#    (It's already in .gitignore)
+
+# ===============================================
+# QUICK SETUP COMMANDS
+# ===============================================
+
+# Generate AUTH_SECRET:
+# node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+
+# Test database connection:
+# mysql -h localhost -u root -p'gM7-3$F<1&4^!' dashboard -e "SELECT 1"
+
+# Restart app after changing .env:
+# pm2 restart valuearch-app

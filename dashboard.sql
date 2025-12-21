@@ -2,9 +2,9 @@
 -- version 5.1.1deb5ubuntu1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Dec 15, 2025 at 01:39 PM
--- Server version: 10.6.22-MariaDB-0ubuntu0.22.04.1
+-- Host: localhost:3306
+-- Generation Time: Dec 20, 2025 at 11:58 PM
+-- Server version: 8.0.44-0ubuntu0.22.04.2
 -- PHP Version: 8.1.2-1ubuntu2.22
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -28,15 +28,15 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `about_stats` (
-  `id` int(11) NOT NULL,
-  `stat_key` varchar(100) NOT NULL,
-  `stat_value` varchar(50) NOT NULL,
-  `label_ku` varchar(255) DEFAULT NULL,
-  `label_ar` varchar(255) DEFAULT NULL,
-  `label_en` varchar(255) DEFAULT NULL,
-  `display_order` int(11) DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `id` int NOT NULL,
+  `stat_key` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `stat_value` varchar(50) COLLATE utf8mb4_general_ci NOT NULL,
+  `label_ku` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label_ar` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `label_en` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `display_order` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -56,15 +56,15 @@ INSERT INTO `about_stats` (`id`, `stat_key`, `stat_value`, `label_ku`, `label_ar
 --
 
 CREATE TABLE `audios` (
-  `id` varchar(36) NOT NULL ,
-  `title_ku` varchar(255) NOT NULL,
-  `title_en` varchar(255) NOT NULL,
-  `title_ar` varchar(255) NOT NULL,
-  `audio_url` text NOT NULL,
-  `is_active` tinyint(1) DEFAULT 1,
-  `use_for` enum('landing','intro','both') DEFAULT 'landing',
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `id` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title_ku` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title_en` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `title_ar` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `audio_url` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_active` tinyint(1) DEFAULT '1',
+  `use_for` enum('landing','intro','both') COLLATE utf8mb4_unicode_ci DEFAULT 'landing',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -82,29 +82,18 @@ INSERT INTO `audios` (`id`, `title_ku`, `title_en`, `title_ar`, `audio_url`, `is
 --
 
 CREATE TABLE `banners` (
-  `id` varchar(36) NOT NULL ,
+  `id` varchar(36) NOT NULL,
   `title_ku` varchar(255) NOT NULL,
   `title_ar` varchar(255) NOT NULL,
   `title_en` varchar(255) NOT NULL,
   `image_url` varchar(500) NOT NULL,
   `video_url` varchar(500) DEFAULT '',
   `type` enum('image','video') NOT NULL DEFAULT 'image',
-  `is_active` tinyint(1) NOT NULL DEFAULT 1,
-  `sort_order` int(11) NOT NULL DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `banners`
---
-
-INSERT INTO `banners` (`id`, `title_ku`, `title_ar`, `title_en`, `image_url`, `video_url`, `type`, `is_active`, `sort_order`, `created_at`, `updated_at`) VALUES
-('7bdb7fee-ab97-11f0-b9f9-a30f62be92a0', 'video', 'video', 'video', '/api/cloud/files/16257842-6eeb-463c-9ba3-c1abf02ebabf', '/api/cloud/files/16257842-6eeb-463c-9ba3-c1abf02ebabf', 'video', 1, 0, '2025-10-17 20:25:55', '2025-10-17 20:25:55'),
-('8da43bfc-b17e-11f0-b1f4-171420638fa7', 'بەرنامەیەکی نوێ', 'برنامج جديد', 'New Program', '/image/2.jpg', '', 'image', 1, 1, '2025-10-25 08:42:34', '2025-10-25 08:42:34'),
-('8da465e6-b17e-11f0-b1f4-171420638fa7', 'پڕۆژەی گەورە', 'مشروع كبير', 'Big Project', '/image/barham.jpg', '', 'image', 1, 2, '2025-10-25 08:42:34', '2025-10-25 08:42:34'),
-('96c19c64-ac0d-11f0-aaa9-4de7a06b35ca', 'بەرنامەیەکی نوێ', 'برنامج جديد', 'New Program', '/image/2.jpg', '', 'image', 1, 1, '2025-10-18 10:31:21', '2025-10-18 10:31:21'),
-('96c1bc94-ac0d-11f0-aaa9-4de7a06b35ca', 'پڕۆژەی گەورە', 'مشروع كبير', 'Big Project', '/image/barham.jpg', '', 'image', 1, 2, '2025-10-18 10:31:21', '2025-10-18 10:31:21');
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -113,10 +102,10 @@ INSERT INTO `banners` (`id`, `title_ku`, `title_ar`, `title_en`, `image_url`, `v
 --
 
 CREATE TABLE `category` (
-  `id` int(11) NOT NULL,
-  `title_ku` varchar(150) NOT NULL,
-  `title_ar` varchar(150) NOT NULL,
-  `title_en` varchar(150) NOT NULL
+  `id` int NOT NULL,
+  `title_ku` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_ar` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_en` varchar(150) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -126,13 +115,13 @@ CREATE TABLE `category` (
 --
 
 CREATE TABLE `countries` (
-  `id` int(11) NOT NULL,
-  `name_ku` varchar(255) NOT NULL,
-  `name_ar` varchar(255) NOT NULL,
-  `name_en` varchar(255) NOT NULL,
-  `code` varchar(3) DEFAULT NULL COMMENT 'ISO 3166-1 alpha-3 country code',
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `id` int NOT NULL,
+  `name_ku` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name_ar` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name_en` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(3) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'ISO 3166-1 alpha-3 country code',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -152,43 +141,18 @@ INSERT INTO `countries` (`id`, `name_ku`, `name_ar`, `name_en`, `code`, `created
 -- --------------------------------------------------------
 
 --
--- Table structure for table `customers`
---
-
-CREATE TABLE `customers` (
-  `id` varchar(36) NOT NULL ,
-  `name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `image_url` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `customers`
---
-
-INSERT INTO `customers` (`id`, `name`, `email`, `image_url`) VALUES
-('13D07535-C59E-4157-A011-F8D2EF4E0CBB', 'Balazs Orban', 'balazs@orban.com', '/customers/balazs-orban.png'),
-('3958dc9e-712f-4377-85e9-fec4b6a6442a', 'Delba de Oliveira', 'delba@oliveira.com', '/customers/delba-de-oliveira.png'),
-('3958dc9e-742f-4377-85e9-fec4b6a6442a', 'Lee Robinson', 'lee@robinson.com', '/customers/lee-robinson.png'),
-('76d65c26-f784-44a2-ac19-586678f7c2f2', 'Michael Novotny', 'michael@novotny.com', '/customers/michael-novotny.png'),
-('CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 'Amy Burns', 'amy@burns.com', '/customers/amy-burns.png'),
-('d6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 'Evil Rabbit', 'evil@rabbit.com', '/customers/evil-rabbit.png');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `event`
 --
 
 CREATE TABLE `event` (
-  `id` int(11) NOT NULL,
-  `title_ku` varchar(155) NOT NULL,
-  `title_ar` varchar(155) NOT NULL,
-  `title_en` varchar(155) NOT NULL,
-  `description_ku` text NOT NULL,
-  `description_ar` text NOT NULL,
-  `description_en` text NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+  `id` int NOT NULL,
+  `title_ku` varchar(155) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_ar` varchar(155) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_en` varchar(155) COLLATE utf8mb4_general_ci NOT NULL,
+  `description_ku` text COLLATE utf8mb4_general_ci NOT NULL,
+  `description_ar` text COLLATE utf8mb4_general_ci NOT NULL,
+  `description_en` text COLLATE utf8mb4_general_ci NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -206,19 +170,19 @@ INSERT INTO `event` (`id`, `title_ku`, `title_ar`, `title_en`, `description_ku`,
 --
 
 CREATE TABLE `footer_properties` (
-  `id` int(11) NOT NULL,
-  `property_key` varchar(100) NOT NULL,
-  `title_en` varchar(255) NOT NULL,
-  `title_ar` varchar(255) NOT NULL,
-  `title_ku` varchar(255) NOT NULL,
-  `content_en` text NOT NULL,
-  `content_ar` text NOT NULL,
-  `content_ku` text NOT NULL,
-  `property_type` enum('about','stats','contact','social') NOT NULL DEFAULT 'about',
-  `display_order` int(11) DEFAULT 0,
-  `is_active` tinyint(1) DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `id` int NOT NULL,
+  `property_key` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_en` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_ar` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_ku` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `content_en` text COLLATE utf8mb4_general_ci NOT NULL,
+  `content_ar` text COLLATE utf8mb4_general_ci NOT NULL,
+  `content_ku` text COLLATE utf8mb4_general_ci NOT NULL,
+  `property_type` enum('about','stats','contact','social') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'about',
+  `display_order` int DEFAULT '0',
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -236,13 +200,13 @@ INSERT INTO `footer_properties` (`id`, `property_key`, `title_en`, `title_ar`, `
 --
 
 CREATE TABLE `galleries` (
-  `id` int(11) NOT NULL,
-  `parent_id` int(11) NOT NULL,
-  `parent_type` enum('0','1','2') NOT NULL COMMENT '0=project\r\n1=event\r\n2=product\r\n\r\n',
-  `image_url` varchar(500) NOT NULL,
-  `alt_text` varchar(255) DEFAULT NULL,
-  `order_index` int(11) DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp()
+  `id` int NOT NULL,
+  `parent_id` int NOT NULL,
+  `parent_type` enum('0','1','2') COLLATE utf8mb4_general_ci NOT NULL COMMENT '0=project\r\n1=event\r\n2=product\r\n\r\n',
+  `image_url` varchar(500) COLLATE utf8mb4_general_ci NOT NULL,
+  `alt_text` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `order_index` int DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -536,10 +500,10 @@ INSERT INTO `galleries` (`id`, `parent_id`, `parent_type`, `image_url`, `alt_tex
 --
 
 CREATE TABLE `graphics` (
-  `id` int(11) NOT NULL,
-  `image_url` varchar(500) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `id` int NOT NULL,
+  `image_url` varchar(500) COLLATE utf8mb4_general_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -559,142 +523,17 @@ INSERT INTO `graphics` (`id`, `image_url`, `created_at`, `updated_at`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `invoices`
---
-
-CREATE TABLE `invoices` (
-  `id` varchar(36) NOT NULL ,
-  `customer_id` varchar(36) NOT NULL,
-  `amount` int(11) NOT NULL,
-  `status` varchar(255) NOT NULL,
-  `date` date NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `invoices`
---
-
-INSERT INTO `invoices` (`id`, `customer_id`, `amount`, `status`, `date`) VALUES
-('51b9eab2-a100-11f0-bd74-0aad4759eb8d', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 20348, 'pending', '2022-11-14'),
-('51ba11b8-a100-11f0-bd74-0aad4759eb8d', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 3040, 'paid', '2022-10-29'),
-('51ba289c-a100-11f0-bd74-0aad4759eb8d', '76d65c26-f784-44a2-ac19-586678f7c2f2', 44800, 'paid', '2023-09-10'),
-('51ba35d0-a100-11f0-bd74-0aad4759eb8d', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 34577, 'pending', '2023-08-05'),
-('51ba4fa2-a100-11f0-bd74-0aad4759eb8d', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 54246, 'pending', '2023-07-16'),
-('51ba697e-a100-11f0-bd74-0aad4759eb8d', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 666, 'pending', '2023-06-27'),
-('51ba7964-a100-11f0-bd74-0aad4759eb8d', '76d65c26-f784-44a2-ac19-586678f7c2f2', 32545, 'paid', '2023-06-09'),
-('51ba8544-a100-11f0-bd74-0aad4759eb8d', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 1250, 'paid', '2023-06-17'),
-('51ba9322-a100-11f0-bd74-0aad4759eb8d', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8546, 'paid', '2023-06-07'),
-('51baa5b0-a100-11f0-bd74-0aad4759eb8d', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 500, 'paid', '2023-08-19'),
-('51bad56c-a100-11f0-bd74-0aad4759eb8d', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8945, 'paid', '2023-06-03'),
-('51baf0ba-a100-11f0-bd74-0aad4759eb8d', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 1000, 'paid', '2022-06-05'),
-('7c1a5b66-7f31-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 15795, 'pending', '2022-12-06'),
-('7c1ada32-7f31-11f0-aa44-a5497d977eb3', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 20348, 'pending', '2022-11-14'),
-('7c1b09ee-7f31-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 3040, 'paid', '2022-10-29'),
-('7c1b230c-7f31-11f0-aa44-a5497d977eb3', '76d65c26-f784-44a2-ac19-586678f7c2f2', 44800, 'paid', '2023-09-10'),
-('7c1b3018-7f31-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 34577, 'pending', '2023-08-05'),
-('7c1b4ab2-7f31-11f0-aa44-a5497d977eb3', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 54246, 'pending', '2023-07-16'),
-('7c1b6f56-7f31-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 666, 'pending', '2023-06-27'),
-('7c1b86d0-7f31-11f0-aa44-a5497d977eb3', '76d65c26-f784-44a2-ac19-586678f7c2f2', 32545, 'paid', '2023-06-09'),
-('7c1b9710-7f31-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 1250, 'paid', '2023-06-17'),
-('7c1ba9c6-7f31-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8546, 'paid', '2023-06-07'),
-('7c1bc6fe-7f31-11f0-aa44-a5497d977eb3', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 500, 'paid', '2023-08-19'),
-('7c1bd612-7f31-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8945, 'paid', '2023-06-03'),
-('7c1be620-7f31-11f0-aa44-a5497d977eb3', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 1000, 'paid', '2022-06-05'),
-('803953ac-8083-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 15795, 'pending', '2022-12-06'),
-('8039d160-8083-11f0-aa44-a5497d977eb3', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 20348, 'pending', '2022-11-14'),
-('8039ee52-8083-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 3040, 'paid', '2022-10-29'),
-('8039fdac-8083-11f0-aa44-a5497d977eb3', '76d65c26-f784-44a2-ac19-586678f7c2f2', 44800, 'paid', '2023-09-10'),
-('803a1a8a-8083-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 34577, 'pending', '2023-08-05'),
-('803a2b60-8083-11f0-aa44-a5497d977eb3', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 54246, 'pending', '2023-07-16'),
-('803a4686-8083-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 666, 'pending', '2023-06-27'),
-('803a6512-8083-11f0-aa44-a5497d977eb3', '76d65c26-f784-44a2-ac19-586678f7c2f2', 32545, 'paid', '2023-06-09'),
-('803a8074-8083-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 1250, 'paid', '2023-06-17'),
-('803a96e0-8083-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8546, 'paid', '2023-06-07'),
-('803aad06-8083-11f0-aa44-a5497d977eb3', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 500, 'paid', '2023-08-19'),
-('803abdf0-8083-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8945, 'paid', '2023-06-03'),
-('803ad5d8-8083-11f0-aa44-a5497d977eb3', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 1000, 'paid', '2022-06-05'),
-('87498abc-7e6d-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 99900, 'paid', '2025-08-21'),
-('89064f04-8181-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 15795, 'pending', '2022-12-06'),
-('89068d70-8181-11f0-aa44-a5497d977eb3', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 20348, 'pending', '2022-11-14'),
-('8906a15c-8181-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 3040, 'paid', '2022-10-29'),
-('8906b5ca-8181-11f0-aa44-a5497d977eb3', '76d65c26-f784-44a2-ac19-586678f7c2f2', 44800, 'paid', '2023-09-10'),
-('8906e7f2-8181-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 34577, 'pending', '2023-08-05'),
-('8906f9f4-8181-11f0-aa44-a5497d977eb3', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 54246, 'pending', '2023-07-16'),
-('89070a2a-8181-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 666, 'pending', '2023-06-27'),
-('89071d94-8181-11f0-aa44-a5497d977eb3', '76d65c26-f784-44a2-ac19-586678f7c2f2', 32545, 'paid', '2023-06-09'),
-('89073130-8181-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 1250, 'paid', '2023-06-17'),
-('89074152-8181-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8546, 'paid', '2023-06-07'),
-('89075304-8181-11f0-aa44-a5497d977eb3', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 500, 'paid', '2023-08-19'),
-('89076128-8181-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8945, 'paid', '2023-06-03'),
-('89076f74-8181-11f0-aa44-a5497d977eb3', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 1000, 'paid', '2022-06-05'),
-('8da16d32-b17e-11f0-b1f4-171420638fa7', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 15795, 'pending', '2022-12-06'),
-('8da20e18-b17e-11f0-b1f4-171420638fa7', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 20348, 'pending', '2022-11-14'),
-('8da25c56-b17e-11f0-b1f4-171420638fa7', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 3040, 'paid', '2022-10-29'),
-('8da28014-b17e-11f0-b1f4-171420638fa7', '76d65c26-f784-44a2-ac19-586678f7c2f2', 44800, 'paid', '2023-09-10'),
-('8da2b5b6-b17e-11f0-b1f4-171420638fa7', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 34577, 'pending', '2023-08-05'),
-('8da2d15e-b17e-11f0-b1f4-171420638fa7', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 54246, 'pending', '2023-07-16'),
-('8da2e752-b17e-11f0-b1f4-171420638fa7', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 666, 'pending', '2023-06-27'),
-('8da2f8aa-b17e-11f0-b1f4-171420638fa7', '76d65c26-f784-44a2-ac19-586678f7c2f2', 32545, 'paid', '2023-06-09'),
-('8da30a48-b17e-11f0-b1f4-171420638fa7', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 1250, 'paid', '2023-06-17'),
-('8da31b5a-b17e-11f0-b1f4-171420638fa7', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8546, 'paid', '2023-06-07'),
-('8da32c12-b17e-11f0-b1f4-171420638fa7', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 500, 'paid', '2023-08-19'),
-('8da33c70-b17e-11f0-b1f4-171420638fa7', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8945, 'paid', '2023-06-03'),
-('8da34ec2-b17e-11f0-b1f4-171420638fa7', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 1000, 'paid', '2022-06-05'),
-('96bf7fe2-ac0d-11f0-aaa9-4de7a06b35ca', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 15795, 'pending', '2022-12-06'),
-('96bf9a86-ac0d-11f0-aaa9-4de7a06b35ca', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 20348, 'pending', '2022-11-14'),
-('96bfb8c2-ac0d-11f0-aaa9-4de7a06b35ca', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 3040, 'paid', '2022-10-29'),
-('96bfd08c-ac0d-11f0-aaa9-4de7a06b35ca', '76d65c26-f784-44a2-ac19-586678f7c2f2', 44800, 'paid', '2023-09-10'),
-('96bfe09a-ac0d-11f0-aaa9-4de7a06b35ca', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 34577, 'pending', '2023-08-05'),
-('96bff2f6-ac0d-11f0-aaa9-4de7a06b35ca', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 54246, 'pending', '2023-07-16'),
-('96c0055c-ac0d-11f0-aaa9-4de7a06b35ca', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 666, 'pending', '2023-06-27'),
-('96c01bc8-ac0d-11f0-aaa9-4de7a06b35ca', '76d65c26-f784-44a2-ac19-586678f7c2f2', 32545, 'paid', '2023-06-09'),
-('96c02d48-ac0d-11f0-aaa9-4de7a06b35ca', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 1250, 'paid', '2023-06-17'),
-('96c03ce8-ac0d-11f0-aaa9-4de7a06b35ca', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8546, 'paid', '2023-06-07'),
-('96c04e4a-ac0d-11f0-aaa9-4de7a06b35ca', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 500, 'paid', '2023-08-19'),
-('96c05e08-ac0d-11f0-aaa9-4de7a06b35ca', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8945, 'paid', '2023-06-03'),
-('96c074e2-ac0d-11f0-aaa9-4de7a06b35ca', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 1000, 'paid', '2022-06-05'),
-('af58ee00-7e70-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 3300, 'paid', '2025-08-21'),
-('d3036bfc-807b-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 15795, 'pending', '2022-12-06'),
-('d3037bf6-807b-11f0-aa44-a5497d977eb3', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 20348, 'pending', '2022-11-14'),
-('d3039014-807b-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 3040, 'paid', '2022-10-29'),
-('d303a3ba-807b-11f0-aa44-a5497d977eb3', '76d65c26-f784-44a2-ac19-586678f7c2f2', 44800, 'paid', '2023-09-10'),
-('d303af36-807b-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 34577, 'pending', '2023-08-05'),
-('d303c458-807b-11f0-aa44-a5497d977eb3', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 54246, 'pending', '2023-07-16'),
-('d303cdc2-807b-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 666, 'pending', '2023-06-27'),
-('d303d646-807b-11f0-aa44-a5497d977eb3', '76d65c26-f784-44a2-ac19-586678f7c2f2', 32545, 'paid', '2023-06-09'),
-('d303df7e-807b-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 1250, 'paid', '2023-06-17'),
-('d303f70c-807b-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8546, 'paid', '2023-06-07'),
-('d3040260-807b-11f0-aa44-a5497d977eb3', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 500, 'paid', '2023-08-19'),
-('d3041a02-807b-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8945, 'paid', '2023-06-03'),
-('d30426e6-807b-11f0-aa44-a5497d977eb3', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 1000, 'paid', '2022-06-05'),
-('f367d5ee-8081-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 15795, 'pending', '2022-12-06'),
-('f367f38a-8081-11f0-aa44-a5497d977eb3', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 20348, 'pending', '2022-11-14'),
-('f3680546-8081-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 3040, 'paid', '2022-10-29'),
-('f3681dba-8081-11f0-aa44-a5497d977eb3', '76d65c26-f784-44a2-ac19-586678f7c2f2', 44800, 'paid', '2023-09-10'),
-('f3683674-8081-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 34577, 'pending', '2023-08-05'),
-('f36850dc-8081-11f0-aa44-a5497d977eb3', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 54246, 'pending', '2023-07-16'),
-('f36866d0-8081-11f0-aa44-a5497d977eb3', 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa', 666, 'pending', '2023-06-27'),
-('f368891c-8081-11f0-aa44-a5497d977eb3', '76d65c26-f784-44a2-ac19-586678f7c2f2', 32545, 'paid', '2023-06-09'),
-('f368a55a-8081-11f0-aa44-a5497d977eb3', 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9', 1250, 'paid', '2023-06-17'),
-('f368ccce-8081-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8546, 'paid', '2023-06-07'),
-('f368ec04-8081-11f0-aa44-a5497d977eb3', '3958dc9e-712f-4377-85e9-fec4b6a6442a', 500, 'paid', '2023-08-19'),
-('f36908ce-8081-11f0-aa44-a5497d977eb3', '13D07535-C59E-4157-A011-F8D2EF4E0CBB', 8945, 'paid', '2023-06-03'),
-('f36917d8-8081-11f0-aa44-a5497d977eb3', '3958dc9e-742f-4377-85e9-fec4b6a6442a', 1000, 'paid', '2022-06-05');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `locations`
 --
 
 CREATE TABLE `locations` (
-  `id` int(11) NOT NULL,
-  `country_id` int(11) NOT NULL,
-  `city_ku` varchar(255) NOT NULL,
-  `city_ar` varchar(255) NOT NULL,
-  `city_en` varchar(255) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `id` int NOT NULL,
+  `country_id` int NOT NULL,
+  `city_ku` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `city_ar` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `city_en` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -759,13 +598,13 @@ INSERT INTO `locations` (`id`, `country_id`, `city_ku`, `city_ar`, `city_en`, `c
 --
 
 CREATE TABLE `products` (
-  `id` int(11) NOT NULL,
-  `title_ar` varchar(155) NOT NULL,
-  `title_en` varchar(155) NOT NULL,
-  `title_ku` varchar(155) NOT NULL,
-  `description_ar` text NOT NULL,
-  `description_en` text NOT NULL,
-  `description_ku` text NOT NULL
+  `id` int NOT NULL,
+  `title_ar` varchar(155) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_en` varchar(155) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_ku` varchar(155) COLLATE utf8mb4_general_ci NOT NULL,
+  `description_ar` text COLLATE utf8mb4_general_ci NOT NULL,
+  `description_en` text COLLATE utf8mb4_general_ci NOT NULL,
+  `description_ku` text COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -782,10 +621,10 @@ INSERT INTO `products` (`id`, `title_ar`, `title_en`, `title_ku`, `description_a
 --
 
 CREATE TABLE `product_groups` (
-  `id` int(11) NOT NULL,
-  `title_ku` varchar(155) NOT NULL,
-  `title_ar` varchar(155) NOT NULL,
-  `title_en` varchar(155) NOT NULL
+  `id` int NOT NULL,
+  `title_ku` varchar(155) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_ar` varchar(155) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_en` varchar(155) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -809,50 +648,31 @@ INSERT INTO `product_groups` (`id`, `title_ku`, `title_ar`, `title_en`) VALUES
 --
 
 CREATE TABLE `projects` (
-  `id` int(11) NOT NULL,
-  `title_ku` varchar(100) NOT NULL,
-  `title_ar` varchar(100) NOT NULL,
-  `title_en` varchar(100) NOT NULL,
-  `description_en` text NOT NULL,
-  `description_ar` text NOT NULL,
-  `description_ku` text NOT NULL,
-  `date` date NOT NULL,
-  `project_category` int(11) DEFAULT NULL,
-  `project_status` tinyint(4) DEFAULT 0,
-  `location_id` int(11) DEFAULT NULL,
-  `project_sub_category` int(11) DEFAULT 0,
-  `project_type` enum('0','1','2') NOT NULL DEFAULT '0'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `id` int NOT NULL,
+  `title_ku` varchar(255) DEFAULT NULL,
+  `title_ar` varchar(255) DEFAULT NULL,
+  `title_en` varchar(255) DEFAULT NULL,
+  `description_en` text,
+  `description_ar` text,
+  `description_ku` text,
+  `image_url` varchar(500) DEFAULT NULL,
+  `date` date DEFAULT NULL,
+  `project_category` int DEFAULT NULL,
+  `project_sub_category` int DEFAULT NULL,
+  `project_status` tinyint DEFAULT '0',
+  `location_id` int DEFAULT NULL,
+  `project_type` enum('0','1','2') DEFAULT '0',
+  `is_published` tinyint(1) DEFAULT '1',
+  `sort_order` int DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `projects`
 --
 
-INSERT INTO `projects` (`id`, `title_ku`, `title_ar`, `title_en`, `description_en`, `description_ar`, `description_ku`, `date`, `project_category`, `project_status`, `location_id`, `project_sub_category`, `project_type`) VALUES
-(13, 'دیزاینی شاری خەونەکان', 'تصميم مدينة الأحلام', 'Dream City Design', 'We at Value Architects are honored to contribute to the development of the\r\nCity of Dreams in Basra, Iraq. We are proud to be part of this important\r\nproject, which embodies a unique vision in the beautiful city of Basra.\r\nThrough hard work and teamwork, we have successfully completed this\r\nendeavor, and we hope it will become a landmark in the region. We are\r\ngrateful for the opportunity to work with you, and we look forward to future\r\ncolaborations and recommendations.', 'نحن في [Value Architects] نتشرف بالمساهمة في تطوير مدينة الأحلام في البصرة، العراق. ونفخر بكوننا جزءًا من هذا المشروع المهم، الذي يجسد رؤية فريدة لمدينة البصرة الجميلة.\r\n\r\nبفضل العمل الجاد والعمل الجماعي، أنجزنا هذا المسعى بنجاح، ونأمل أن يصبح معلمًا بارزًا في المنطقة. نحن ممتنون لفرصة العمل معكم، ونتطلع إلى تعاونات وتوصيات مستقبلية.', 'ئێمە لە تەلارسازەکانی بەها شانازی دەکەین کە بەشداری بکەین لە پەرەپێدانی...\r\nشاری خەونەکان لە شاری بەسرە لە عێراق. ئێمە شانازی دەکەین کە بەشێکین لەم گرنگە\r\nپڕۆژە، کە دیدێکی ناوازە لە شاری جوانی بەسرە بەرجەستە دەکات.\r\nلە ڕێگەی کاری قورس و کاری تیمییەوە، ئێمە بە سەرکەوتوویی ئەم کارەمان تەواو کردووە\r\nهەوڵ بدەن، و هیوادارین ببێتە هێمایەکی گرینگ لە ناوچەکەدا. ئێمە\r\nسوپاسگوزارین بۆ دەرفەتی کارکردن لەگەڵ ئێوە، و ئێمە چاوەڕوانی داهاتووین\r\nهاوکاری و پێشنیارەکان.\"', '2025-07-08', 6, 1, 2, 11, '0'),
-(17, 'بینای بازرگانی', 'مبنى تجاري', 'commercial building', 'commercial building', 'مبنى تجاري', 'بینای بازرگانی', '2023-01-05', 10, 1, 11, NULL, '0'),
-(18, 'کافتریای غرام', ' مقهى غرام', 'GHARAM CAFE ', 'Ghram Cafeteria in Baghdad has been designed by the Value team', 'تم تصميم كافتيريا غرام في بغداد من قبل فريق فاليو', 'کافتریای غرام لە شاری بغداد کاری دیزاینی ناوەوەی کافتریاکەیان لەلایەن تیمی ڤالیو جێبێ کراوە ', '2022-10-23', 7, 1, 1, 4, '0'),
-(19, 'دیزاینی بەشی ناوەوەی خانوو', 'التصميم الداخلي للمنزل', 'Interior design of house', 'Interior design of residential house in Sulaimani Bakrajo area', 'تصميم داخلي لمنزل سكني في منطقة السليمانية بكرجو', 'دیزاینی بەشی ناوەوەی خانوی نیشتەجێبوون لە شاری سلێمانی ناوچەی بەکرەجۆ', '2023-12-28', 7, 1, 11, 1, '0'),
-(20, 'دیزاینی ناوەوەی خانوو', 'التصميم الداخلي للمنزل', 'Interior design of house', 'Interior design of a modern and contemporary residential unit in Kirkuk by Value Engineering Team', 'التصميم الداخلي لوحدة سكنية حديثة ومعاصرة في كركوك من قبل فريق الهندسة القيمية', 'دیزاینی ناوەوەی یەکەی نیشتەجێبوون بە شێوازی مۆدێرن و سەردەمیانە لە شاری  کەرکوک لەلایەن تیمی ئەندازیاری ڤالیوو', '2023-03-13', 7, 1, 17, 1, '0'),
-(21, 'دیزاینی ناوەوە', 'التصميم الداخلي', 'Interior Design', 'Interior design of a residential unit in a modern style in the heights of Sulaimani by Value Engineering Team', 'التصميم الداخلي لوحدة سكنية على الطراز الحديث في مرتفعات السليمانية من قبل فريق الهندسة القيمية', 'دیزاینی ناوەوەی یەکەی نیشتەجێبوون بە شێوازی مۆدێرن و سەردەمیانە لەبەرزایەکانی سلێمانی لەلایەن تیمی ئەندازیاری ڤالیوو', '2024-08-13', 7, 1, 11, 1, '0'),
-(22, 'دیزاینی ناوەوەی خانوو', 'التصميم الداخلي للمنزل ', 'Interior design of house', 'Interior design of residential units in a modern and contemporary style by Value Engineering Team in Kalar', 'التصميم الداخلي للوحدات السكنية بأسلوب حديث ومعاصر من قبل فريق الهندسة القيمية في كلار', 'دیزاینی ناوەوەی یەکەی نیشتەجێبوون بە شێوازێکی مۆدێرن  و سەردەمیانە  لەلایەن تیمی ئەندازیاری ڤالیو لەشاری کەلار', '2022-03-02', 7, 1, 53, 1, '0'),
-(23, 'دیزاینی کلاسیکی نیشتەجێبوون', 'تصميم سكني كلاسيكي', ' Residential classic design', ' Residential classic design', 'تصميم سكني كلاسيكي', 'دیزاینی کلاسیکی نیشتەجێبوون', '2021-10-27', 7, 1, 11, 1, '0'),
-(24, 'شاری سپی ', 'مدينة سبي', 'Spi city ', 'Spi city ', 'مدينة سبي', 'شاری سپی ', '2023-07-30', 7, 1, 11, 1, '0'),
-(25, 'دیزاینی ناوەوەی خانوو', 'التصميم الداخلي للمنزل', 'Interior design of house', 'Interior design of house', 'التصميم الداخلي للمنزل', 'دیزاینی ناوەوەی خانوو', '2023-02-11', 7, 1, 11, 1, '0'),
-(26, 'دیزاینی ناوەوەی یەکەی نیشتەجێبوون ', 'التصميم الداخلي للوحدة السكنية', 'Interior design of the residential unit', 'Interior design of residential units in a modern and contemporary style by Value Engineering Team in Kirkuk', 'التصميم الداخلي للوحدات السكنية بأسلوب حديث ومعاصر من قبل فريق الهندسة القيمية في كركوك', 'دیزاینی ناوەوەی یەکەی نیشتەجێبوون بە شێوازێکی مۆدێرن  و سەردەمیانە  لەلایەن تیمی ئەندازیاری ڤالیو لەشاری کەرکوک\r\n', '2023-08-20', 7, 1, 17, 1, '0'),
-(27, 'پارک77- نیشتەجێبوون', 'بارك 77-سكني', 'Park77-Residential', 'Park77-Residential', 'بارك 77-سكني', 'پارک77- نیشتەجێبوون', '2022-09-13', 7, 1, 11, 1, '0'),
-(28, 'شاری بابان ', 'مدينة بابان', 'Baban City ', 'Interior Design of Residential Unit in Baban City in Sulaimani, Value Engineering Agency supervised the interior design of residential unit in Baban City in Sulaimani', 'التصميم الداخلي لوحدة سكنية في مدينة بابان في السليمانية، أشرفت وكالة الهندسة القيمية على التصميم الداخلي لوحدة سكنية في مدينة بابان في السليمانية', 'دیزاین کردنی ناوەوەی یەکەی نیشتەجێبوون لە شاری بابان لە سلێمانی، نوسینگەی ئەندازیاری ڤالیوو سەرپەرشتی دیزاینی ناوەوەی یەکەی نیشتەجێبوونی کرد لە شاری بابان لە شاری سلێمانی ', '2023-08-26', 7, 0, 11, 1, '0'),
-(29, 'مۆبیلیاتی هۆم لاین', 'أثاث هوم لاين', 'Homeline Mobilya', 'Homeline Mobilya', 'أثاث هوم لاين', 'مۆبیلیاتی هۆم لاین', '2024-03-06', 7, 1, 11, 5, '0'),
-(30, 'جێف جیم ', 'جیف جیم', 'JEFF\'S GYM', 'Construction of Jeff gym Welfare and Entertainment Unit in Sulaimani by Value Agency in a modern and attractive manner', 'إنشاء وحدة جيف جيم للرعاية والترفيه في السليمانية من قبل وكالة فاليو بطريقة حديثة وجذابة', 'دروست کردنی یەکەی  خۆشگوزەرانی و کات بەسەربردنی جێف جیم لە شاری سلێمانی لەلایەن نوسینەگەی ڤالیو بەشێوازی سەردەمیانەو سەرنج ڕاکێش ', '2022-05-17', 7, 1, 11, 10, '0'),
-(32, 'کۆمپانیای ئاوێزان ', 'شركة أويزان', 'awezan company ', 'Exterior of  Awezan Company implemented by Value Engineering Team', 'الواجهة الخارجية لشركة أفزان التي نفذها فريق الهندسة فالیوو', 'ڕوکاری دەرەوەی کۆمپانیای ئاوێزان کە لەلایەن تیمی ئەندازیاری ڤالیوو جێبەجێ کراوە ', '2022-10-04', 6, 1, 11, 12, '0'),
-(33, 'میوان خانەی هێڤین ', 'فندق هيفين', ' Hevin Motel', 'The exterior design of Hevin Hotel in Sarchnar, Sulaimani, was executed by the engineering staff of Value.\r\n\r\n', 'تم تنفيذ التصميم الخارجي لفندق هيفين في سرجنار بالسليمانية من قبل فريق الهندسة في شركة فاليو.\r\n', 'میوان خانەی هێڤین  لە سەرچناری سلێمانی  دیزاینی دەرەوەی بیناکەیان جێبەجێ کراوە لەلایەن ستافی ئەندازیاری ڤالیوو', '2023-10-11', 6, 1, 11, 12, '0'),
-(34, 'بینای بازرگانی', 'مبنى تجاري', 'commercial building', 'The exterior design of their building has been implemented by Value Engineering staff', 'تم تنفيذ التصميم الخارجي للمبنى من قبل موظفي الهندسة فالیوو', ' دیزاینی دەرەوەی بیناکەیان جێبەجێ کراوە لەلایەن ستافی ئەندازیاری ڤالیوو', '2024-12-01', 6, 0, 11, 12, '0'),
-(35, 'فەرمانگەی ڕێکخستنی پایتەختی کەرکوک', 'مكتب تنظيم العاصمة كركوك', 'Kirkuk Capital Organization Office', 'Kirkuk Capital Organization Office', 'مكتب تنظيم العاصمة كركوك', 'فەرمانگەی ڕێکخستنی پایتەختی کەرکوک', '2024-07-20', 6, 0, 11, 14, '0'),
-(36, 'بەرزایەکانی ', 'برزایکان', 'Barzayakan ', 'Exterior design of residential unit in Sulaimani heights', 'التصميم الخارجي لوحدة سكنية في مرتفعات السليمانية', 'دیزاینی دەرەوەی یەکەی نیشتەجێبوون لە بەرزایەکانی سلێمانی ', '2024-11-11', 6, 1, 11, 11, '1'),
-(37, 'دیزاینی دەرەوە شوێنی نیشتەجێبوون', 'التصميم الخارجي السكني', 'Exterior Design Residential', 'Exterior Design Residential', 'التصميم الخارجي السكني', 'دیزاینی دەرەوە شوێنی نیشتەجێبوون', '2022-10-15', 6, 1, 1, 11, '0'),
-(38, 'دیزاینی دەرەوە شوێنی نیشتەجێبوون', 'التصميم الخارجي السكني', 'Exterior Design Residential', 'Exterior Design Residential', 'التصميم الخارجي السكني', 'دیزاینی دەرەوە شوێنی نیشتەجێبوون', '2022-07-06', 6, 1, 11, 11, '0'),
-(39, 'دیزاینی ڕوکاری دەرەوەی خانوو', 'التصميم الخارجي السكني', 'Exterior Design Residential', 'Exterior Design Residential', 'التصميم الخارجي السكني', 'دیزاینی ڕوکاری دەرەوەی خانوو', '2025-11-06', 6, 1, 17, 11, '0'),
-(41, 'دیزاینی ناوەوە نیشتەجێبوون', 'التصميم الداخلي السكني', 'interior Design Residential', 'interior Design Residential', 'التصميم الداخلي السكني', 'دیزاینی ناوەوە نیشتەجێبوون', '2024-02-15', 7, 0, 11, 1, '0');
+INSERT INTO `projects` (`id`, `title_ku`, `title_ar`, `title_en`, `description_en`, `description_ar`, `description_ku`, `image_url`, `date`, `project_category`, `project_sub_category`, `project_status`, `location_id`, `project_type`, `is_published`, `sort_order`, `created_at`) VALUES
+(1, 'پڕۆژەی تاقیکردنەوە', NULL, 'Test Project', NULL, NULL, NULL, 'https://cloud.mirkokawa.dev/api/placeholder.png', NULL, NULL, NULL, 1, NULL, '0', 1, 0, '2025-12-20 23:57:01');
 
 -- --------------------------------------------------------
 
@@ -861,10 +681,10 @@ INSERT INTO `projects` (`id`, `title_ku`, `title_ar`, `title_en`, `description_e
 --
 
 CREATE TABLE `project_categories` (
-  `id` int(11) NOT NULL,
-  `title_ku` varchar(255) NOT NULL,
-  `title_ar` varchar(255) NOT NULL,
-  `title_en` varchar(255) NOT NULL
+  `id` int NOT NULL,
+  `title_ku` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_ar` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_en` varchar(255) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -886,11 +706,11 @@ INSERT INTO `project_categories` (`id`, `title_ku`, `title_ar`, `title_en`) VALU
 --
 
 CREATE TABLE `properties` (
-  `id` int(11) NOT NULL,
-  `key` varchar(150) NOT NULL,
-  `value_ku` varchar(255) NOT NULL,
-  `value_ar` varchar(255) NOT NULL,
-  `value_en` varchar(255) NOT NULL
+  `id` int NOT NULL,
+  `key` varchar(150) COLLATE utf8mb4_general_ci NOT NULL,
+  `value_ku` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `value_ar` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `value_en` varchar(255) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -915,11 +735,11 @@ INSERT INTO `properties` (`id`, `key`, `value_ku`, `value_ar`, `value_en`) VALUE
 --
 
 CREATE TABLE `quotes` (
-  `id` int(11) NOT NULL,
-  `title_ku` text NOT NULL,
-  `title_en` text NOT NULL,
-  `title_ar` text NOT NULL,
-  `image_url` varchar(255) NOT NULL
+  `id` int NOT NULL,
+  `title_ku` text COLLATE utf8mb4_general_ci NOT NULL,
+  `title_en` text COLLATE utf8mb4_general_ci NOT NULL,
+  `title_ar` text COLLATE utf8mb4_general_ci NOT NULL,
+  `image_url` varchar(255) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -936,8 +756,8 @@ INSERT INTO `quotes` (`id`, `title_ku`, `title_en`, `title_ar`, `image_url`) VAL
 --
 
 CREATE TABLE `revenue` (
-  `month` varchar(4) NOT NULL,
-  `revenue` int(11) NOT NULL
+  `month` varchar(4) COLLATE utf8mb4_general_ci NOT NULL,
+  `revenue` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -965,42 +785,20 @@ INSERT INTO `revenue` (`month`, `revenue`) VALUES
 --
 
 CREATE TABLE `social_media` (
-  `id` varchar(36) NOT NULL ,
-  `type` int(11) NOT NULL,
+  `id` varchar(36) NOT NULL,
+  `type` int NOT NULL,
   `url` varchar(500) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `social_media`
 --
 
 INSERT INTO `social_media` (`id`, `type`, `url`, `created_at`, `updated_at`) VALUES
-('80424cc8-8083-11f0-aa44-a5497d977eb3', 0, 'https://www.instagram.com/value.architects/', '2025-08-24 00:44:32', '2025-10-25 08:45:19'),
-('804267bc-8083-11f0-aa44-a5497d977eb3', 1, 'https://www.facebook.com/value.Architect.group', '2025-08-24 00:44:32', '2025-10-25 08:44:02'),
-('uuid()', 3, '+964 770 190 6763', '2025-10-28 15:17:44', '2025-10-28 15:17:44');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `special_projects`
---
-
-CREATE TABLE `special_projects` (
-  `id` varchar(36) NOT NULL ,
-  `image_url` varchar(500) NOT NULL,
-  `sort_order` int(11) NOT NULL DEFAULT 0,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `special_projects`
---
-
-INSERT INTO `special_projects` (`id`, `image_url`, `sort_order`, `created_at`, `updated_at`) VALUES
-('4fab44a6-ab95-11f0-b9f9-a30f62be92a0', '/api/cloud/files/64fc2280-e3d8-4f7a-97d2-31353cd36e80', 0, '2025-10-17 20:10:22', '2025-10-17 20:10:22');
+('1', 0, 'https://instagram.com/value.architects', '2025-12-20 23:51:41', '2025-12-20 23:51:41'),
+('2', 1, 'https://facebook.com/value.Architect.group', '2025-12-20 23:51:41', '2025-12-20 23:51:41');
 
 -- --------------------------------------------------------
 
@@ -1009,11 +807,11 @@ INSERT INTO `special_projects` (`id`, `image_url`, `sort_order`, `created_at`, `
 --
 
 CREATE TABLE `sub_categorys` (
-  `id` int(11) NOT NULL,
-  `category_id` int(11) NOT NULL,
-  `title_ku` varchar(100) NOT NULL,
-  `title_ar` varchar(100) NOT NULL,
-  `title_en` varchar(100) NOT NULL
+  `id` int NOT NULL,
+  `category_id` int NOT NULL,
+  `title_ku` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_ar` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `title_en` varchar(100) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -1039,30 +837,6 @@ INSERT INTO `sub_categorys` (`id`, `category_id`, `title_ku`, `title_ar`, `title
 -- --------------------------------------------------------
 
 --
--- Table structure for table `teams`
---
-
-CREATE TABLE `teams` (
-  `id` varchar(36) NOT NULL ,
-  `name_ku` varchar(255) NOT NULL,
-  `position_ku` varchar(255) NOT NULL,
-  `image_url` varchar(255) NOT NULL,
-  `position_ar` varchar(255) NOT NULL,
-  `name_en` varchar(255) NOT NULL,
-  `name_ar` varchar(255) NOT NULL,
-  `position_en` varchar(255) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `teams`
---
-
-INSERT INTO `teams` (`id`, `name_ku`, `position_ku`, `image_url`, `position_ar`, `name_en`, `name_ar`, `position_en`) VALUES
-('6a88c418-ab97-11f0-b9f9-a30f62be92a0', 'بەرهەم', 'cofounder', 'https://cloud.mirkokawa.dev/api/public/csk_9384d0f7217211b7d537980ab1bd156c6af4027ac57ef67a9461589be6a329a4/24e77e59-3670-4f41-b829-121ddc6e6c6a', 'cofounder', 'barham', 'بەرهەم', 'cofounder');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `users`
 --
 
@@ -1071,33 +845,24 @@ CREATE TABLE `users` (
   `name` varchar(255) NOT NULL,
   `email` varchar(255) NOT NULL,
   `password` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `password`) VALUES
-('410544b2-4001-4271-9855-fec4b6a6442a', 'User', 'admin@valuearch.com', '$2a$12$camkEwiGMJ.berU5isQBm.TiK79bhkLAqDLJVC8EtKSNUywJyTrUG');
+('admin-1', 'Admin', 'admin@valuearch.com', '$2a$12$camkEwiGMJ.berU5isQBm.TiK79bhkLAqDLJVC8EtKSNUywJyTrUG');
 
 --
 -- Indexes for dumped tables
 --
 
 --
--- Indexes for table `about_stats`
---
-ALTER TABLE `about_stats`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `stat_key` (`stat_key`);
-
---
 -- Indexes for table `audios`
 --
 ALTER TABLE `audios`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_is_active` (`is_active`),
-  ADD KEY `idx_use_for` (`use_for`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `banners`
@@ -1106,133 +871,15 @@ ALTER TABLE `banners`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `category`
---
-ALTER TABLE `category`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `countries`
---
-ALTER TABLE `countries`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_name_en` (`name_en`),
-  ADD KEY `idx_name_en` (`name_en`),
-  ADD KEY `idx_code` (`code`);
-
---
--- Indexes for table `customers`
---
-ALTER TABLE `customers`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `event`
---
-ALTER TABLE `event`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `footer_properties`
---
-ALTER TABLE `footer_properties`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `property_key` (`property_key`);
-
---
--- Indexes for table `galleries`
---
-ALTER TABLE `galleries`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `graphics`
---
-ALTER TABLE `graphics`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `invoices`
---
-ALTER TABLE `invoices`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `locations`
---
-ALTER TABLE `locations`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_city_en` (`city_en`),
-  ADD KEY `idx_country_id` (`country_id`);
-
---
--- Indexes for table `products`
---
-ALTER TABLE `products`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `product_groups`
---
-ALTER TABLE `product_groups`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indexes for table `projects`
 --
 ALTER TABLE `projects`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `projects_ibfk_1` (`project_category`),
-  ADD KEY `idx_location_id` (`location_id`);
-
---
--- Indexes for table `project_categories`
---
-ALTER TABLE `project_categories`
   ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `properties`
---
-ALTER TABLE `properties`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `quotes`
---
-ALTER TABLE `quotes`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `revenue`
---
-ALTER TABLE `revenue`
-  ADD PRIMARY KEY (`month`),
-  ADD UNIQUE KEY `month` (`month`);
 
 --
 -- Indexes for table `social_media`
 --
 ALTER TABLE `social_media`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `special_projects`
---
-ALTER TABLE `special_projects`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `sort_order` (`sort_order`);
-
---
--- Indexes for table `sub_categorys`
---
-ALTER TABLE `sub_categorys`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `teams`
---
-ALTER TABLE `teams`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1247,111 +894,10 @@ ALTER TABLE `users`
 --
 
 --
--- AUTO_INCREMENT for table `about_stats`
---
-ALTER TABLE `about_stats`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
-
---
--- AUTO_INCREMENT for table `category`
---
-ALTER TABLE `category`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `countries`
---
-ALTER TABLE `countries`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
-
---
--- AUTO_INCREMENT for table `event`
---
-ALTER TABLE `event`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT for table `footer_properties`
---
-ALTER TABLE `footer_properties`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `galleries`
---
-ALTER TABLE `galleries`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1215;
-
---
--- AUTO_INCREMENT for table `graphics`
---
-ALTER TABLE `graphics`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
-
---
--- AUTO_INCREMENT for table `locations`
---
-ALTER TABLE `locations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=54;
-
---
--- AUTO_INCREMENT for table `products`
---
-ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT for table `product_groups`
---
-ALTER TABLE `product_groups`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
-
---
 -- AUTO_INCREMENT for table `projects`
 --
 ALTER TABLE `projects`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
-
---
--- AUTO_INCREMENT for table `project_categories`
---
-ALTER TABLE `project_categories`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
-
---
--- AUTO_INCREMENT for table `properties`
---
-ALTER TABLE `properties`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
-
---
--- AUTO_INCREMENT for table `quotes`
---
-ALTER TABLE `quotes`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
-
---
--- AUTO_INCREMENT for table `sub_categorys`
---
-ALTER TABLE `sub_categorys`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
-
---
--- Constraints for dumped tables
---
-
---
--- Constraints for table `locations`
---
-ALTER TABLE `locations`
-  ADD CONSTRAINT `fk_locations_country` FOREIGN KEY (`country_id`) REFERENCES `countries` (`id`) ON UPDATE CASCADE;
-
---
--- Constraints for table `projects`
---
-ALTER TABLE `projects`
-  ADD CONSTRAINT `fk_projects_location` FOREIGN KEY (`location_id`) REFERENCES `locations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `projects_ibfk_1` FOREIGN KEY (`project_category`) REFERENCES `project_categories` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

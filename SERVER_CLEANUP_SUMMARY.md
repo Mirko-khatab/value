@@ -378,3 +378,7 @@ ssh root@167.235.28.79 "mysql -u admin -p'admin123@#!123' -e 'CREATE DATABASE um
 
 
 
+
+
+
+
