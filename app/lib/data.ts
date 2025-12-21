@@ -284,16 +284,24 @@ export async function fetchProjects() {
           WHERE g2.parent_id = p.id
             AND g2.parent_type = ?
         )
-      ORDER BY p.date DESC
+      WHERE p.is_published = 1
+      ORDER BY p.date DESC, p.id DESC
     `,
       [parentType, parentType]
     );
-    return projects as Project[];
+    return (projects as Project[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch projects.");
+    console.error("Database Error in fetchProjects:", error);
+    // Return empty array instead of throwing
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -308,9 +316,20 @@ export async function fetchProjectsPaginated(
 
     // Get total count for hasMore calculation
     const [countResult] = await connection.execute(
-      "SELECT COUNT(*) as total FROM projects"
+      "SELECT COUNT(*) as total FROM projects WHERE is_published = 1"
     );
-    const total = (countResult as any)[0].total;
+    const total = (countResult as any)[0]?.total || 0;
+
+    // Return empty result if no projects
+    if (total === 0) {
+      return {
+        data: [],
+        hasMore: false,
+        total: 0,
+        page,
+        limit,
+      };
+    }
 
     // Fetch paginated projects
     const parentType = ParentType.Project.toString();
@@ -347,7 +366,8 @@ export async function fetchProjectsPaginated(
           WHERE g2.parent_id = p.id
             AND g2.parent_type = ?
         )
-      ORDER BY p.date DESC
+      WHERE p.is_published = 1
+      ORDER BY p.date DESC, p.id DESC
       LIMIT ${parseInt(String(limit))} OFFSET ${parseInt(String(offset))}
     `,
       [parentType, parentType]
@@ -356,17 +376,30 @@ export async function fetchProjectsPaginated(
     const hasMore = offset + limit < total;
 
     return {
-      data: projects as Project[],
+      data: (projects as Project[]) || [],
       hasMore,
       total,
       page,
       limit,
     };
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch projects.");
+    console.error("Database Error in fetchProjectsPaginated:", error);
+    // Return empty result instead of throwing error
+    return {
+      data: [],
+      hasMore: false,
+      total: 0,
+      page,
+      limit,
+    };
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
