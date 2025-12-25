@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// New API: https://api.mirkokawa.dev
 const CLOUD_API_BASE =
-  process.env.CLOUD_API_BASE_URL || "https://cloud.mirkokawa.dev/api";
+  process.env.CLOUD_API_BASE_URL || "https://api.mirkokawa.dev";
 const CLOUD_API_KEY_READ = process.env.CLOUD_API_KEY_READ || "";
 
 export async function GET(
@@ -19,7 +20,8 @@ export async function GET(
     }
 
     // Fetch file from cloud storage using the public URL endpoint
-    // Format: https://cloud.mirkokawa.dev/api/public/{PUBLIC_KEY}/{FILE_ID}
+    // New format: https://api.mirkokawa.dev/public/{API_KEY}/{FILE_ID}
+    // No headers needed - public URL works everywhere!
     const publicUrl = `${CLOUD_API_BASE}/public/${CLOUD_API_KEY_READ}/${fileId}`;
     const response = await fetch(publicUrl);
 

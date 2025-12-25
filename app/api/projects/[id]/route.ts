@@ -8,14 +8,11 @@ export async function GET(
   try {
     const { id } = await params;
     const project = await fetchProjectById(id);
-    
+
     if (!project) {
-      return NextResponse.json(
-        { error: "Project not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
-    
+
     return NextResponse.json([project]);
   } catch (error) {
     console.error("Failed to fetch project:", error);

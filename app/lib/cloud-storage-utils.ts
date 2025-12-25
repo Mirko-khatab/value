@@ -4,9 +4,9 @@
  * These are NOT server actions, just helper functions
  */
 
-// Use localhost if CLOUD_API_BASE_URL is not set, since cloud app runs on same server
+// New API: https://api.mirkokawa.dev
 const CLOUD_API_BASE =
-  process.env.CLOUD_API_BASE_URL || "http://localhost:1200/api";
+  process.env.CLOUD_API_BASE_URL || "https://api.mirkokawa.dev";
 const CLOUD_API_KEY_READ = process.env.CLOUD_API_KEY_READ || "";
 
 /**
@@ -31,7 +31,7 @@ export function getPublicFileUrl(fileId: string): string {
 
 /**
  * Generate a direct cloud storage URL (for server-side use or downloads)
- * Note: May have CORS issues in browser due to cross-origin restrictions
+ * No CORS issues - works everywhere without headers!
  */
 export function getDirectCloudUrl(fileId: string): string {
   // Extract just the UUID if a full URL is provided
@@ -45,6 +45,7 @@ export function getDirectCloudUrl(fileId: string): string {
   }
 
   // Return direct public URL from cloud storage
+  // New format: https://api.mirkokawa.dev/public/{API_KEY}/{FILE_ID}
   return `${CLOUD_API_BASE}/public/${CLOUD_API_KEY_READ}/${fileId}`;
 }
 
