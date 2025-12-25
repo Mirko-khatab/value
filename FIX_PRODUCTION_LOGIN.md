@@ -3,6 +3,7 @@
 ## ✅ Local is Fixed!
 
 Your local development login now works:
+
 - **URL:** http://localhost:3000/login
 - **Email:** `admin@valuearch.com`
 - **Password:** `admin123`
@@ -16,31 +17,36 @@ You need to update the password on your production server at `valuearch.com`.
 ### **Method 1: Simple Copy-Paste (Recommended)**
 
 1. **SSH into your server:**
+
    ```bash
    ssh mirko@195.90.209.92
    # Password: mirko123
    ```
 
 2. **Generate password hash:**
+
    ```bash
    cd /var/www/dashboard/value
-   
+
    node -e "const bcrypt = require('bcryptjs'); bcrypt.hash('admin123', 10, (err, hash) => { if (err) return console.error(err); console.log(hash); });"
    ```
 
 3. **Copy the hash** (it looks like: `$2b$10$...`)
 
 4. **Update database:**
+
    ```bash
    mysql -u root -p'gM7-3$F<1&4^!' dashboard -e "UPDATE users SET password = 'PASTE_YOUR_HASH_HERE' WHERE email = 'admin@valuearch.com';"
    ```
 
 5. **Verify:**
+
    ```bash
    mysql -u root -p'gM7-3$F<1&4^!' dashboard -e "SELECT id, name, email FROM users WHERE email = 'admin@valuearch.com';"
    ```
 
 6. **Restart app:**
+
    ```bash
    pm2 restart valuearch-app
    ```
@@ -106,16 +112,19 @@ After updating the production password:
 **Check these:**
 
 1. **Is the user in the database?**
+
    ```bash
    mysql -u root -p'gM7-3$F<1&4^!' dashboard -e "SELECT * FROM users;"
    ```
 
 2. **Is the .env file correct?**
+
    ```bash
    cat /var/www/dashboard/value/.env | grep AUTH
    ```
-   
+
    Should show:
+
    ```
    AUTH_SECRET=ImNUCn0j+wg3bMZLb0Vdssdr/w/enyMZsoVQKzt68F0=
    AUTH_URL=https://valuearch.com
@@ -123,6 +132,7 @@ After updating the production password:
    ```
 
 3. **Check app logs:**
+
    ```bash
    pm2 logs valuearch-app --lines 50
    ```
@@ -152,6 +162,7 @@ After updating the production password:
 ## 📋 Quick Reference
 
 ### **Local Development**
+
 ```
 URL: http://localhost:3000/login
 Email: admin@valuearch.com
@@ -159,6 +170,7 @@ Password: admin123
 ```
 
 ### **Production**
+
 ```
 URL: https://valuearch.com/login
 Email: admin@valuearch.com

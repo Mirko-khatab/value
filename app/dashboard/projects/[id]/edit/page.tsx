@@ -13,18 +13,16 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const [projectResult, categories, galleries, locations] = await Promise.all([
+  const [project, categories, galleries, locations] = await Promise.all([
     fetchProjectById(id),
     fetchProjectCategories(),
     fetchProjectGalleriesData(id),
     fetchLocations(),
   ]);
 
-  if (!projectResult || projectResult.length === 0) {
+  if (!project) {
     notFound();
   }
-
-  const project = projectResult[0];
 
   // Format the date for HTML date input (YYYY-MM-DD)
   const formatDateForInput = (dateValue: string | Date) => {
