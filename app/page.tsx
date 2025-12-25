@@ -17,7 +17,8 @@ import Intro from "@/app/ui/intro";
 import QuoteGallery from "./ui/home/quote-gallery";
 import { QouteData } from "./ui/home/qoute-data";
 import VideoLoading from "@/app/ui/video-loading";
-import TechAnnouncement from "@/app/ui/tech-announcement";
+import TechNotificationBar from "@/app/ui/tech-notification-bar";
+import TechHeroSection from "@/app/ui/tech-hero-section";
 import { 
   getOrganizationStructuredData, 
   getWebsiteStructuredData, 
@@ -93,6 +94,9 @@ export default function Page() {
         }}
       />
 
+      {/* TOP NOTIFICATION BAR - Always visible at top */}
+      <TechNotificationBar />
+
       {/* Show loading video */}
       {showLoading && (
         <div className="fixed inset-0 z-[60] bg-black">
@@ -163,8 +167,8 @@ export default function Page() {
           <Slide />
         </ShowcaseLayout>
 
-        {/* VALUE TECH Announcement Section */}
-        <TechAnnouncement />
+        {/* PROMINENT VALUE TECH HERO SECTION - Impossible to miss! */}
+        <TechHeroSection />
       </div>
     </>
   );
