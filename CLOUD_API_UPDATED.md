@@ -3,11 +3,13 @@
 ## 🎯 What Changed
 
 ### **Old API:**
+
 - Base URL: `https://cloud.mirkokawa.dev/api`
 - Upload: `POST https://cloud.mirkokawa.dev/api/file/upload`
 - Public URL: `https://cloud.mirkokawa.dev/api/public/{KEY}/{ID}`
 
 ### **New API:**
+
 - Base URL: `https://api.mirkokawa.dev`
 - Upload: `POST https://api.mirkokawa.dev/api/file/upload`
 - Public URL: `https://api.mirkokawa.dev/public/{KEY}/{ID}`
@@ -17,15 +19,18 @@
 ## 📋 Files Updated
 
 ✅ **app/lib/cloud-storage.ts**
+
 - Changed API base URL to `https://api.mirkokawa.dev`
 - Upload endpoint: `/api/file/upload` ✓
 - Headers: `X-API-Key` ✓
 
 ✅ **app/lib/cloud-storage-utils.ts**
+
 - Updated `getDirectCloudUrl()` to use new public URL format
 - Public URLs now work everywhere without CORS issues!
 
 ✅ **app/api/cloud/files/[fileId]/route.ts**
+
 - Updated proxy endpoint to fetch from new API
 - Public URL format: `https://api.mirkokawa.dev/public/{KEY}/{ID}`
 
@@ -51,14 +56,16 @@ NEXT_PUBLIC_CLOUD_API_KEY_READ=your_read_only_key
 ## ✨ Key Features
 
 ### **Upload (Server-side)**
+
 ```typescript
-import { uploadFileToCloud } from '@/app/lib/cloud-storage';
+import { uploadFileToCloud } from "@/app/lib/cloud-storage";
 
 const result = await uploadFileToCloud(buffer, filename, mimeType);
 // Returns: { id, fileName, size, mimeType, uploadedAt }
 ```
 
 ### **Public URL (No CORS!)**
+
 ```typescript
 import { getDirectCloudUrl } from '@/app/lib/cloud-storage-utils';
 
@@ -71,13 +78,14 @@ const url = getDirectCloudUrl(fileId);
 ```
 
 ### **Proxy URL (Through Next.js)**
+
 ```typescript
-import { getPublicFileUrl } from '@/app/lib/cloud-storage-utils';
+import { getPublicFileUrl } from "@/app/lib/cloud-storage-utils";
 
 const url = getPublicFileUrl(fileId);
 // Returns: /api/cloud/files/{fileId}
 
-<img src={url} alt="Image" />
+<img src={url} alt="Image" />;
 ```
 
 ---
@@ -98,11 +106,13 @@ All methods use the new API endpoint:
 ## 📊 Public URL Format
 
 ### **Direct Access (Best!)**
+
 ```
 https://api.mirkokawa.dev/public/{API_KEY}/{FILE_ID}
 ```
 
 **Advantages:**
+
 - ✅ No CORS issues
 - ✅ No authentication needed
 - ✅ Works in `<img>`, `<video>`, `<audio>` tags
@@ -110,6 +120,7 @@ https://api.mirkokawa.dev/public/{API_KEY}/{FILE_ID}
 - ✅ Cacheable
 
 **Example:**
+
 ```html
 <img src="https://api.mirkokawa.dev/public/csk_abc123/file-uuid-here" />
 ```
@@ -121,6 +132,7 @@ https://api.mirkokawa.dev/public/{API_KEY}/{FILE_ID}
 Your application now uses the new Cloud Storage API. All existing functionality remains the same, just with updated endpoints.
 
 **Next Steps:**
+
 1. Update `.env` file with new API URL (already done in code!)
 2. Deploy to production
 3. Test image/video uploads

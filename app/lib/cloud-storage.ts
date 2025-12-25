@@ -44,7 +44,9 @@ export async function uploadFileToCloud(
   try {
     // Check if API key is configured
     if (!CLOUD_API_KEY_FULL) {
-      throw new Error("Cloud storage API key is not configured. Please set CLOUD_API_KEY_FULL environment variable.");
+      throw new Error(
+        "Cloud storage API key is not configured. Please set CLOUD_API_KEY_FULL environment variable."
+      );
     }
 
     // Use form-data package for proper multipart/form-data in Node.js
@@ -85,13 +87,13 @@ export async function uploadFileToCloud(
 
     // Upload to cloud storage with allowDuplicates parameter
     const uploadUrl = `${CLOUD_API_BASE}/file/upload?allowDuplicates=true`;
-    
+
     // form-data package provides getHeaders() method for proper Content-Type with boundary
     const headers = {
       "X-API-Key": CLOUD_API_KEY_FULL,
       ...formData.getHeaders(), // This sets Content-Type with boundary
     };
-    
+
     // Use node-fetch for better compatibility with form-data package
     const response = await fetchNode(uploadUrl, {
       method: "POST",
@@ -151,15 +153,17 @@ export async function uploadFileToCloud(
 
       console.warn("⚠️  Cloud storage upload warning:", errorData);
       throw new Error(
-        errorData.message || 
-        errorData.error || 
-        `Upload failed with status ${response.status}: ${response.statusText}`
+        errorData.message ||
+          errorData.error ||
+          `Upload failed with status ${response.status}: ${response.statusText}`
       );
     }
 
     const result = await response.json();
     if (!result.data) {
-      throw new Error("Invalid response from cloud storage: missing data field");
+      throw new Error(
+        "Invalid response from cloud storage: missing data field"
+      );
     }
     return result.data;
   } catch (error) {
@@ -169,7 +173,9 @@ export async function uploadFileToCloud(
       throw error;
     }
     throw new Error(
-      `Failed to upload file: ${error instanceof Error ? error.message : String(error)}`
+      `Failed to upload file: ${
+        error instanceof Error ? error.message : String(error)
+      }`
     );
   }
 }
@@ -296,4 +302,3 @@ export async function listCloudFiles(
  * cloud-storage-utils.ts to avoid "use server" restrictions.
  * Import them from "./cloud-storage-utils" instead.
  */
-
