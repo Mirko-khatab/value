@@ -1931,10 +1931,14 @@ export async function createBanner(prevState: BannerState, formData: FormData) {
   try {
     await connection.beginTransaction();
 
-    // Insert banner record
+    // Generate UUID for banner record
+    const bannerId = crypto.randomUUID();
+
+    // Insert banner record with UUID
     await connection.execute(
-      "INSERT INTO banners (title_ku, title_en, title_ar, image_url, video_url, type, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO banners (id, title_ku, title_en, title_ar, image_url, video_url, type, is_active, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
       [
+        bannerId,
         title_ku,
         title_en,
         title_ar,
@@ -2113,10 +2117,13 @@ export async function createAudio(prevState: AudioState, formData: FormData) {
   try {
     await connection.beginTransaction();
 
-    // Insert audio record
+    // Generate UUID for audio record
+    const audioId = crypto.randomUUID();
+
+    // Insert audio record with UUID
     await connection.execute(
-      "INSERT INTO audios (title_ku, title_en, title_ar, audio_url, is_active, use_for) VALUES (?, ?, ?, ?, ?, ?)",
-      [title_ku, title_en, title_ar, audio_url, is_active, use_for]
+      "INSERT INTO audios (id, title_ku, title_en, title_ar, audio_url, is_active, use_for) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [audioId, title_ku, title_en, title_ar, audio_url, is_active, use_for]
     );
 
     await connection.commit();
