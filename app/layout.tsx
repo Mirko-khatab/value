@@ -5,6 +5,7 @@ import { LoadingProvider } from "@/app/lib/loading-context";
 import { LanguageProvider } from "@/app/lib/language-context";
 import PageLoadAnimation from "@/app/ui/page-load-animation";
 import GlobalAudioPlayer from "@/app/ui/global-audio-player";
+import ChristmasTheme from "@/app/ui/christmas-theme";
 import type { Metadata, Viewport } from "next";
 
 export const viewport: Viewport = {
@@ -105,6 +106,7 @@ export default function RootLayout({
       >
         <LoadingProvider>
           <PageLoadAnimation />
+          <ChristmasTheme />
           <LanguageProvider>
             <ThemeProvider>
               {children}
