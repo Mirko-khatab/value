@@ -8,6 +8,7 @@
     "optimize-video": "node scripts/optimize-video.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@heroicons/react": "^2.2.0",
     "@iconify/react": "^6.0.0",
     "@tailwindcss/forms": "^0.5.10",
