@@ -17,6 +17,7 @@ import Intro from "@/app/ui/intro";
 import QuoteGallery from "./ui/home/quote-gallery";
 import { QouteData } from "./ui/home/qoute-data";
 import VideoLoading from "@/app/ui/video-loading";
+import TechAnnouncement from "@/app/ui/tech-announcement";
 import { 
   getOrganizationStructuredData, 
   getWebsiteStructuredData, 
@@ -161,6 +162,9 @@ export default function Page() {
         <ShowcaseLayout>
           <Slide />
         </ShowcaseLayout>
+
+        {/* VALUE TECH Announcement Section */}
+        <TechAnnouncement />
       </div>
     </>
   );
