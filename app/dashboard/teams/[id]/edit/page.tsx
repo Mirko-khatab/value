@@ -11,7 +11,7 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const id = params.id;
   const team = await fetchTeamById(id);
 
-  if (!team || team.length === 0) {
+  if (!team) {
     notFound();
   }
 
@@ -42,9 +42,9 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
           cancelPath="/dashboard/teams"
           entityName="Team Member"
           mode="edit"
-          initialData={team[0]}
+          initialData={team}
           customContent={
-            <TeamImageUpload initialImageUrl={team[0].image_url} />
+            <TeamImageUpload initialImageUrl={team.image_url} />
           }
         />
       </div>
