@@ -798,13 +798,19 @@ export async function fetchTotalTeamsPages(searchQuery: string) {
       "SELECT COUNT(*) as total FROM teams WHERE name_en LIKE ? OR name_ku LIKE ? OR name_ar LIKE ?",
       [`%${searchQuery}%`, `%${searchQuery}%`, `%${searchQuery}%`]
     );
-    const count = (result as any[])[0].total;
+    const count = (result as any[])[0]?.total || 0;
     return Math.ceil(count / ITEMS_PER_PAGE);
   } catch (error) {
-    console.error("Database Error:", error);
+    console.error("Database Error in fetchTotalTeamsPages:", error);
     return 1; // Return 1 page as fallback
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -816,12 +822,18 @@ export async function fetchCustomers() {
     const [customers] = await connection.execute(
       "SELECT * FROM teams ORDER BY id DESC"
     );
-    return customers as Customer[];
+    return (customers as Customer[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch teams.");
+    console.error("Database Error in fetchCustomers:", error);
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -833,12 +845,18 @@ export async function fetchTeams() {
     const [teams] = await connection.execute(
       "SELECT * FROM teams ORDER BY id DESC"
     );
-    return teams as TeamField[];
+    return (teams as TeamField[]) || [];
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch teams.");
+    console.error("Database Error in fetchTeams:", error);
+    return [];
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 
@@ -851,12 +869,19 @@ export async function fetchTeamById(id: string) {
       "SELECT * FROM teams WHERE id = ?",
       [id]
     );
-    return teams as TeamField[];
+    const teamArray = (teams as TeamField[]) || [];
+    return teamArray.length > 0 ? teamArray[0] : null;
   } catch (error) {
-    console.error("Database Error:", error);
-    throw new Error("Failed to fetch team.");
+    console.error("Database Error in fetchTeamById:", error);
+    return null;
   } finally {
-    if (connection) await connection.end();
+    if (connection) {
+      try {
+        await connection.end();
+      } catch (closeError) {
+        console.warn("Error closing connection:", closeError);
+      }
+    }
   }
 }
 // PRODUCT GALLERIES DATA FETCHING
