@@ -86,7 +86,7 @@ export async function uploadFileToCloud(
     }
 
     // Upload to cloud storage with allowDuplicates parameter
-    const uploadUrl = `${CLOUD_API_BASE}/file/upload?allowDuplicates=true`;
+    const uploadUrl = `${CLOUD_API_BASE}/api/file/upload?allowDuplicates=true`;
 
     // form-data package provides getHeaders() method for proper Content-Type with boundary
     const headers = {
@@ -198,7 +198,7 @@ export async function getUploadEndpoint() {
  */
 export async function getFileMetadata(fileId: string): Promise<FileMetadata> {
   try {
-    const response = await fetch(`${CLOUD_API_BASE}/file/${fileId}`, {
+    const response = await fetch(`${CLOUD_API_BASE}/api/file/${fileId}`, {
       headers: {
         "X-API-Key": CLOUD_API_KEY_READ,
       },
@@ -244,7 +244,7 @@ export async function deleteCloudFile(fileId: string): Promise<boolean> {
       }
     }
 
-    const response = await fetch(`${CLOUD_API_BASE}/file/${cloudFileId}`, {
+    const response = await fetch(`${CLOUD_API_BASE}/api/file/${cloudFileId}`, {
       method: "DELETE",
       headers: {
         "X-API-Key": CLOUD_API_KEY_FULL,
@@ -279,7 +279,7 @@ export async function listCloudFiles(
       search,
     });
 
-    const response = await fetch(`${CLOUD_API_BASE}/file/list?${params}`, {
+    const response = await fetch(`${CLOUD_API_BASE}/api/file/list?${params}`, {
       headers: {
         "X-API-Key": CLOUD_API_KEY_READ,
       },
