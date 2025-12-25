@@ -4,9 +4,9 @@
  * These are NOT server actions, just helper functions
  */
 
-// New API: https://api.mirkokawa.dev
+// New API: https://api.mirkokawa.dev/api
 const CLOUD_API_BASE =
-  process.env.CLOUD_API_BASE_URL || "https://api.mirkokawa.dev";
+  process.env.CLOUD_API_BASE_URL || "https://api.mirkokawa.dev/api";
 const CLOUD_API_KEY_READ = process.env.CLOUD_API_KEY_READ || "";
 
 /**
