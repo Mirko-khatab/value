@@ -1429,10 +1429,13 @@ export async function createSocialMedia(
       };
     }
 
-    // Insert social media record
+    // Generate UUID for social media record
+    const socialMediaId = crypto.randomUUID();
+
+    // Insert social media record with UUID
     await connection.execute(
-      "INSERT INTO social_media (type, url) VALUES (?, ?)",
-      [type, url]
+      "INSERT INTO social_media (id, type, url) VALUES (?, ?, ?)",
+      [socialMediaId, type, url]
     );
 
     await connection.commit();
