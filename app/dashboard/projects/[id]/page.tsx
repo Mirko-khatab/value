@@ -9,16 +9,14 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   const id = params.id;
 
-  const [projectResult, galleries] = await Promise.all([
+  const [projectData, galleries] = await Promise.all([
     fetchProjectById(id),
     fetchProjectGalleriesData(id),
   ]);
 
-  if (!projectResult || projectResult.length === 0) {
+  if (!projectData) {
     notFound();
   }
-
-  const projectData = projectResult[0];
   const mainImage = galleries.length > 0 ? galleries[0] : null;
 
   return (
