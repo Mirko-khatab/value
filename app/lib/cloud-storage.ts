@@ -217,9 +217,9 @@ export async function getFileMetadata(fileId: string): Promise<FileMetadata> {
 }
 
 /**
- * Delete a file from cloud storage
+ * Delete a file from cloud storage with retry logic for rate limits
  */
-export async function deleteCloudFile(fileId: string): Promise<boolean> {
+export async function deleteCloudFile(fileId: string, maxRetries: number = 3): Promise<boolean> {
   try {
     // Extract file ID if a full URL is provided
     let cloudFileId = fileId;
@@ -244,20 +244,47 @@ export async function deleteCloudFile(fileId: string): Promise<boolean> {
       }
     }
 
-    const response = await fetch(`${CLOUD_API_BASE}/file/${cloudFileId}`, {
-      method: "DELETE",
-      headers: {
-        "X-API-Key": CLOUD_API_KEY_FULL,
-      },
-    });
+    // Retry logic for rate limiting
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const response = await fetch(`${CLOUD_API_BASE}/file/${cloudFileId}`, {
+          method: "DELETE",
+          headers: {
+            "X-API-Key": CLOUD_API_KEY_FULL,
+          },
+        });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("Cloud storage delete error:", errorData);
-      return false;
+        if (response.ok) {
+          return true;
+        }
+
+        // Handle rate limiting
+        if (response.status === 429) {
+          const waitTime = (attempt + 1) * 2; // 2s, 4s, 6s
+          console.warn(
+            `⚠️  Rate limited on delete. Waiting ${waitTime}s before retry ${attempt + 1}/${maxRetries}...`
+          );
+          await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
+          continue;
+        }
+
+        // Other errors
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Cloud storage delete error:", errorData);
+        
+        // Don't retry on non-rate-limit errors
+        return false;
+      } catch (fetchError) {
+        if (attempt < maxRetries - 1) {
+          console.warn(`Delete attempt ${attempt + 1} failed, retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
+        } else {
+          throw fetchError;
+        }
+      }
     }
 
-    return true;
+    return false;
   } catch (error) {
     console.error("Error deleting from cloud storage:", error);
     return false;
