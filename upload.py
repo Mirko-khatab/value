@@ -483,46 +483,61 @@ Make titles concise (3-6 words) and descriptions informative but brief."""
         }
 
 
-def upload_image_to_cloud(image_path):
-    """Upload image to cloud storage"""
+def upload_image_to_cloud(image_path, max_retries=3):
+    """Upload image to cloud storage with retry logic"""
     print(f"📤 Uploading: {image_path.name}")
     
-    try:
-        url = f"{CONFIG['cloud']['base_url']}/file/upload?allowDuplicates=true"
-        
-        with open(image_path, 'rb') as f:
-            files = {'file': (image_path.name, f, 'image/jpeg')}
-            headers = {'X-API-Key': CONFIG['cloud']['api_key']}
+    for attempt in range(max_retries):
+        try:
+            url = f"{CONFIG['cloud']['base_url']}/file/upload?allowDuplicates=true"
             
-            response = requests.post(url, files=files, headers=headers)
-        
-        # HTTP 200 (OK) and 201 (Created) are both success statuses
-        if response.status_code not in [200, 201]:
-            raise Exception(f"Upload failed: {response.status_code} {response.text}")
-        
-        data = response.json()
-        
-        # Check if upload was successful
-        if not data.get('success'):
-            raise Exception("Upload failed: " + data.get('message', 'Unknown error'))
-        
-        # Get file ID from response (it's in data.data.id)
-        file_id = data.get('data', {}).get('id')
-        
-        if not file_id:
-            raise Exception("Upload response missing file ID")
-        
-        # Use proxy route to avoid rate limiting (Next.js will cache this)
-        # This goes through YOUR server, not directly to cloud API
-        proxy_url = f"/api/cloud/files/{file_id}"
-        
-        print(f"✅ Uploaded: {file_id}")
-        print(f"   Proxy URL: {proxy_url}")
-        return proxy_url
-        
-    except Exception as e:
-        print(f"❌ Upload error for {image_path.name}: {e}")
-        return None
+            with open(image_path, 'rb') as f:
+                files = {'file': (image_path.name, f, 'image/jpeg')}
+                headers = {'X-API-Key': CONFIG['cloud']['api_key']}
+                
+                response = requests.post(url, files=files, headers=headers)
+            
+            # HTTP 200 (OK) and 201 (Created) are both success statuses
+            if response.status_code == 429:
+                # Rate limited - wait longer and retry
+                wait_time = (attempt + 1) * 5  # 5s, 10s, 15s
+                print(f"⚠️  Rate limited. Waiting {wait_time} seconds before retry {attempt + 1}/{max_retries}...")
+                time.sleep(wait_time)
+                continue
+            
+            if response.status_code not in [200, 201]:
+                raise Exception(f"Upload failed: {response.status_code} {response.text}")
+            
+            data = response.json()
+            
+            # Check if upload was successful
+            if not data.get('success'):
+                raise Exception("Upload failed: " + data.get('message', 'Unknown error'))
+            
+            # Get file ID from response (it's in data.data.id)
+            file_id = data.get('data', {}).get('id')
+            
+            if not file_id:
+                raise Exception("Upload response missing file ID")
+            
+            # Use proxy route to avoid rate limiting (Next.js will cache this)
+            # This goes through YOUR server, not directly to cloud API
+            proxy_url = f"/api/cloud/files/{file_id}"
+            
+            print(f"✅ Uploaded: {file_id}")
+            return proxy_url
+            
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 3
+                print(f"⚠️  Upload failed: {e}")
+                print(f"🔄 Retrying in {wait_time} seconds... (Attempt {attempt + 2}/{max_retries})")
+                time.sleep(wait_time)
+            else:
+                print(f"❌ Upload error for {image_path.name} after {max_retries} attempts: {e}")
+                return None
+    
+    return None
 
 
 def create_project_in_database(connection, project_data, image_ids, location_id=None, project_date=None):
@@ -667,10 +682,17 @@ def process_project(connection, project_folder, folder_name, excel_data=None):
         # Upload images
         print("\n📤 Uploading images to cloud storage...")
         image_ids = []
-        for img in images:
+        for idx, img in enumerate(images, 1):
             img_id = upload_image_to_cloud(img)
             image_ids.append(img_id)
-            time.sleep(0.5)  # Small delay between uploads
+            
+            # Progress indicator
+            print(f"✅ Uploaded {idx}/{len(images)}")
+            
+            # Wait 2 seconds between uploads to avoid rate limiting
+            if idx < len(images):  # Don't wait after last image
+                print(f"⏳ Waiting 2 seconds to avoid rate limit...")
+                time.sleep(2)
         
         successful_uploads = [id for id in image_ids if id]
         print(f"✅ Uploaded {len(successful_uploads)}/{len(images)} images")
