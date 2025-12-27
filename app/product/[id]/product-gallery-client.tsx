@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { Gallery } from "@/app/lib/definitions";
+import OptimizedImage from "@/app/ui/optimized-image";
 import {
   ChevronDoubleRightIcon,
   ChevronDoubleLeftIcon,
@@ -71,14 +72,16 @@ export default function ProductGalleryClient({
 
   return (
     <div className="flex flex-col justify-center sm:items-end items-center gap-4 w-full md:w-1/2">
-      <Image
+      <OptimizedImage
         src={images[selectedImageIndex]}
         alt="product"
         width={500}
         height={500}
-        className="rounded-md w-[400px] h-[271px] object-cover"
+        className="rounded-md w-[400px] h-[271px]"
+        objectFit="cover"
         priority={selectedImageIndex === 0}
-        loading={selectedImageIndex === 0 ? "eager" : "lazy"}
+        quality={90}
+        sizes="(max-width: 768px) 100vw, 400px"
       />
       <div className="flex flex-row justify-center items-center gap-4">
         <button
@@ -101,18 +104,20 @@ export default function ProductGalleryClient({
                   : "hover:scale-105"
               }`}
             >
-              <Image
+              <OptimizedImage
                 src={image}
                 alt={`product ${index + 1}`}
                 width={100}
                 height={100}
-                className={`rounded-md object-cover ${
+                className={`rounded-md ${
                   index === selectedImageIndex
                     ? "opacity-100"
                     : "opacity-70 hover:opacity-90"
                 }`}
+                objectFit="cover"
                 priority={index <= 2}
-                loading={index <= 2 ? "eager" : "lazy"}
+                quality={70}
+                sizes="100px"
               />
             </button>
           ))}

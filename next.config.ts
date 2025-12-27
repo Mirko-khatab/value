@@ -25,8 +25,17 @@ const nextConfig: NextConfig = {
       },
     ],
     unoptimized: false,
+    // Optimized device sizes for better performance
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Modern image formats for better compression
+    formats: ["image/avif", "image/webp"],
+    // Minimize layout shift with blur placeholders
+    minimumCacheTTL: 31536000, // 1 year cache for images
+    // Enable sharp for faster image processing (default in production)
+    dangerouslyAllowSVG: true,
+    contentDispositionType: "attachment",
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

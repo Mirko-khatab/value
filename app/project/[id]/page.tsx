@@ -7,6 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 import ShowcaseLayout from "@/app/ui/showcase-layout";
 import Breadcrumbs from "@/app/ui/breadcrumbs";
+import OptimizedImage from "@/app/ui/optimized-image";
+import { ProjectGallerySkeleton } from "@/app/ui/skeleton-loader";
 import {
   MapPinIcon,
   FolderIcon,
@@ -167,9 +169,13 @@ export default function ProjectDetailPage({ params }: PageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-black flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
+      <ShowcaseLayout>
+        <div className="min-h-screen w-full">
+          <div className="w-full md:pt-60 pt-40">
+            <ProjectGallerySkeleton />
+          </div>
+        </div>
+      </ShowcaseLayout>
     );
   }
 
@@ -304,15 +310,18 @@ export default function ProjectDetailPage({ params }: PageProps) {
                         }`}
                         onClick={toggleFullscreen}
                       >
-                        <Image
+                        <OptimizedImage
                           src={gallery.image_url}
                           alt={
                             gallery.alt_text ||
                             getLocalizedField(project, "title")
                           }
                           fill
-                          className="object-cover cursor-pointer"
+                          className="cursor-pointer"
+                          objectFit="cover"
                           priority={index === 0}
+                          quality={index === 0 ? 90 : 75}
+                          sizes="100vw"
                         />
                       </div>
                     ))}
@@ -697,11 +706,14 @@ export default function ProjectDetailPage({ params }: PageProps) {
                   index === currentSlide ? "opacity-100" : "opacity-0"
                 }`}
               >
-                <Image
+                <OptimizedImage
                   src={gallery.image_url}
                   alt={gallery.alt_text || getLocalizedField(project, "title")}
                   fill
-                  className="object-contain"
+                  objectFit="contain"
+                  priority
+                  quality={95}
+                  sizes="100vw"
                 />
               </div>
             ))}
