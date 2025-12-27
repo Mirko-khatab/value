@@ -184,7 +184,7 @@ function question(query) {
 
 async function selectFolderWithDialog() {
   console.log("\n📂 Folder Selection Options:\n");
-  
+
   const { method } = await inquirer.prompt([
     {
       type: "list",
@@ -210,8 +210,10 @@ async function selectFolderWithDialog() {
 async function selectFolderWithMacPicker() {
   try {
     console.log("\n🖱️  Opening folder picker dialog...");
-    console.log("   (Select the main folder containing your project subfolders)");
-    
+    console.log(
+      "   (Select the main folder containing your project subfolders)"
+    );
+
     const appleScript = `
       tell application "System Events"
         activate
@@ -692,7 +694,7 @@ async function main() {
   }
 
   console.log(`✅ Found ${projectFolders.length} project folders\n`);
-  
+
   // Show folder list with interactive selection
   const folderNames = projectFolders.map((folder, i) => ({
     name: `${i + 1}. ${path.basename(folder)}`,
@@ -703,7 +705,8 @@ async function main() {
     {
       type: "checkbox",
       name: "selectedFolders",
-      message: "Select which projects to upload (use spacebar to select, enter to confirm):",
+      message:
+        "Select which projects to upload (use spacebar to select, enter to confirm):",
       choices: [
         { name: "📌 Select All", value: "ALL", checked: true },
         new inquirer.Separator("--- Projects ---"),

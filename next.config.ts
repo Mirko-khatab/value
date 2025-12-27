@@ -11,11 +11,19 @@ const nextConfig: NextConfig = {
         hostname: "d27wu6gy6te9ow.cloudfront.net",
         pathname: "/**",
       },
+      // Cloud storage API domain - for file IDs
+      {
+        protocol: "https",
+        hostname: "api.mirkokawa.dev",
+        pathname: "/api/public/**",
+      },
+      // Cloud storage domain - direct URLs (recommended)
+      {
+        protocol: "https",
+        hostname: "cloud.mirkokawa.dev",
+        pathname: "/api/public/**",
+      },
     ],
-    // Allow local images to be optimized
-    dangerouslyAllowSVG: true,
-    contentDispositionType: "attachment",
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     unoptimized: false,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],

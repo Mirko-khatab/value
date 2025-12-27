@@ -272,16 +272,26 @@ export const Slide: React.FC<SlideProps> = ({
     if (slide.items.length === 0) return "/image/2.jpg";
 
     const firstItem = slide.items[0];
+    let imageUrl: string | undefined;
+    
     if (slide.type === "graphics") {
-      const imageUrl = (firstItem as Graphic).image_url;
-      return imageUrl && imageUrl.trim() !== "" ? imageUrl : "/image/2.jpg";
+      imageUrl = (firstItem as Graphic).image_url;
     } else {
-      const galleryImageUrl = (firstItem as Project | Product | Event)
-        .gallery_image_url;
-      return galleryImageUrl && galleryImageUrl.trim() !== ""
-        ? galleryImageUrl
-        : "/image/2.jpg";
+      imageUrl = (firstItem as Project | Product | Event).gallery_image_url;
     }
+
+    // Check if we have a valid image URL
+    if (!imageUrl || imageUrl.trim() === "") {
+      return "/image/2.jpg";
+    }
+
+    // If it's already a full URL (starts with http/https or /), use it directly
+    if (imageUrl.startsWith("http") || imageUrl.startsWith("/")) {
+      return imageUrl;
+    }
+
+    // Otherwise, it's a file ID from cloud storage - convert to full URL
+    return `https://api.mirkokawa.dev/api/public/${imageUrl}`;
   };
 
   return (
