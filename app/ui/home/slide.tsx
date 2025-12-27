@@ -4,6 +4,7 @@ import Image from "next/image";
 import React, { useState, useEffect, useRef } from "react";
 import { useLanguage } from "@/app/lib/language-context";
 import Link from "next/link";
+import { getImageUrl } from "@/app/lib/image-utils";
 
 interface Project {
   id: string;
@@ -273,25 +274,15 @@ export const Slide: React.FC<SlideProps> = ({
 
     const firstItem = slide.items[0];
     let imageUrl: string | undefined;
-    
+
     if (slide.type === "graphics") {
       imageUrl = (firstItem as Graphic).image_url;
     } else {
       imageUrl = (firstItem as Project | Product | Event).gallery_image_url;
     }
 
-    // Check if we have a valid image URL
-    if (!imageUrl || imageUrl.trim() === "") {
-      return "/image/2.jpg";
-    }
-
-    // If it's already a full URL (starts with http/https or /), use it directly
-    if (imageUrl.startsWith("http") || imageUrl.startsWith("/")) {
-      return imageUrl;
-    }
-
-    // Otherwise, it's a file ID from cloud storage - convert to full URL
-    return `https://api.mirkokawa.dev/api/public/${imageUrl}`;
+    // Use utility function to convert file ID to full URL
+    return getImageUrl(imageUrl, "/image/2.jpg");
   };
 
   return (

@@ -512,12 +512,13 @@ def upload_image_to_cloud(image_path):
         if not file_id:
             raise Exception("Upload response missing file ID")
         
-        # Convert file ID to full URL for database
-        full_url = f"https://api.mirkokawa.dev/api/public/{file_id}"
+        # Use proxy route to avoid rate limiting (Next.js will cache this)
+        # This goes through YOUR server, not directly to cloud API
+        proxy_url = f"/api/cloud/files/{file_id}"
         
         print(f"✅ Uploaded: {file_id}")
-        print(f"   URL: {full_url}")
-        return full_url
+        print(f"   Proxy URL: {proxy_url}")
+        return proxy_url
         
     except Exception as e:
         print(f"❌ Upload error for {image_path.name}: {e}")
