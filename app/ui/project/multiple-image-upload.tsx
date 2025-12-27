@@ -312,7 +312,7 @@ export default function MultipleImageUpload({
                 <div className="space-y-2">
                   <input
                     type="text"
-                    value={image.altText}
+                    value={image.altText || ''}
                     onChange={(e) =>
                       updateExistingAltText(index, e.target.value)
                     }
@@ -361,7 +361,7 @@ export default function MultipleImageUpload({
                 <div className="space-y-2">
                   <input
                     type="text"
-                    value={image.altText}
+                    value={image.altText || ''}
                     onChange={(e) => updateAltText(index, e.target.value)}
                     placeholder="Alt text"
                     className="w-full text-sm border rounded px-2 py-1 placeholder:text-gray-900  dark:text-gray-900"
@@ -414,7 +414,7 @@ export default function MultipleImageUpload({
           key={`hidden-alt-${index}`}
           type="hidden"
           name={`gallery_alt_${index}`}
-          value={image.altText}
+          value={image.altText || ''}
         />
       ))}
       {displayImages.map((image, index) => (
