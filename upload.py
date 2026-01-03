@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-AI-Powered Bulk Project Upload Script (Python)
+AI-Powered Bulk Project Upload Script (Python) - FULLY AUTOMATIC
 
 Uses Google Gemini AI to analyze project images and automatically:
 - Generate titles (English, Kurdish, Arabic)
@@ -10,7 +10,13 @@ Uses Google Gemini AI to analyze project images and automatically:
 - Create projects in database
 
 Usage:
-    python3 upload_to_database.py
+    python3 upload.py
+    
+    1. Select folder containing project subfolders (GUI)
+    2. Select Excel file with location data (GUI, optional)
+    3. Script automatically uploads ALL projects without asking!
+
+No more prompts! Just select folder and Excel file, then sit back and watch!
 """
 
 import os
@@ -668,16 +674,8 @@ def process_project(connection, project_folder, folder_name, excel_data=None):
             if subcat:
                 print(f"   Subcategory: {subcat['en']}")
         
-        # Confirm upload
-        proceed = input("\n✅ Upload this project? (yes/skip/cancel): ").lower()
-        
-        if proceed == "skip":
-            print("⏭️  Skipped")
-            return {"success": False, "reason": "Skipped by user"}
-        
-        if proceed == "cancel":
-            print("❌ Cancelled")
-            raise Exception("Upload cancelled by user")
+        # Automatically proceed with upload (no confirmation needed)
+        print("\n🚀 Uploading project automatically...")
         
         # Upload images
         print("\n📤 Uploading images to cloud storage...")
@@ -729,7 +727,11 @@ def process_project(connection, project_folder, folder_name, excel_data=None):
 
 
 def main():
-    print("🚀 AI-Powered Bulk Project Upload (Python)")
+    print("🚀 AI-Powered Bulk Project Upload (Fully Automatic)")
+    print("=" * 70)
+    print("   📁 Step 1: Select folder with projects")
+    print("   📊 Step 2: Select Excel file (optional)")
+    print("   ⚡ Step 3: Watch automatic upload!")
     print("=" * 70)
     print()
     
@@ -787,12 +789,13 @@ def main():
         print(f"❌ Database connection error: {e}")
         return
     
-    # Process each project
+    # Process each project automatically
+    print("\n🚀 Starting automatic upload of all projects...\n")
+    
     results = {
         "total": len(project_folders),
         "success": 0,
         "failed": 0,
-        "skipped": 0,
         "projects": [],
     }
     
@@ -808,8 +811,6 @@ def main():
                 "title": result["title"],
                 "images": result["images"],
             })
-        elif result.get("reason") == "Skipped by user":
-            results["skipped"] += 1
         else:
             results["failed"] += 1
         
@@ -826,7 +827,6 @@ def main():
     print(f"Total projects: {results['total']}")
     print(f"✅ Successful: {results['success']}")
     print(f"❌ Failed: {results['failed']}")
-    print(f"⏭️  Skipped: {results['skipped']}")
     
     if results["projects"]:
         print("\n📋 Created Projects:")
