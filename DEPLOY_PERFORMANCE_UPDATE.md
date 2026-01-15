@@ -313,4 +313,3 @@ Optional enhancements:
 4. **Enable HTTP/3** on server (faster protocol)
 
 **But your site is already SUPER FAST now!** 🚀
-

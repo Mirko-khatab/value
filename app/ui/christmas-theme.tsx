@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 /**
  * ChristmasTheme Component
@@ -24,6 +24,30 @@ interface Snowflake {
 
 export default function ChristmasTheme() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isEnabled, setIsEnabled] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Check if theme should be active
+  useEffect(() => {
+    async function checkThemeStatus() {
+      try {
+        const response = await fetch('/api/theme-settings');
+        const data = await response.json();
+        setIsEnabled(data.enabled || false);
+      } catch (error) {
+        console.error('Failed to fetch theme settings:', error);
+        setIsEnabled(false);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    checkThemeStatus();
+  }, []);
+
+  // Don't render anything while loading or if disabled
+  if (isLoading || !isEnabled) {
+    return null;
+  }
 
   useEffect(() => {
     const canvas = canvasRef.current;

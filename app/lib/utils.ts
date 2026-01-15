@@ -134,4 +134,9 @@ export const links = [
     href: "/dashboard/graphics",
     icon: SparklesIcon,
   },
+  {
+    name: "Theme Settings",
+    href: "/dashboard/settings/theme",
+    icon: SparklesIcon,
+  },
 ];
