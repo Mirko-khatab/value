@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { query } from "@/app/lib/db";
+import { getConnection } from "@/app/lib/serverutils";
 
 /**
  * Check if a theme should be active based on:
@@ -52,8 +52,10 @@ function isThemeActive(settings: any): boolean {
 }
 
 export async function GET() {
+  let connection;
   try {
-    const result = await query(
+    connection = await getConnection();
+    const [result]: any = await connection.execute(
       "SELECT * FROM theme_settings WHERE theme_name = ?",
       ["christmas"]
     );
@@ -89,14 +91,18 @@ export async function GET() {
       },
       { status: 500 }
     );
+  } finally {
+    if (connection) await connection.end();
   }
 }
 
 export async function POST(request: Request) {
+  let connection;
   try {
     const { enabled } = await request.json();
 
-    await query(
+    connection = await getConnection();
+    await connection.execute(
       "UPDATE theme_settings SET is_enabled = ? WHERE theme_name = ?",
       [enabled ? 1 : 0, "christmas"]
     );
@@ -113,5 +119,7 @@ export async function POST(request: Request) {
       },
       { status: 500 }
     );
+  } finally {
+    if (connection) await connection.end();
   }
 }

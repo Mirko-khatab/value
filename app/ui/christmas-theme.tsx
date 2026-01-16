@@ -44,12 +44,11 @@ export default function ChristmasTheme() {
     checkThemeStatus();
   }, []);
 
-  // Don't render anything while loading or if disabled
-  if (isLoading || !isEnabled) {
-    return null;
-  }
-
+  // Snowfall animation effect
   useEffect(() => {
+    // Don't run animation if disabled or still loading
+    if (isLoading || !isEnabled) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -143,7 +142,12 @@ export default function ChristmasTheme() {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [isEnabled, isLoading]);
+
+  // Don't render anything while loading or if disabled
+  if (isLoading || !isEnabled) {
+    return null;
+  }
 
   return (
     <>
